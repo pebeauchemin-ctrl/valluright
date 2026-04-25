@@ -1,22 +1,35 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useNavigate, useLocation } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Mountain, LayoutDashboard, Sparkles } from "lucide-react";
+import {
+  Mountain, LayoutDashboard, FileSpreadsheet, Sparkles, Sliders, Eye,
+  Folder, Users, Settings as SettingsIcon, LogOut, ChevronDown, Plus
+} from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { useBusiness } from "@/lib/business";
 
 export const Route = createFileRoute("/app")({
   head: () => ({ meta: [{ title: "Dashboard — ValuRight.ai" }] }),
-  component: AppDashboard,
+  component: AppLayout,
 });
 
-function AppDashboard() {
-  const { user, loading, signOut } = useAuth();
+function AppLayout() {
+  const { user, loading: authLoading, signOut } = useAuth();
+  const { businesses, current, setCurrent, loading: bizLoading } = useBusiness();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/auth" });
-  }, [user, loading, navigate]);
+    if (!authLoading && !user) navigate({ to: "/auth" });
+  }, [user, authLoading, navigate]);
 
-  if (loading || !user) {
+  useEffect(() => {
+    // First-time user lands on dashboard but has no business — push them to onboarding
+    if (!authLoading && !bizLoading && user && businesses.length === 0 && location.pathname === "/app") {
+      navigate({ to: "/app/onboarding" });
+    }
+  }, [authLoading, bizLoading, user, businesses, location.pathname, navigate]);
+
+  if (authLoading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-sm text-muted-foreground">Loading…</div>
@@ -24,48 +37,101 @@ function AppDashboard() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-secondary/30">
-      <header className="border-b border-border bg-card">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              <Mountain className="h-4 w-4" />
-            </div>
-            <span className="font-display font-semibold text-primary">valuright.ai</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground hidden sm:inline">{user.email}</span>
-            <button
-              onClick={() => { signOut(); navigate({ to: "/" }); }}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground"
-            >
-              Sign out
-            </button>
-          </div>
-        </div>
-      </header>
+  const navItems = [
+    { to: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
+    { to: "/app/financials", label: "Financials", icon: FileSpreadsheet },
+    { to: "/app/recommendations", label: "Recommendations", icon: Sparkles },
+    { to: "/app/scenarios", label: "What-if Scenarios", icon: Sliders },
+    { to: "/app/buyer-teaser", label: "Buyer Teaser", icon: Eye },
+    { to: "/app/data-room", label: "Data Room", icon: Folder },
+    { to: "/app/advisors", label: "Advisors", icon: Users },
+    { to: "/app/settings", label: "Settings", icon: SettingsIcon },
+  ] as const;
 
-      <main className="mx-auto max-w-6xl px-6 py-12">
-        <div className="rounded-2xl border border-border bg-card p-10 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-accent-soft text-accent">
-            <LayoutDashboard className="h-7 w-7" />
+  return (
+    <div className="min-h-screen flex bg-secondary/40">
+      {/* Sidebar */}
+      <aside className="w-64 shrink-0 bg-sidebar text-sidebar-foreground flex flex-col">
+        <Link to="/" className="flex items-center gap-2 px-5 py-5 border-b border-sidebar-border">
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-accent text-accent-foreground">
+            <Mountain className="h-4 w-4" />
           </div>
-          <h1 className="mt-6 font-display text-3xl font-semibold text-primary">Welcome to ValuRight.ai</h1>
-          <p className="mt-2 max-w-lg mx-auto text-muted-foreground">
-            Your foundation is ready. The full app — onboarding wizard, financials,
-            valuation dashboard, scenarios, buyer teaser, advisor portal, and data room —
-            comes online in the next build pass.
-          </p>
-          <div className="mt-8 flex items-center justify-center gap-3">
+          <span className="font-display font-semibold">valuright.ai</span>
+        </Link>
+
+        {/* Business switcher */}
+        <div className="px-3 py-3 border-b border-sidebar-border">
+          {businesses.length > 0 && current ? (
+            <div className="relative group">
+              <button className="w-full flex items-center justify-between gap-2 rounded-md bg-sidebar-accent px-3 py-2 text-sm text-left hover:bg-sidebar-accent/80 transition">
+                <div className="min-w-0 flex-1">
+                  <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">Business</div>
+                  <div className="font-medium truncate">{current.name}</div>
+                </div>
+                <ChevronDown className="h-4 w-4 shrink-0 text-sidebar-foreground/60" />
+              </button>
+              {businesses.length > 1 && (
+                <div className="absolute z-20 left-0 right-0 mt-1 hidden group-hover:block group-focus-within:block">
+                  <div className="rounded-md bg-sidebar-accent border border-sidebar-border shadow-lg overflow-hidden">
+                    {businesses.map((b) => (
+                      <button
+                        key={b.id}
+                        onClick={() => setCurrent(b)}
+                        className={`w-full text-left px-3 py-2 text-sm hover:bg-sidebar/40 ${b.id === current.id ? "bg-sidebar/30" : ""}`}
+                      >
+                        {b.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
             <Link
-              to="/demo"
-              className="inline-flex items-center gap-1.5 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition"
+              to="/app/onboarding"
+              className="flex items-center gap-2 rounded-md bg-accent px-3 py-2 text-sm font-medium text-accent-foreground hover:bg-accent/90 transition"
             >
-              <Sparkles className="h-4 w-4" /> See a sample valuation
+              <Plus className="h-4 w-4" /> Add your business
             </Link>
-          </div>
+          )}
         </div>
+
+        {/* Nav */}
+        <nav className="flex-1 px-3 py-3 space-y-0.5">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const active = item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to);
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition ${
+                  active
+                    ? "bg-sidebar-accent text-sidebar-foreground font-semibold"
+                    : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+                }`}
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="px-3 py-3 border-t border-sidebar-border">
+          <div className="text-xs text-sidebar-foreground/60 px-3 mb-2 truncate">{user.email}</div>
+          <button
+            onClick={async () => { await signOut(); navigate({ to: "/" }); }}
+            className="w-full flex items-center gap-2 rounded-md px-3 py-2 text-sm text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground transition"
+          >
+            <LogOut className="h-4 w-4" /> Sign out
+          </button>
+        </div>
+      </aside>
+
+      {/* Main */}
+      <main className="flex-1 min-w-0 overflow-x-hidden">
+        <Outlet />
       </main>
     </div>
   );

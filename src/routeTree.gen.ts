@@ -14,6 +14,16 @@ import { Route as DemoRouteImport } from './routes/demo'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as TeaserPublicIdRouteImport } from './routes/teaser.$publicId'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
+import { Route as AppScenariosRouteImport } from './routes/app.scenarios'
+import { Route as AppRecommendationsRouteImport } from './routes/app.recommendations'
+import { Route as AppOnboardingRouteImport } from './routes/app.onboarding'
+import { Route as AppFinancialsRouteImport } from './routes/app.financials'
+import { Route as AppDataRoomRouteImport } from './routes/app.data-room'
+import { Route as AppBuyerTeaserRouteImport } from './routes/app.buyer-teaser'
+import { Route as AppAdvisorsRouteImport } from './routes/app.advisors'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -40,43 +50,168 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const TeaserPublicIdRoute = TeaserPublicIdRouteImport.update({
+  id: '/teaser/$publicId',
+  path: '/teaser/$publicId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppScenariosRoute = AppScenariosRouteImport.update({
+  id: '/scenarios',
+  path: '/scenarios',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRecommendationsRoute = AppRecommendationsRouteImport.update({
+  id: '/recommendations',
+  path: '/recommendations',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppOnboardingRoute = AppOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFinancialsRoute = AppFinancialsRouteImport.update({
+  id: '/financials',
+  path: '/financials',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDataRoomRoute = AppDataRoomRouteImport.update({
+  id: '/data-room',
+  path: '/data-room',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBuyerTeaserRoute = AppBuyerTeaserRouteImport.update({
+  id: '/buyer-teaser',
+  path: '/buyer-teaser',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdvisorsRoute = AppAdvisorsRouteImport.update({
+  id: '/advisors',
+  path: '/advisors',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
+  '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/app/advisors': typeof AppAdvisorsRoute
+  '/app/buyer-teaser': typeof AppBuyerTeaserRoute
+  '/app/data-room': typeof AppDataRoomRoute
+  '/app/financials': typeof AppFinancialsRoute
+  '/app/onboarding': typeof AppOnboardingRoute
+  '/app/recommendations': typeof AppRecommendationsRoute
+  '/app/scenarios': typeof AppScenariosRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/teaser/$publicId': typeof TeaserPublicIdRoute
+  '/app/': typeof AppIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
   '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/app/advisors': typeof AppAdvisorsRoute
+  '/app/buyer-teaser': typeof AppBuyerTeaserRoute
+  '/app/data-room': typeof AppDataRoomRoute
+  '/app/financials': typeof AppFinancialsRoute
+  '/app/onboarding': typeof AppOnboardingRoute
+  '/app/recommendations': typeof AppRecommendationsRoute
+  '/app/scenarios': typeof AppScenariosRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/teaser/$publicId': typeof TeaserPublicIdRoute
+  '/app': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
+  '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/app/advisors': typeof AppAdvisorsRoute
+  '/app/buyer-teaser': typeof AppBuyerTeaserRoute
+  '/app/data-room': typeof AppDataRoomRoute
+  '/app/financials': typeof AppFinancialsRoute
+  '/app/onboarding': typeof AppOnboardingRoute
+  '/app/recommendations': typeof AppRecommendationsRoute
+  '/app/scenarios': typeof AppScenariosRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/teaser/$publicId': typeof TeaserPublicIdRoute
+  '/app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/auth' | '/demo' | '/reset-password'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/auth'
+    | '/demo'
+    | '/reset-password'
+    | '/app/advisors'
+    | '/app/buyer-teaser'
+    | '/app/data-room'
+    | '/app/financials'
+    | '/app/onboarding'
+    | '/app/recommendations'
+    | '/app/scenarios'
+    | '/app/settings'
+    | '/teaser/$publicId'
+    | '/app/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app' | '/auth' | '/demo' | '/reset-password'
-  id: '__root__' | '/' | '/app' | '/auth' | '/demo' | '/reset-password'
+  to:
+    | '/'
+    | '/auth'
+    | '/demo'
+    | '/reset-password'
+    | '/app/advisors'
+    | '/app/buyer-teaser'
+    | '/app/data-room'
+    | '/app/financials'
+    | '/app/onboarding'
+    | '/app/recommendations'
+    | '/app/scenarios'
+    | '/app/settings'
+    | '/teaser/$publicId'
+    | '/app'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/auth'
+    | '/demo'
+    | '/reset-password'
+    | '/app/advisors'
+    | '/app/buyer-teaser'
+    | '/app/data-room'
+    | '/app/financials'
+    | '/app/onboarding'
+    | '/app/recommendations'
+    | '/app/scenarios'
+    | '/app/settings'
+    | '/teaser/$publicId'
+    | '/app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AppRoute: typeof AppRoute
+  AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
   DemoRoute: typeof DemoRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  TeaserPublicIdRoute: typeof TeaserPublicIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -116,15 +251,112 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/teaser/$publicId': {
+      id: '/teaser/$publicId'
+      path: '/teaser/$publicId'
+      fullPath: '/teaser/$publicId'
+      preLoaderRoute: typeof TeaserPublicIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/scenarios': {
+      id: '/app/scenarios'
+      path: '/scenarios'
+      fullPath: '/app/scenarios'
+      preLoaderRoute: typeof AppScenariosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/recommendations': {
+      id: '/app/recommendations'
+      path: '/recommendations'
+      fullPath: '/app/recommendations'
+      preLoaderRoute: typeof AppRecommendationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/onboarding': {
+      id: '/app/onboarding'
+      path: '/onboarding'
+      fullPath: '/app/onboarding'
+      preLoaderRoute: typeof AppOnboardingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/financials': {
+      id: '/app/financials'
+      path: '/financials'
+      fullPath: '/app/financials'
+      preLoaderRoute: typeof AppFinancialsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/data-room': {
+      id: '/app/data-room'
+      path: '/data-room'
+      fullPath: '/app/data-room'
+      preLoaderRoute: typeof AppDataRoomRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/buyer-teaser': {
+      id: '/app/buyer-teaser'
+      path: '/buyer-teaser'
+      fullPath: '/app/buyer-teaser'
+      preLoaderRoute: typeof AppBuyerTeaserRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/advisors': {
+      id: '/app/advisors'
+      path: '/advisors'
+      fullPath: '/app/advisors'
+      preLoaderRoute: typeof AppAdvisorsRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppAdvisorsRoute: typeof AppAdvisorsRoute
+  AppBuyerTeaserRoute: typeof AppBuyerTeaserRoute
+  AppDataRoomRoute: typeof AppDataRoomRoute
+  AppFinancialsRoute: typeof AppFinancialsRoute
+  AppOnboardingRoute: typeof AppOnboardingRoute
+  AppRecommendationsRoute: typeof AppRecommendationsRoute
+  AppScenariosRoute: typeof AppScenariosRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppAdvisorsRoute: AppAdvisorsRoute,
+  AppBuyerTeaserRoute: AppBuyerTeaserRoute,
+  AppDataRoomRoute: AppDataRoomRoute,
+  AppFinancialsRoute: AppFinancialsRoute,
+  AppOnboardingRoute: AppOnboardingRoute,
+  AppRecommendationsRoute: AppRecommendationsRoute,
+  AppScenariosRoute: AppScenariosRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AppRoute: AppRoute,
+  AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
   DemoRoute: DemoRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  TeaserPublicIdRoute: TeaserPublicIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
