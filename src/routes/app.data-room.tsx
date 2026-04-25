@@ -10,7 +10,7 @@ export const Route = createFileRoute("/app/data-room")({
   component: DataRoom,
 });
 
-const CATEGORIES = ["financials", "tax_returns", "legal", "leases", "contracts", "operations", "other"] as const;
+const CATEGORIES = ["financials", "tax_returns", "legal", "lease_real_estate", "equipment", "employees", "customers", "vendors", "licenses", "operations_manuals", "photos"] as const;
 type Category = typeof CATEGORIES[number];
 
 type FileRow = { id: string; filename: string; storage_path: string; category: Category; size_bytes: number | null; mime_type: string | null; uploaded_at: string };

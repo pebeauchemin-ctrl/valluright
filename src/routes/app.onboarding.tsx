@@ -58,7 +58,7 @@ function Onboarding() {
   const [topCustomerPct, setTopCustomerPct] = useState(15);
   const [sopStatus, setSopStatus] = useState("partial");
   const [managerDepth, setManagerDepth] = useState("partial");
-  const [exitTimeline, setExitTimeline] = useState<"now" | "1_2y" | "2_5y" | "5y_plus" | "exploring">("2_5y");
+  const [exitTimeline, setExitTimeline] = useState<"lt_1y" | "1_2y" | "2_5y" | "5_plus_y" | "exploring">("2_5y");
 
   const fillSample = () => {
     setName(SAMPLE_HVAC_BUSINESS.name);
@@ -273,10 +273,10 @@ function Onboarding() {
                 { value: "strong", label: "Full management team in place" },
               ]} />
               <Choice label="Exit timeline" value={exitTimeline} onChange={(v) => setExitTimeline(v as never)} options={[
-                { value: "now", label: "Now — actively selling" },
+                { value: "lt_1y", label: "Now — within 1 year" },
                 { value: "1_2y", label: "Within 1–2 years" },
                 { value: "2_5y", label: "2–5 years" },
-                { value: "5y_plus", label: "5+ years" },
+                { value: "5_plus_y", label: "5+ years" },
                 { value: "exploring", label: "Just exploring" },
               ]} />
             </div>

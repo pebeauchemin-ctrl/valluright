@@ -37,16 +37,16 @@ function AppLayout() {
     );
   }
 
-  const navItems = [
-    { to: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
-    { to: "/app/financials", label: "Financials", icon: FileSpreadsheet },
-    { to: "/app/recommendations", label: "Recommendations", icon: Sparkles },
-    { to: "/app/scenarios", label: "What-if Scenarios", icon: Sliders },
-    { to: "/app/buyer-teaser", label: "Buyer Teaser", icon: Eye },
-    { to: "/app/data-room", label: "Data Room", icon: Folder },
-    { to: "/app/advisors", label: "Advisors", icon: Users },
-    { to: "/app/settings", label: "Settings", icon: SettingsIcon },
-  ] as const;
+    const navItems: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }> = [
+      { to: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
+      { to: "/app/financials", label: "Financials", icon: FileSpreadsheet },
+      { to: "/app/recommendations", label: "Recommendations", icon: Sparkles },
+      { to: "/app/scenarios", label: "What-if Scenarios", icon: Sliders },
+      { to: "/app/buyer-teaser", label: "Buyer Teaser", icon: Eye },
+      { to: "/app/data-room", label: "Data Room", icon: Folder },
+      { to: "/app/advisors", label: "Advisors", icon: Users },
+      { to: "/app/settings", label: "Settings", icon: SettingsIcon },
+    ];
 
   return (
     <div className="min-h-screen flex bg-secondary/40">
