@@ -2,30 +2,52 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Mountain } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — ValuRight.ai" }] }),
   component: AuthPage,
 });
 
+type Mode = "signin" | "signup" | "forgot";
+
 function AuthPage() {
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<Mode>("signin");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     if (user) navigate({ to: "/app" });
   }, [user, navigate]);
 
+  const switchMode = (m: Mode) => {
+    setMode(m);
+    setError(null);
+    setInfo(null);
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setInfo(null);
     setBusy(true);
+
+    if (mode === "forgot") {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: typeof window !== "undefined" ? window.location.origin + "/reset-password" : undefined,
+      });
+      setBusy(false);
+      if (error) setError(error.message);
+      else setInfo("If an account exists for that email, a reset link is on its way. Check your inbox.");
+      return;
+    }
+
     const { error } = mode === "signin"
       ? await signIn(email, password)
       : await signUp(email, password, fullName);
@@ -33,6 +55,15 @@ function AuthPage() {
     if (error) setError(error);
     else navigate({ to: "/app" });
   };
+
+  const heading = mode === "signin" ? "Welcome back" : mode === "signup" ? "Create your account" : "Reset your password";
+  const subheading =
+    mode === "signin"
+      ? "Sign in to your dashboard."
+      : mode === "signup"
+        ? "Start your first valuation in minutes."
+        : "Enter your email and we'll send you a link to choose a new password.";
+  const cta = mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link";
 
   return (
     <div className="min-h-screen flex bg-background">
@@ -63,22 +94,38 @@ function AuthPage() {
             <span className="font-display font-semibold text-primary">valuright.ai</span>
           </Link>
 
-          <h1 className="font-display text-3xl font-semibold text-primary">
-            {mode === "signin" ? "Welcome back" : "Create your account"}
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {mode === "signin" ? "Sign in to your dashboard." : "Start your first valuation in minutes."}
-          </p>
+          <h1 className="font-display text-3xl font-semibold text-primary">{heading}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{subheading}</p>
 
           <form onSubmit={submit} className="mt-8 space-y-4">
             {mode === "signup" && (
               <Field label="Full name" type="text" value={fullName} onChange={setFullName} required />
             )}
             <Field label="Email" type="email" value={email} onChange={setEmail} required />
-            <Field label="Password" type="password" value={password} onChange={setPassword} required minLength={6} />
+            {mode !== "forgot" && (
+              <div>
+                <Field label="Password" type="password" value={password} onChange={setPassword} required minLength={6} />
+                {mode === "signin" && (
+                  <div className="mt-2 text-right">
+                    <button
+                      type="button"
+                      onClick={() => switchMode("forgot")}
+                      className="text-xs font-medium text-accent hover:underline"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
             {error && (
               <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
                 {error}
+              </div>
+            )}
+            {info && (
+              <div className="rounded-md border border-accent/30 bg-accent/5 px-3 py-2 text-sm text-foreground">
+                {info}
               </div>
             )}
             <button
@@ -86,18 +133,26 @@ function AuthPage() {
               disabled={busy}
               className="w-full rounded-md bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition disabled:opacity-60"
             >
-              {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+              {busy ? "Please wait…" : cta}
             </button>
           </form>
 
           <div className="mt-6 text-center text-sm text-muted-foreground">
-            {mode === "signin" ? "New to ValuRight?" : "Already have an account?"}{" "}
-            <button
-              onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(null); }}
-              className="font-semibold text-accent hover:underline"
-            >
-              {mode === "signin" ? "Create one" : "Sign in"}
-            </button>
+            {mode === "forgot" ? (
+              <button onClick={() => switchMode("signin")} className="font-semibold text-accent hover:underline">
+                Back to sign in
+              </button>
+            ) : (
+              <>
+                {mode === "signin" ? "New to ValuRight?" : "Already have an account?"}{" "}
+                <button
+                  onClick={() => switchMode(mode === "signin" ? "signup" : "signin")}
+                  className="font-semibold text-accent hover:underline"
+                >
+                  {mode === "signin" ? "Create one" : "Sign in"}
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
