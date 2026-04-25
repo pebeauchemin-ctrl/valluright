@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Sparkles, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Sparkles, Loader2, Upload } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useBusiness, toBusinessInputs } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
