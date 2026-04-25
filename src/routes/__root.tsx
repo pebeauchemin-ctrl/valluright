@@ -1,4 +1,5 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { AuthProvider } from "@/lib/auth";
 
 import appCss from "../styles.css?url";
 
@@ -29,21 +30,15 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "ValuRight.ai — Know Your Value. Plan Your Exit. Live Your Freedom." },
+      { name: "description", content: "Exit-readiness and business valuation software for owners preparing to retire or sell. Estimate value, identify risks, and grow what your business is worth." },
+      { name: "author", content: "ValuRight.ai" },
+      { property: "og:title", content: "ValuRight.ai — Plan a confident exit" },
+      { property: "og:description", content: "Estimate your business value, see what's holding it back, and act on it before you sell." },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-    ],
+    links: [{ rel: "stylesheet", href: appCss }],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -65,5 +60,9 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  return <Outlet />;
+  return (
+    <AuthProvider>
+      <Outlet />
+    </AuthProvider>
+  );
 }
