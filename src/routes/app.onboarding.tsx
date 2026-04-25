@@ -150,6 +150,7 @@ function Onboarding() {
     }
   };
 
+  const fillSample = () => {
     setName(SAMPLE_HVAC_BUSINESS.name);
     setIndustry(SAMPLE_HVAC_BUSINESS.industry);
     setRegion(SAMPLE_HVAC_BUSINESS.region);
