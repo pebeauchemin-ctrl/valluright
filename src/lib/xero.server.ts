@@ -11,8 +11,8 @@ export const XERO_SCOPES = [
   "profile",
   "email",
   "offline_access",
-  "accounting.reports.read",
-  "accounting.settings.read",
+  "accounting.reports.profitandloss.read",
+  "accounting.reports.balancesheet.read",
 ].join(" ");
 
 export function getXeroCreds() {
