@@ -203,7 +203,33 @@ function Onboarding() {
             <div className="space-y-5">
               <div>
                 <h1 className="font-display text-2xl font-semibold text-primary">Three years of financials</h1>
-                <p className="mt-1 text-sm text-muted-foreground">Most recent year is required. Two prior years strengthen the estimate.</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Most recent year is required and must end no later than {currentYear - 1}. Two prior years strengthen the estimate.
+                </p>
+              </div>
+              <div className="rounded-xl border border-dashed border-border bg-secondary/30 p-4">
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                  <div>
+                    <div className="text-sm font-semibold text-foreground">Import from your accounting software</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">Pull P&amp;L and balance sheet data automatically.</div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => toast.info("QuickBooks import is coming soon. Enter your numbers manually for now.")}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-2 text-xs font-semibold hover:bg-secondary transition"
+                    >
+                      <Upload className="h-3.5 w-3.5" /> QuickBooks
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => toast.info("Xero import is coming soon. Enter your numbers manually for now.")}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-2 text-xs font-semibold hover:bg-secondary transition"
+                    >
+                      <Upload className="h-3.5 w-3.5" /> Xero
+                    </button>
+                  </div>
+                </div>
               </div>
               <div className="overflow-x-auto -mx-2">
                 <table className="w-full border-separate border-spacing-x-2 border-spacing-y-1 text-sm">
