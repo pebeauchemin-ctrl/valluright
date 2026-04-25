@@ -45,8 +45,18 @@ function Onboarding() {
   const { user } = useAuth();
   const { refresh, setCurrent } = useBusiness();
   const navigate = useNavigate();
+  const search = Route.useSearch();
   const [step, setStep] = useState<Step>(0);
   const [saving, setSaving] = useState(false);
+
+  // Xero
+  const startXero = useServerFn(startXeroConnect);
+  const importXero = useServerFn(importXeroFinancials);
+  const fetchConnections = useServerFn(listXeroConnections);
+  const [xeroLoading, setXeroLoading] = useState(false);
+  const [xeroTenants, setXeroTenants] = useState<{ tenant_id: string; tenant_name: string | null }[]>([]);
+  const [selectedTenant, setSelectedTenant] = useState<string | null>(null);
+
 
   // Step 0: business basics
   const [name, setName] = useState("");
