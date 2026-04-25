@@ -24,6 +24,7 @@ import { Route as AppFinancialsRouteImport } from './routes/app.financials'
 import { Route as AppDataRoomRouteImport } from './routes/app.data-room'
 import { Route as AppBuyerTeaserRouteImport } from './routes/app.buyer-teaser'
 import { Route as AppAdvisorsRouteImport } from './routes/app.advisors'
+import { Route as ApiPublicXeroCallbackRouteImport } from './routes/api.public.xero.callback'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -100,6 +101,11 @@ const AppAdvisorsRoute = AppAdvisorsRouteImport.update({
   path: '/advisors',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiPublicXeroCallbackRoute = ApiPublicXeroCallbackRouteImport.update({
+  id: '/api/public/xero/callback',
+  path: '/api/public/xero/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/app/settings': typeof AppSettingsRoute
   '/teaser/$publicId': typeof TeaserPublicIdRoute
   '/app/': typeof AppIndexRoute
+  '/api/public/xero/callback': typeof ApiPublicXeroCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -133,6 +140,7 @@ export interface FileRoutesByTo {
   '/app/settings': typeof AppSettingsRoute
   '/teaser/$publicId': typeof TeaserPublicIdRoute
   '/app': typeof AppIndexRoute
+  '/api/public/xero/callback': typeof ApiPublicXeroCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -151,6 +159,7 @@ export interface FileRoutesById {
   '/app/settings': typeof AppSettingsRoute
   '/teaser/$publicId': typeof TeaserPublicIdRoute
   '/app/': typeof AppIndexRoute
+  '/api/public/xero/callback': typeof ApiPublicXeroCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/teaser/$publicId'
     | '/app/'
+    | '/api/public/xero/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -186,6 +196,7 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/teaser/$publicId'
     | '/app'
+    | '/api/public/xero/callback'
   id:
     | '__root__'
     | '/'
@@ -203,6 +214,7 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/teaser/$publicId'
     | '/app/'
+    | '/api/public/xero/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -212,6 +224,7 @@ export interface RootRouteChildren {
   DemoRoute: typeof DemoRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TeaserPublicIdRoute: typeof TeaserPublicIdRoute
+  ApiPublicXeroCallbackRoute: typeof ApiPublicXeroCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -321,6 +334,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdvisorsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/public/xero/callback': {
+      id: '/api/public/xero/callback'
+      path: '/api/public/xero/callback'
+      fullPath: '/api/public/xero/callback'
+      preLoaderRoute: typeof ApiPublicXeroCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -357,6 +377,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoRoute: DemoRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TeaserPublicIdRoute: TeaserPublicIdRoute,
+  ApiPublicXeroCallbackRoute: ApiPublicXeroCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

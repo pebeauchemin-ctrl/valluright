@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Sparkles, Loader2, Upload } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowLeft, ArrowRight, Check, Sparkles, Loader2, Upload, Link2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useBusiness, toBusinessInputs } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,9 +10,22 @@ import {
 } from "@/lib/valuation";
 import { fmtCurrency } from "@/lib/format";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { startXeroConnect, importXeroFinancials, listXeroConnections } from "@/lib/xero.functions";
+
+type OnboardingSearch = {
+  xero?: "connected" | "error";
+  tenant?: string;
+  message?: string;
+};
 
 export const Route = createFileRoute("/app/onboarding")({
   head: () => ({ meta: [{ title: "Onboarding — ValuRight.ai" }] }),
+  validateSearch: (search: Record<string, unknown>): OnboardingSearch => ({
+    xero: search.xero === "connected" || search.xero === "error" ? search.xero : undefined,
+    tenant: typeof search.tenant === "string" ? search.tenant : undefined,
+    message: typeof search.message === "string" ? search.message : undefined,
+  }),
   component: Onboarding,
 });
 
@@ -32,8 +45,18 @@ function Onboarding() {
   const { user } = useAuth();
   const { refresh, setCurrent } = useBusiness();
   const navigate = useNavigate();
+  const search = Route.useSearch();
   const [step, setStep] = useState<Step>(0);
   const [saving, setSaving] = useState(false);
+
+  // Xero
+  const startXero = useServerFn(startXeroConnect);
+  const importXero = useServerFn(importXeroFinancials);
+  const fetchConnections = useServerFn(listXeroConnections);
+  const [xeroLoading, setXeroLoading] = useState(false);
+  const [xeroTenants, setXeroTenants] = useState<{ tenant_id: string; tenant_name: string | null }[]>([]);
+  const [selectedTenant, setSelectedTenant] = useState<string | null>(null);
+
 
   // Step 0: business basics
   const [name, setName] = useState("");
@@ -59,6 +82,87 @@ function Onboarding() {
   const [sopStatus, setSopStatus] = useState("partial");
   const [managerDepth, setManagerDepth] = useState("partial");
   const [exitTimeline, setExitTimeline] = useState<"lt_1y" | "1_2y" | "2_5y" | "5_plus_y" | "exploring">("2_5y");
+
+  // After redirect back from Xero, surface status and load tenants for the user.
+  useEffect(() => {
+    if (search.xero === "error") {
+      toast.error(`Xero connection failed: ${search.message ?? "unknown error"}`);
+      navigate({ to: "/app/onboarding", search: {} as never, replace: true });
+      return;
+    }
+    if (search.xero === "connected") {
+      setStep(1);
+      if (search.tenant) setSelectedTenant(search.tenant);
+      toast.success("Connected to Xero. Importing your reports…");
+      void loadTenantsAndImport(search.tenant ?? null);
+      navigate({ to: "/app/onboarding", search: {} as never, replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search.xero]);
+
+  // Load any pre-existing Xero tenants for this user on mount.
+  useEffect(() => {
+    if (!user) return;
+    fetchConnections()
+      .then(({ connections }) => {
+        if (connections.length) {
+          setXeroTenants(connections.map((c) => ({ tenant_id: c.tenant_id, tenant_name: c.tenant_name })));
+          setSelectedTenant((prev) => prev ?? connections[0].tenant_id);
+        }
+      })
+      .catch(() => { /* ignore */ });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+  const loadTenantsAndImport = async (preferredTenant: string | null) => {
+    try {
+      const { connections } = await fetchConnections();
+      const tenants = connections.map((c) => ({
+        tenant_id: c.tenant_id,
+        tenant_name: c.tenant_name,
+      }));
+      setXeroTenants(tenants);
+      const useTenant = preferredTenant ?? tenants[0]?.tenant_id ?? null;
+      if (useTenant) {
+        setSelectedTenant(useTenant);
+        await runXeroImport(useTenant);
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not load Xero connections");
+    }
+  };
+
+  const handleConnectXero = async () => {
+    try {
+      setXeroLoading(true);
+      const { url } = await startXero({ data: { businessId: null } });
+      window.location.href = url;
+    } catch (e) {
+      setXeroLoading(false);
+      toast.error(e instanceof Error ? e.message : "Failed to start Xero connect");
+    }
+  };
+
+  const runXeroImport = async (tenantId: string) => {
+    try {
+      setXeroLoading(true);
+      const requestedYears = [currentYear - 3, currentYear - 2, currentYear - 1];
+      const { years: imported } = await importXero({
+        data: { tenantId, years: requestedYears },
+      });
+      setYears((prev) =>
+        prev.map((row) => {
+          const match = imported.find((y) => y.year === row.year);
+          return match ? { ...row, ...match } : row;
+        }),
+      );
+      toast.success(`Imported ${imported.length} year(s) of P&L and Balance Sheet from Xero. Review and adjust owner salary and add-backs.`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Xero import failed");
+    } finally {
+      setXeroLoading(false);
+    }
+  };
 
   const fillSample = () => {
     setName(SAMPLE_HVAC_BUSINESS.name);
@@ -221,13 +325,46 @@ function Onboarding() {
                     >
                       <Upload className="h-3.5 w-3.5" /> QuickBooks
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => toast.info("Xero import is coming soon. Enter your numbers manually for now.")}
-                      className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-2 text-xs font-semibold hover:bg-secondary transition"
-                    >
-                      <Upload className="h-3.5 w-3.5" /> Xero
-                    </button>
+                    {xeroTenants.length === 0 ? (
+                      <button
+                        type="button"
+                        onClick={handleConnectXero}
+                        disabled={xeroLoading}
+                        className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-2 text-xs font-semibold hover:bg-secondary transition disabled:opacity-50"
+                      >
+                        {xeroLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5" />}
+                        Connect Xero
+                      </button>
+                    ) : (
+                      <>
+                        <select
+                          value={selectedTenant ?? ""}
+                          onChange={(e) => setSelectedTenant(e.target.value)}
+                          className="rounded-md border border-input bg-background px-2 py-2 text-xs"
+                        >
+                          {xeroTenants.map((t) => (
+                            <option key={t.tenant_id} value={t.tenant_id}>{t.tenant_name ?? t.tenant_id}</option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => selectedTenant && runXeroImport(selectedTenant)}
+                          disabled={xeroLoading || !selectedTenant}
+                          className="inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-2 text-xs font-semibold text-accent-foreground hover:bg-accent/90 transition disabled:opacity-50"
+                        >
+                          {xeroLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                          Import from Xero
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleConnectXero}
+                          disabled={xeroLoading}
+                          className="text-xs text-muted-foreground hover:text-foreground underline"
+                        >
+                          Reconnect
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
