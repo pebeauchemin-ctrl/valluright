@@ -4,6 +4,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHost, getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { withSupabaseAuth } from "@/lib/with-supabase-auth";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import {
   buildAuthorizeUrl,
