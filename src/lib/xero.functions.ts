@@ -23,7 +23,7 @@ function getOrigin() {
 }
 
 export const startXeroConnect = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([withSupabaseAuth, requireSupabaseAuth])
   .inputValidator(z.object({ businessId: z.string().uuid().nullable().optional() }))
   .handler(async ({ data, context }) => {
     const origin = getOrigin();
@@ -42,7 +42,7 @@ export const startXeroConnect = createServerFn({ method: "POST" })
   });
 
 export const listXeroConnections = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([withSupabaseAuth, requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data, error } = await supabaseAdmin
       .from("xero_connections")
@@ -75,7 +75,7 @@ async function ensureFreshToken(connection: {
 }
 
 export const importXeroFinancials = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([withSupabaseAuth, requireSupabaseAuth])
   .inputValidator(
     z.object({
       tenantId: z.string().min(1),
@@ -107,7 +107,7 @@ export const importXeroFinancials = createServerFn({ method: "POST" })
   });
 
 export const refreshXeroTenants = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([withSupabaseAuth, requireSupabaseAuth])
   .inputValidator(z.object({ tenantId: z.string().min(1) }))
   .handler(async ({ data, context }) => {
     const { data: conn, error } = await supabaseAdmin
