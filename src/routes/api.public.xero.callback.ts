@@ -56,12 +56,18 @@ export const Route = createFileRoute("/api/public/xero/callback")({
         for (const t of tenants) {
           // Upsert by (user_id, tenant_id, business_id IS NULL during onboarding).
           // Delete prior row for same user+tenant to avoid duplicates.
-          await supabaseAdmin
-            .from("xero_connections")
-            .delete()
-            .eq("user_id", stateRow.user_id)
-            .eq("tenant_id", t.tenantId)
-            .is("business_id", stateRow.business_id);
+          {
+            const del = supabaseAdmin
+              .from("xero_connections")
+              .delete()
+              .eq("user_id", stateRow.user_id)
+              .eq("tenant_id", t.tenantId);
+            if (stateRow.business_id) {
+              await del.eq("business_id", stateRow.business_id);
+            } else {
+              await del.is("business_id", null);
+            }
+          }
 
           const { error: insertErr } = await supabaseAdmin.from("xero_connections").insert({
             user_id: stateRow.user_id,
