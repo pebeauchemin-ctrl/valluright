@@ -666,6 +666,72 @@ export type Database = {
           },
         ]
       }
+      xero_connections: {
+        Row: {
+          access_token: string
+          business_id: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          refresh_token: string
+          scope: string | null
+          tenant_id: string
+          tenant_name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          business_id?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          refresh_token: string
+          scope?: string | null
+          tenant_id: string
+          tenant_name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          business_id?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          refresh_token?: string
+          scope?: string | null
+          tenant_id?: string
+          tenant_name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      xero_oauth_states: {
+        Row: {
+          business_id: string | null
+          created_at: string
+          redirect_uri: string
+          state: string
+          user_id: string
+        }
+        Insert: {
+          business_id?: string | null
+          created_at?: string
+          redirect_uri: string
+          state: string
+          user_id: string
+        }
+        Update: {
+          business_id?: string | null
+          created_at?: string
+          redirect_uri?: string
+          state?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
