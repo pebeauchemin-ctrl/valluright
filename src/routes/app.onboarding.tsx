@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Sparkles, Loader2, Upload } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowLeft, ArrowRight, Check, Sparkles, Loader2, Upload, Link2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useBusiness, toBusinessInputs } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,9 +10,22 @@ import {
 } from "@/lib/valuation";
 import { fmtCurrency } from "@/lib/format";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { startXeroConnect, importXeroFinancials, listXeroConnections } from "@/lib/xero.functions";
+
+type OnboardingSearch = {
+  xero?: "connected" | "error";
+  tenant?: string;
+  message?: string;
+};
 
 export const Route = createFileRoute("/app/onboarding")({
   head: () => ({ meta: [{ title: "Onboarding — ValuRight.ai" }] }),
+  validateSearch: (search: Record<string, unknown>): OnboardingSearch => ({
+    xero: search.xero === "connected" || search.xero === "error" ? search.xero : undefined,
+    tenant: typeof search.tenant === "string" ? search.tenant : undefined,
+    message: typeof search.message === "string" ? search.message : undefined,
+  }),
   component: Onboarding,
 });
 
