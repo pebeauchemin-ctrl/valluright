@@ -100,6 +100,20 @@ function Onboarding() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search.xero]);
 
+  // Load any pre-existing Xero tenants for this user on mount.
+  useEffect(() => {
+    if (!user) return;
+    fetchConnections()
+      .then(({ connections }) => {
+        if (connections.length) {
+          setXeroTenants(connections.map((c) => ({ tenant_id: c.tenant_id, tenant_name: c.tenant_name })));
+          setSelectedTenant((prev) => prev ?? connections[0].tenant_id);
+        }
+      })
+      .catch(() => { /* ignore */ });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
   const loadTenantsAndImport = async (preferredTenant: string | null) => {
     try {
       const { connections } = await fetchConnections();
