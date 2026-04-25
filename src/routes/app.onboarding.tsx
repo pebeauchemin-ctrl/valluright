@@ -42,11 +42,11 @@ function Onboarding() {
   const [yearsInBusiness, setYearsInBusiness] = useState<number>(10);
   const [employees, setEmployees] = useState<number>(10);
 
-  // Step 1: financials (3 yrs)
+  // Step 1: financials (3 yrs) — most recent completed year is last year
   const [years, setYears] = useState([
+    emptyYear(currentYear - 3),
     emptyYear(currentYear - 2),
     emptyYear(currentYear - 1),
-    emptyYear(currentYear),
   ]);
 
   // Step 2: operations / risk
