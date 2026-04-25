@@ -83,7 +83,73 @@ function Onboarding() {
   const [managerDepth, setManagerDepth] = useState("partial");
   const [exitTimeline, setExitTimeline] = useState<"lt_1y" | "1_2y" | "2_5y" | "5_plus_y" | "exploring">("2_5y");
 
-  const fillSample = () => {
+  // After redirect back from Xero, surface status and load tenants for the user.
+  useEffect(() => {
+    if (search.xero === "error") {
+      toast.error(`Xero connection failed: ${search.message ?? "unknown error"}`);
+      navigate({ to: "/app/onboarding", search: {} as never, replace: true });
+      return;
+    }
+    if (search.xero === "connected") {
+      setStep(1);
+      if (search.tenant) setSelectedTenant(search.tenant);
+      toast.success("Connected to Xero. Importing your reports…");
+      void loadTenantsAndImport(search.tenant ?? null);
+      navigate({ to: "/app/onboarding", search: {} as never, replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search.xero]);
+
+  const loadTenantsAndImport = async (preferredTenant: string | null) => {
+    try {
+      const { connections } = await fetchConnections();
+      const tenants = connections.map((c) => ({
+        tenant_id: c.tenant_id,
+        tenant_name: c.tenant_name,
+      }));
+      setXeroTenants(tenants);
+      const useTenant = preferredTenant ?? tenants[0]?.tenant_id ?? null;
+      if (useTenant) {
+        setSelectedTenant(useTenant);
+        await runXeroImport(useTenant);
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not load Xero connections");
+    }
+  };
+
+  const handleConnectXero = async () => {
+    try {
+      setXeroLoading(true);
+      const { url } = await startXero({ data: { businessId: null } });
+      window.location.href = url;
+    } catch (e) {
+      setXeroLoading(false);
+      toast.error(e instanceof Error ? e.message : "Failed to start Xero connect");
+    }
+  };
+
+  const runXeroImport = async (tenantId: string) => {
+    try {
+      setXeroLoading(true);
+      const requestedYears = [currentYear - 3, currentYear - 2, currentYear - 1];
+      const { years: imported } = await importXero({
+        data: { tenantId, years: requestedYears },
+      });
+      setYears((prev) =>
+        prev.map((row) => {
+          const match = imported.find((y) => y.year === row.year);
+          return match ? { ...row, ...match } : row;
+        }),
+      );
+      toast.success(`Imported ${imported.length} year(s) of P&L and Balance Sheet from Xero. Review and adjust owner salary and add-backs.`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Xero import failed");
+    } finally {
+      setXeroLoading(false);
+    }
+  };
+
     setName(SAMPLE_HVAC_BUSINESS.name);
     setIndustry(SAMPLE_HVAC_BUSINESS.industry);
     setRegion(SAMPLE_HVAC_BUSINESS.region);
