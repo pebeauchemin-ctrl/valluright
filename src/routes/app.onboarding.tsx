@@ -58,7 +58,7 @@ function Onboarding() {
   const [topCustomerPct, setTopCustomerPct] = useState(15);
   const [sopStatus, setSopStatus] = useState("partial");
   const [managerDepth, setManagerDepth] = useState("partial");
-  const [exitTimeline, setExitTimeline] = useState<"now" | "1_2y" | "2_5y" | "5y_plus" | "exploring">("2_5y");
+  const [exitTimeline, setExitTimeline] = useState<"lt_1y" | "1_2y" | "2_5y" | "5_plus_y" | "exploring">("2_5y");
 
   const fillSample = () => {
     setName(SAMPLE_HVAC_BUSINESS.name);
