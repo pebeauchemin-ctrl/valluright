@@ -1,0 +1,122 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { Mountain } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+
+export const Route = createFileRoute("/auth")({
+  head: () => ({ meta: [{ title: "Sign in — ValuRight.ai" }] }),
+  component: AuthPage,
+});
+
+function AuthPage() {
+  const { signIn, signUp, user } = useAuth();
+  const navigate = useNavigate();
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (user) navigate({ to: "/app" });
+  }, [user, navigate]);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setBusy(true);
+    const { error } = mode === "signin"
+      ? await signIn(email, password)
+      : await signUp(email, password, fullName);
+    setBusy(false);
+    if (error) setError(error);
+    else navigate({ to: "/app" });
+  };
+
+  return (
+    <div className="min-h-screen flex bg-background">
+      <div className="hidden lg:flex lg:w-1/2 bg-primary text-primary-foreground p-12 flex-col justify-between">
+        <Link to="/" className="flex items-center gap-2">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground">
+            <Mountain className="h-5 w-5" />
+          </div>
+          <span className="font-display text-lg font-semibold">valuright.ai</span>
+        </Link>
+        <div>
+          <h2 className="font-display text-4xl font-semibold leading-tight">
+            Know what your<br />business is worth.
+          </h2>
+          <p className="mt-4 text-primary-foreground/70 max-w-md">
+            Join owners using ValuRight.ai to plan a confident exit on their terms.
+          </p>
+        </div>
+        <p className="text-xs text-primary-foreground/50">© ValuRight.ai · Software-generated estimates only.</p>
+      </div>
+
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="w-full max-w-md">
+          <Link to="/" className="lg:hidden flex items-center gap-2 mb-8">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
+              <Mountain className="h-4 w-4" />
+            </div>
+            <span className="font-display font-semibold text-primary">valuright.ai</span>
+          </Link>
+
+          <h1 className="font-display text-3xl font-semibold text-primary">
+            {mode === "signin" ? "Welcome back" : "Create your account"}
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {mode === "signin" ? "Sign in to your dashboard." : "Start your first valuation in minutes."}
+          </p>
+
+          <form onSubmit={submit} className="mt-8 space-y-4">
+            {mode === "signup" && (
+              <Field label="Full name" type="text" value={fullName} onChange={setFullName} required />
+            )}
+            <Field label="Email" type="email" value={email} onChange={setEmail} required />
+            <Field label="Password" type="password" value={password} onChange={setPassword} required minLength={6} />
+            {error && (
+              <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+                {error}
+              </div>
+            )}
+            <button
+              type="submit"
+              disabled={busy}
+              className="w-full rounded-md bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition disabled:opacity-60"
+            >
+              {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+            </button>
+          </form>
+
+          <div className="mt-6 text-center text-sm text-muted-foreground">
+            {mode === "signin" ? "New to ValuRight?" : "Already have an account?"}{" "}
+            <button
+              onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(null); }}
+              className="font-semibold text-accent hover:underline"
+            >
+              {mode === "signin" ? "Create one" : "Sign in"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, type, value, onChange, required, minLength }: { label: string; type: string; value: string; onChange: (v: string) => void; required?: boolean; minLength?: number }) {
+  return (
+    <label className="block">
+      <span className="text-sm font-medium text-foreground">{label}</span>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        required={required}
+        minLength={minLength}
+        className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+      />
+    </label>
+  );
+}
