@@ -311,13 +311,46 @@ function Onboarding() {
                     >
                       <Upload className="h-3.5 w-3.5" /> QuickBooks
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => toast.info("Xero import is coming soon. Enter your numbers manually for now.")}
-                      className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-2 text-xs font-semibold hover:bg-secondary transition"
-                    >
-                      <Upload className="h-3.5 w-3.5" /> Xero
-                    </button>
+                    {xeroTenants.length === 0 ? (
+                      <button
+                        type="button"
+                        onClick={handleConnectXero}
+                        disabled={xeroLoading}
+                        className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-2 text-xs font-semibold hover:bg-secondary transition disabled:opacity-50"
+                      >
+                        {xeroLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5" />}
+                        Connect Xero
+                      </button>
+                    ) : (
+                      <>
+                        <select
+                          value={selectedTenant ?? ""}
+                          onChange={(e) => setSelectedTenant(e.target.value)}
+                          className="rounded-md border border-input bg-background px-2 py-2 text-xs"
+                        >
+                          {xeroTenants.map((t) => (
+                            <option key={t.tenant_id} value={t.tenant_id}>{t.tenant_name ?? t.tenant_id}</option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => selectedTenant && runXeroImport(selectedTenant)}
+                          disabled={xeroLoading || !selectedTenant}
+                          className="inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-2 text-xs font-semibold text-accent-foreground hover:bg-accent/90 transition disabled:opacity-50"
+                        >
+                          {xeroLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                          Import from Xero
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleConnectXero}
+                          disabled={xeroLoading}
+                          className="text-xs text-muted-foreground hover:text-foreground underline"
+                        >
+                          Reconnect
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
