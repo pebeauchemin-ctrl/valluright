@@ -147,24 +147,60 @@ export type ParsedYear = {
   debt: number;
 };
 
-// Walk Xero report row tree and find a "SummaryRow" or "Row" whose first cell label matches predicate.
-// Returns the numeric value from the LAST cell (which is the period total for that section).
-function findRowValue(rows: unknown[], match: (label: string) => boolean): number | null {
-  for (const r of rows as Array<Record<string, unknown>>) {
-    const rowType = r.RowType as string | undefined;
-    const cells = r.Cells as Array<{ Value?: string }> | undefined;
-    if ((rowType === "Row" || rowType === "SummaryRow") && cells && cells.length >= 2) {
-      const label = (cells[0]?.Value ?? "").toString();
-      if (match(label)) {
-        // Use last cell as the value column for a single-period report.
-        const raw = cells[cells.length - 1]?.Value ?? "";
-        const n = parseFloat(raw.toString().replace(/,/g, ""));
-        if (!isNaN(n)) return n;
-      }
+// Xero report row shape
+type XRow = {
+  RowType?: string;
+  Title?: string;
+  Cells?: Array<{ Value?: string }>;
+  Rows?: XRow[];
+};
+
+function num(s: unknown): number {
+  if (s == null) return 0;
+  const str = s.toString().trim();
+  if (!str) return 0;
+  // Handle parenthesised negatives e.g. "(1,234.56)"
+  const isNeg = /^\(.*\)$/.test(str);
+  const cleaned = str.replace(/[(),$\s]/g, "").replace(/[)]/g, "");
+  const n = parseFloat(cleaned);
+  if (isNaN(n)) return 0;
+  return isNeg ? -n : n;
+}
+
+// Get the numeric value column for a single-period report row. Xero returns
+// [labelCell, valueCell] for a single period, or [labelCell, ...periodCells] for multi-period.
+// We always take the FIRST numeric value (the most recent / requested period).
+function rowValue(row: XRow): number {
+  const cells = row.Cells ?? [];
+  if (cells.length < 2) return 0;
+  return num(cells[1]?.Value);
+}
+
+// Walk all rows (recursively) and yield rows of given RowType.
+function* walkRows(rows: XRow[]): Generator<XRow> {
+  for (const r of rows) {
+    yield r;
+    if (r.Rows && r.Rows.length) yield* walkRows(r.Rows);
+  }
+}
+
+// Find the SummaryRow inside a top-level Section by Title regex.
+function sectionSummary(rows: XRow[], titleRe: RegExp): number | null {
+  for (const r of rows) {
+    if (r.RowType === "Section" && r.Title && titleRe.test(r.Title)) {
+      const summary = (r.Rows ?? []).find((x) => x.RowType === "SummaryRow");
+      if (summary) return rowValue(summary);
     }
-    if (r.Rows && Array.isArray(r.Rows)) {
-      const nested = findRowValue(r.Rows as unknown[], match);
-      if (nested != null) return nested;
+  }
+  return null;
+}
+
+// Find any SummaryRow whose first cell label matches regex (anywhere in tree).
+function summaryByLabel(rows: XRow[], labelRe: RegExp): number | null {
+  for (const r of walkRows(rows)) {
+    if (r.RowType === "SummaryRow") {
+      const label = r.Cells?.[0]?.Value ?? "";
+      if (labelRe.test(label)) return rowValue(r);
     }
   }
   return null;
@@ -177,26 +213,41 @@ function parsePnl(report: unknown): {
   operating_expenses: number;
   net_income: number;
 } {
-  const reports = (report as { Reports?: Array<{ Rows?: unknown[] }> }).Reports;
+  const reports = (report as { Reports?: Array<{ Rows?: XRow[] }> }).Reports;
   const rows = reports?.[0]?.Rows ?? [];
+
   const revenue =
-    findRowValue(rows, (l) => /^total\s+(income|revenue|trading income|operating revenue)/i.test(l)) ??
-    findRowValue(rows, (l) => /total\s+(income|revenue)/i.test(l)) ??
+    sectionSummary(rows, /^(income|revenue|trading income|operating revenue|sales)$/i) ??
+    summaryByLabel(rows, /^total\s+(income|revenue|trading income|operating revenue|sales)/i) ??
     0;
+
   const cogs =
-    findRowValue(rows, (l) => /^total\s+cost of (goods sold|sales)/i.test(l)) ??
-    findRowValue(rows, (l) => /cost of (goods sold|sales)/i.test(l)) ??
+    sectionSummary(rows, /^(less\s+)?cost of (goods sold|sales)$/i) ??
+    summaryByLabel(rows, /^total\s+cost of (goods sold|sales)/i) ??
     0;
+
+  // Sum ALL expense-style sections (operating, less operating expenses, expenses, overheads, etc.)
+  // because Xero may split into "Operating Expenses" and "Less Operating Expenses" or multiple groups.
+  let operating_expenses = 0;
+  for (const r of rows) {
+    if (r.RowType !== "Section" || !r.Title) continue;
+    if (/^(less\s+)?(operating\s+)?expenses$/i.test(r.Title) || /overheads/i.test(r.Title)) {
+      const summary = (r.Rows ?? []).find((x) => x.RowType === "SummaryRow");
+      if (summary) operating_expenses += rowValue(summary);
+    }
+  }
+  if (operating_expenses === 0) {
+    operating_expenses =
+      summaryByLabel(rows, /^total\s+(operating\s+)?expenses/i) ?? 0;
+  }
+
   const gross_profit =
-    findRowValue(rows, (l) => /^gross\s+profit/i.test(l)) ?? Math.max(0, revenue - cogs);
-  const operating_expenses =
-    findRowValue(rows, (l) => /^total\s+(operating\s+)?expenses/i.test(l)) ??
-    findRowValue(rows, (l) => /total\s+expenses/i.test(l)) ??
-    0;
+    summaryByLabel(rows, /^gross\s+profit/i) ?? revenue - cogs;
+
   const net_income =
-    findRowValue(rows, (l) => /^(net\s+(profit|income|earnings)|profit\s+for the (year|period))/i.test(l)) ??
-    findRowValue(rows, (l) => /net\s+(profit|income)/i.test(l)) ??
-    0;
+    summaryByLabel(rows, /^(net\s+(profit|income|earnings|loss)|profit\s+for the (year|period))/i) ??
+    gross_profit - operating_expenses;
+
   return { revenue, cogs, gross_profit, operating_expenses, net_income };
 }
 
@@ -205,30 +256,47 @@ function parseBalanceSheet(report: unknown): {
   liabilities: number;
   debt: number;
 } {
-  const reports = (report as { Reports?: Array<{ Rows?: unknown[] }> }).Reports;
+  const reports = (report as { Reports?: Array<{ Rows?: XRow[] }> }).Reports;
   const rows = reports?.[0]?.Rows ?? [];
+
+  // Total assets / liabilities — Xero emits these as top-level SummaryRows OR "Section" titled accordingly.
   const assets =
-    findRowValue(rows, (l) => /^total\s+assets/i.test(l)) ?? 0;
-  const liabilities =
-    findRowValue(rows, (l) => /^total\s+liabilities/i.test(l)) ?? 0;
-  // Debt = sum of any rows whose labels look like loans/borrowings; fall back to 0.
-  let debt = 0;
-  const sumDebt = (rs: unknown[]) => {
-    for (const r of rs as Array<Record<string, unknown>>) {
-      const cells = r.Cells as Array<{ Value?: string }> | undefined;
-      if (cells && cells.length >= 2) {
-        const label = (cells[0]?.Value ?? "").toString();
-        if (/(loan|borrowing|note payable|long.?term debt|bank debt)/i.test(label)) {
-          const raw = cells[cells.length - 1]?.Value ?? "";
-          const n = parseFloat(raw.toString().replace(/,/g, ""));
-          if (!isNaN(n)) debt += Math.abs(n);
-        }
+    summaryByLabel(rows, /^total\s+assets/i) ??
+    sectionSummary(rows, /^assets$/i) ??
+    0;
+
+  let liabilities =
+    summaryByLabel(rows, /^total\s+liabilities/i) ??
+    sectionSummary(rows, /^liabilities$/i) ??
+    0;
+
+  // If still 0, sum any liability-style section summaries (current + non-current + bank overdrafts).
+  if (liabilities === 0) {
+    for (const r of rows) {
+      if (r.RowType !== "Section" || !r.Title) continue;
+      if (/(current\s+liabilities|non.?current\s+liabilities|long.?term\s+liabilities)/i.test(r.Title)) {
+        const summary = (r.Rows ?? []).find((x) => x.RowType === "SummaryRow");
+        if (summary) liabilities += rowValue(summary);
       }
-      if (r.Rows && Array.isArray(r.Rows)) sumDebt(r.Rows as unknown[]);
     }
-  };
-  sumDebt(rows);
-  return { assets, liabilities, debt };
+  }
+
+  // Debt: prefer "Total Non-Current Liabilities" / "Total Long-Term Liabilities" section total
+  // (these are dominated by loans). Fall back to summing rows whose labels look like loans.
+  let debt =
+    summaryByLabel(rows, /^total\s+(non.?current|long.?term)\s+liabilities/i) ?? 0;
+
+  if (debt === 0) {
+    for (const r of walkRows(rows)) {
+      if (r.RowType !== "Row") continue;
+      const label = r.Cells?.[0]?.Value ?? "";
+      if (/(loan|borrowing|note[s]?\s+payable|long.?term\s+debt|bank\s+debt|mortgage)/i.test(label)) {
+        debt += Math.abs(rowValue(r));
+      }
+    }
+  }
+
+  return { assets: Math.abs(assets), liabilities: Math.abs(liabilities), debt };
 }
 
 export async function fetchYearSummary(opts: {
