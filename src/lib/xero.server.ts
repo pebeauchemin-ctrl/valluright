@@ -296,6 +296,7 @@ function parsePnl(report: unknown): {
 
   const net_income =
     summaryByLabel(rows, /^(net\s+(profit|income|earnings|loss)|profit\s+for the (year|period))/i) ??
+    rowByLabel(rows, /^net\s+income$/i) ??
     rowByLabel(rows, /^(net\s+(profit|income|earnings|loss)|profit\s+for the (year|period))/i) ??
     null;
 
