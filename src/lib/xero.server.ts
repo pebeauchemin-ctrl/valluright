@@ -176,6 +176,10 @@ function rowValue(row: XRow): number {
   return num(cells[1]?.Value);
 }
 
+function rowLabel(row: XRow): string {
+  return (row.Cells?.[0]?.Value ?? row.Title ?? "").trim();
+}
+
 // Walk all rows (recursively) and yield rows of given RowType.
 function* walkRows(rows: XRow[]): Generator<XRow> {
   for (const r of rows) {
@@ -184,22 +188,69 @@ function* walkRows(rows: XRow[]): Generator<XRow> {
   }
 }
 
+function sectionTotal(row: XRow): number | null {
+  const directSummary = (row.Rows ?? []).find((x) => x.RowType === "SummaryRow");
+  if (directSummary) return rowValue(directSummary);
+
+  let lastSummary: XRow | null = null;
+  for (const child of walkRows(row.Rows ?? [])) {
+    if (child.RowType === "SummaryRow") lastSummary = child;
+  }
+  return lastSummary ? rowValue(lastSummary) : null;
+}
+
 // Find the SummaryRow inside a top-level Section by Title regex.
 function sectionSummary(rows: XRow[], titleRe: RegExp): number | null {
-  for (const r of rows) {
+  for (const r of walkRows(rows)) {
     if (r.RowType === "Section" && r.Title && titleRe.test(r.Title)) {
-      const summary = (r.Rows ?? []).find((x) => x.RowType === "SummaryRow");
-      if (summary) return rowValue(summary);
+      const total = sectionTotal(r);
+      if (total != null) return total;
     }
   }
   return null;
+}
+
+function sumSectionSummaries(rows: XRow[], includeRe: RegExp, excludeRe?: RegExp): number | null {
+  let total = 0;
+  let matched = false;
+
+  const visit = (items: XRow[]) => {
+    for (const r of items) {
+      if (r.RowType !== "Section" || !r.Title) continue;
+      const title = r.Title;
+      if (includeRe.test(title) && !(excludeRe?.test(title) ?? false)) {
+        const value = sectionTotal(r);
+        if (value != null) {
+          total += Math.abs(value);
+          matched = true;
+          continue;
+        }
+      }
+      visit(r.Rows ?? []);
+    }
+  };
+
+  visit(rows);
+  return matched ? total : null;
+}
+
+function sumLineItemsByLabel(rows: XRow[], includeRe: RegExp, excludeRe?: RegExp): number {
+  let total = 0;
+  for (const r of walkRows(rows)) {
+    if (r.RowType !== "Row") continue;
+    const label = rowLabel(r);
+    if (includeRe.test(label) && !(excludeRe?.test(label) ?? false)) {
+      total += Math.abs(rowValue(r));
+    }
+  }
+  return total;
 }
 
 // Find any SummaryRow whose first cell label matches regex (anywhere in tree).
 function summaryByLabel(rows: XRow[], labelRe: RegExp): number | null {
   for (const r of walkRows(rows)) {
     if (r.RowType === "SummaryRow") {
-      const label = r.Cells?.[0]?.Value ?? "";
+      const label = rowLabel(r);
       if (labelRe.test(label)) return rowValue(r);
     }
   }
@@ -211,6 +262,8 @@ function parsePnl(report: unknown): {
   cogs: number;
   gross_profit: number;
   operating_expenses: number;
+  interest: number;
+  depreciation_amortization: number;
   net_income: number;
 } {
   const reports = (report as { Reports?: Array<{ Rows?: XRow[] }> }).Reports;
@@ -233,33 +286,34 @@ function parsePnl(report: unknown): {
     summaryByLabel(rows, /^(net\s+(profit|income|earnings|loss)|profit\s+for the (year|period))/i) ??
     null;
 
-  // Sum ALL expense-style sections. Xero titles vary: "Operating Expenses",
-  // "Less Operating Expenses", "Expenses", "Overheads", "Administrative Expenses", etc.
-  // We match any top-level section whose title contains "expense" or "overhead"
-  // (but is NOT cost of goods sold, which is handled separately).
-  let opex_from_sections = 0;
-  let matched_any = false;
-  for (const r of rows) {
-    if (r.RowType !== "Section" || !r.Title) continue;
-    const t = r.Title;
-    if (/cost of (goods sold|sales)/i.test(t)) continue;
-    if (/(expense|overhead)/i.test(t)) {
-      const summary = (r.Rows ?? []).find((x) => x.RowType === "SummaryRow");
-      if (summary) {
-        opex_from_sections += Math.abs(rowValue(summary));
-        matched_any = true;
-      }
-    }
-  }
+  const belowLineRe = /(interest|finance cost|tax|income tax|depreciation|amorti[sz]ation)/i;
+  const opex_from_sections =
+    sumSectionSummaries(
+      rows,
+      /(operating\s+expenses?|expenses?|overheads?|administrative|general|selling|distribution)/i,
+      new RegExp(`cost of (goods sold|sales)|${belowLineRe.source}`, "i"),
+    ) ?? 0;
+
+  const explicit_operating_expenses =
+    sectionSummary(rows, /^(less\s+)?operating\s+expenses?$/i) ??
+    summaryByLabel(rows, /^total\s+(operating\s+)?expenses/i);
+
+  const interest = sumLineItemsByLabel(
+    rows,
+    /(interest|finance cost|bank charge|loan fee)/i,
+    /income|received|revenue/i,
+  );
+  const depreciation_amortization = sumLineItemsByLabel(rows, /(depreciation|amorti[sz]ation)/i);
+  const ebitda_addbacks = interest + depreciation_amortization;
 
   // Most reliable fallback: if we have both gross profit and net income,
   // operating expenses ≈ gross_profit − net_income.
   let operating_expenses: number;
   if (net_income != null && gross_profit) {
-    const derived = gross_profit - net_income;
-    // Prefer derived value when sections gave us something obviously too small
-    // (e.g. only matched a small "Other Expenses" sub-section).
-    if (!matched_any || derived > opex_from_sections * 1.5) {
+    const derived = gross_profit - net_income - ebitda_addbacks;
+    if (explicit_operating_expenses != null) {
+      operating_expenses = Math.abs(explicit_operating_expenses) - ebitda_addbacks;
+    } else if (!opex_from_sections || Math.abs(derived - opex_from_sections) / Math.max(1, derived) < 0.08) {
       operating_expenses = Math.max(0, derived);
     } else {
       operating_expenses = opex_from_sections;
@@ -270,9 +324,19 @@ function parsePnl(report: unknown): {
       Math.abs(summaryByLabel(rows, /^total\s+(operating\s+)?expenses/i) ?? 0);
   }
 
-  const final_net_income = net_income ?? gross_profit - operating_expenses;
+  operating_expenses = Math.max(0, operating_expenses);
 
-  return { revenue, cogs, gross_profit, operating_expenses, net_income: final_net_income };
+  const final_net_income = net_income ?? gross_profit - operating_expenses - ebitda_addbacks;
+
+  return {
+    revenue,
+    cogs,
+    gross_profit,
+    operating_expenses,
+    interest,
+    depreciation_amortization,
+    net_income: final_net_income,
+  };
 }
 
 function parseBalanceSheet(report: unknown): {
@@ -347,9 +411,9 @@ export async function fetchYearSummary(opts: {
   const pnl = parsePnl(pnlReport);
   const bs = parseBalanceSheet(bsReport);
 
-  // Best-effort EBITDA approximation: net_income + (interest + tax + D&A if available is unknown here).
-  // Without those breakdowns we use Operating Profit ≈ Gross Profit - Operating Expenses.
-  const ebitda = pnl.gross_profit - pnl.operating_expenses;
+  // EBITDA = net income + interest + depreciation/amortization (tax add-back only if explicitly parsed later).
+  // This keeps below-the-line financing/non-cash costs from being treated as operating expenses.
+  const ebitda = pnl.net_income + pnl.interest + pnl.depreciation_amortization;
 
   return {
     year: opts.year,
