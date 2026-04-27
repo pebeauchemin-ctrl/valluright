@@ -411,9 +411,9 @@ export async function fetchYearSummary(opts: {
   const pnl = parsePnl(pnlReport);
   const bs = parseBalanceSheet(bsReport);
 
-  // Best-effort EBITDA approximation: net_income + (interest + tax + D&A if available is unknown here).
-  // Without those breakdowns we use Operating Profit ≈ Gross Profit - Operating Expenses.
-  const ebitda = pnl.gross_profit - pnl.operating_expenses;
+  // EBITDA = net income + interest + depreciation/amortization (tax add-back only if explicitly parsed later).
+  // This keeps below-the-line financing/non-cash costs from being treated as operating expenses.
+  const ebitda = pnl.net_income + pnl.interest + pnl.depreciation_amortization;
 
   return {
     year: opts.year,
