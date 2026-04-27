@@ -176,6 +176,10 @@ function rowValue(row: XRow): number {
   return num(cells[1]?.Value);
 }
 
+function rowLabel(row: XRow): string {
+  return (row.Cells?.[0]?.Value ?? row.Title ?? "").trim();
+}
+
 // Walk all rows (recursively) and yield rows of given RowType.
 function* walkRows(rows: XRow[]): Generator<XRow> {
   for (const r of rows) {
@@ -184,22 +188,69 @@ function* walkRows(rows: XRow[]): Generator<XRow> {
   }
 }
 
+function sectionTotal(row: XRow): number | null {
+  const directSummary = (row.Rows ?? []).find((x) => x.RowType === "SummaryRow");
+  if (directSummary) return rowValue(directSummary);
+
+  let lastSummary: XRow | null = null;
+  for (const child of walkRows(row.Rows ?? [])) {
+    if (child.RowType === "SummaryRow") lastSummary = child;
+  }
+  return lastSummary ? rowValue(lastSummary) : null;
+}
+
 // Find the SummaryRow inside a top-level Section by Title regex.
 function sectionSummary(rows: XRow[], titleRe: RegExp): number | null {
-  for (const r of rows) {
+  for (const r of walkRows(rows)) {
     if (r.RowType === "Section" && r.Title && titleRe.test(r.Title)) {
-      const summary = (r.Rows ?? []).find((x) => x.RowType === "SummaryRow");
-      if (summary) return rowValue(summary);
+      const total = sectionTotal(r);
+      if (total != null) return total;
     }
   }
   return null;
+}
+
+function sumSectionSummaries(rows: XRow[], includeRe: RegExp, excludeRe?: RegExp): number | null {
+  let total = 0;
+  let matched = false;
+
+  const visit = (items: XRow[]) => {
+    for (const r of items) {
+      if (r.RowType !== "Section" || !r.Title) continue;
+      const title = r.Title;
+      if (includeRe.test(title) && !(excludeRe?.test(title) ?? false)) {
+        const value = sectionTotal(r);
+        if (value != null) {
+          total += Math.abs(value);
+          matched = true;
+          continue;
+        }
+      }
+      visit(r.Rows ?? []);
+    }
+  };
+
+  visit(rows);
+  return matched ? total : null;
+}
+
+function sumLineItemsByLabel(rows: XRow[], includeRe: RegExp, excludeRe?: RegExp): number {
+  let total = 0;
+  for (const r of walkRows(rows)) {
+    if (r.RowType !== "Row") continue;
+    const label = rowLabel(r);
+    if (includeRe.test(label) && !(excludeRe?.test(label) ?? false)) {
+      total += Math.abs(rowValue(r));
+    }
+  }
+  return total;
 }
 
 // Find any SummaryRow whose first cell label matches regex (anywhere in tree).
 function summaryByLabel(rows: XRow[], labelRe: RegExp): number | null {
   for (const r of walkRows(rows)) {
     if (r.RowType === "SummaryRow") {
-      const label = r.Cells?.[0]?.Value ?? "";
+      const label = rowLabel(r);
       if (labelRe.test(label)) return rowValue(r);
     }
   }
