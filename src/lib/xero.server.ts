@@ -226,29 +226,53 @@ function parsePnl(report: unknown): {
     summaryByLabel(rows, /^total\s+cost of (goods sold|sales)/i) ??
     0;
 
-  // Sum ALL expense-style sections (operating, less operating expenses, expenses, overheads, etc.)
-  // because Xero may split into "Operating Expenses" and "Less Operating Expenses" or multiple groups.
-  let operating_expenses = 0;
-  for (const r of rows) {
-    if (r.RowType !== "Section" || !r.Title) continue;
-    if (/^(less\s+)?(operating\s+)?expenses$/i.test(r.Title) || /overheads/i.test(r.Title)) {
-      const summary = (r.Rows ?? []).find((x) => x.RowType === "SummaryRow");
-      if (summary) operating_expenses += rowValue(summary);
-    }
-  }
-  if (operating_expenses === 0) {
-    operating_expenses =
-      summaryByLabel(rows, /^total\s+(operating\s+)?expenses/i) ?? 0;
-  }
-
   const gross_profit =
     summaryByLabel(rows, /^gross\s+profit/i) ?? revenue - cogs;
 
   const net_income =
     summaryByLabel(rows, /^(net\s+(profit|income|earnings|loss)|profit\s+for the (year|period))/i) ??
-    gross_profit - operating_expenses;
+    null;
 
-  return { revenue, cogs, gross_profit, operating_expenses, net_income };
+  // Sum ALL expense-style sections. Xero titles vary: "Operating Expenses",
+  // "Less Operating Expenses", "Expenses", "Overheads", "Administrative Expenses", etc.
+  // We match any top-level section whose title contains "expense" or "overhead"
+  // (but is NOT cost of goods sold, which is handled separately).
+  let opex_from_sections = 0;
+  let matched_any = false;
+  for (const r of rows) {
+    if (r.RowType !== "Section" || !r.Title) continue;
+    const t = r.Title;
+    if (/cost of (goods sold|sales)/i.test(t)) continue;
+    if (/(expense|overhead)/i.test(t)) {
+      const summary = (r.Rows ?? []).find((x) => x.RowType === "SummaryRow");
+      if (summary) {
+        opex_from_sections += Math.abs(rowValue(summary));
+        matched_any = true;
+      }
+    }
+  }
+
+  // Most reliable fallback: if we have both gross profit and net income,
+  // operating expenses ≈ gross_profit − net_income.
+  let operating_expenses: number;
+  if (net_income != null && gross_profit) {
+    const derived = gross_profit - net_income;
+    // Prefer derived value when sections gave us something obviously too small
+    // (e.g. only matched a small "Other Expenses" sub-section).
+    if (!matched_any || derived > opex_from_sections * 1.5) {
+      operating_expenses = Math.max(0, derived);
+    } else {
+      operating_expenses = opex_from_sections;
+    }
+  } else {
+    operating_expenses =
+      opex_from_sections ||
+      Math.abs(summaryByLabel(rows, /^total\s+(operating\s+)?expenses/i) ?? 0);
+  }
+
+  const final_net_income = net_income ?? gross_profit - operating_expenses;
+
+  return { revenue, cogs, gross_profit, operating_expenses, net_income: final_net_income };
 }
 
 function parseBalanceSheet(report: unknown): {
