@@ -257,6 +257,16 @@ function summaryByLabel(rows: XRow[], labelRe: RegExp): number | null {
   return null;
 }
 
+function rowByLabel(rows: XRow[], labelRe: RegExp): number | null {
+  for (const r of walkRows(rows)) {
+    if (r.RowType === "Row") {
+      const label = rowLabel(r);
+      if (labelRe.test(label)) return rowValue(r);
+    }
+  }
+  return null;
+}
+
 function parsePnl(report: unknown): {
   revenue: number;
   cogs: number;
@@ -280,10 +290,14 @@ function parsePnl(report: unknown): {
     0;
 
   const gross_profit =
-    summaryByLabel(rows, /^gross\s+profit/i) ?? revenue - cogs;
+    summaryByLabel(rows, /^gross\s+profit/i) ??
+    rowByLabel(rows, /^gross\s+profit/i) ??
+    revenue - cogs;
 
   const net_income =
     summaryByLabel(rows, /^(net\s+(profit|income|earnings|loss)|profit\s+for the (year|period))/i) ??
+    rowByLabel(rows, /^net\s+income$/i) ??
+    rowByLabel(rows, /^(net\s+(profit|income|earnings|loss)|profit\s+for the (year|period))/i) ??
     null;
 
   const belowLineRe = /(interest|finance cost|tax|income tax|depreciation|amorti[sz]ation)/i;
@@ -294,30 +308,20 @@ function parsePnl(report: unknown): {
       new RegExp(`cost of (goods sold|sales)|${belowLineRe.source}`, "i"),
     ) ?? 0;
 
-  const explicit_operating_expenses =
-    sectionSummary(rows, /^(less\s+)?operating\s+expenses?$/i) ??
-    summaryByLabel(rows, /^total\s+(operating\s+)?expenses/i);
-
   const interest = sumLineItemsByLabel(
     rows,
-    /(interest|finance cost|bank charge|loan fee)/i,
+    /(interest|finance cost)/i,
     /income|received|revenue/i,
   );
   const depreciation_amortization = sumLineItemsByLabel(rows, /(depreciation|amorti[sz]ation)/i);
   const ebitda_addbacks = interest + depreciation_amortization;
 
-  // Most reliable fallback: if we have both gross profit and net income,
-  // operating expenses ≈ gross_profit − net_income.
+  // Most reliable source for the app's "Operating expenses" row is the full
+  // expense bridge from gross profit to net income. Do not subtract EBITDA
+  // add-backs here; EBITDA adds interest and D&A back separately below.
   let operating_expenses: number;
   if (net_income != null && gross_profit) {
-    const derived = gross_profit - net_income - ebitda_addbacks;
-    if (explicit_operating_expenses != null) {
-      operating_expenses = Math.abs(explicit_operating_expenses) - ebitda_addbacks;
-    } else if (!opex_from_sections || Math.abs(derived - opex_from_sections) / Math.max(1, derived) < 0.08) {
-      operating_expenses = Math.max(0, derived);
-    } else {
-      operating_expenses = opex_from_sections;
-    }
+    operating_expenses = Math.max(0, gross_profit - net_income);
   } else {
     operating_expenses =
       opex_from_sections ||
@@ -326,7 +330,7 @@ function parsePnl(report: unknown): {
 
   operating_expenses = Math.max(0, operating_expenses);
 
-  const final_net_income = net_income ?? gross_profit - operating_expenses - ebitda_addbacks;
+  const final_net_income = net_income ?? gross_profit - operating_expenses;
 
   return {
     revenue,
