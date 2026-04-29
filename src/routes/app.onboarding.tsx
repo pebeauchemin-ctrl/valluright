@@ -33,6 +33,27 @@ type Step = 0 | 1 | 2 | 3;
 
 const currentYear = new Date().getFullYear();
 
+const US_STATES = [
+  "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD",
+  "MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC",
+  "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY","DC","PR",
+];
+
+const SUB_INDUSTRY_SUGGESTIONS: Record<string, string[]> = {
+  "HVAC / Trades": ["HVAC", "Plumbing", "Electrical", "Roofing", "Landscaping", "Pest control", "General contracting"],
+  "Professional Services": ["Accounting / CPA", "Legal", "Marketing agency", "Consulting", "IT services", "Architecture / Engineering"],
+  "Healthcare Practice": ["Dental", "Veterinary", "Medical / Primary care", "Physical therapy", "Optometry", "Mental health"],
+  "Construction": ["Residential", "Commercial", "Specialty trades", "Remodeling", "Site work / excavation"],
+  "Restaurant / Hospitality": ["QSR / Fast casual", "Full service restaurant", "Bar / Pub", "Catering", "Hotel / Lodging", "Food truck"],
+  "Retail": ["Apparel", "Convenience / C-store", "Specialty retail", "Furniture / Home goods", "Liquor store", "Gas station"],
+  "Manufacturing": ["Metal fabrication", "Food & beverage", "Plastics", "Electronics", "Custom / Job shop", "Consumer products"],
+  "E-commerce / Online": ["Amazon / Marketplace seller", "DTC brand", "Subscription box", "Digital products", "Dropshipping"],
+  "Software / SaaS": ["B2B SaaS", "B2C SaaS", "Vertical SaaS", "Mobile app", "Marketplace", "Dev tools"],
+  "Auto Repair / Service": ["General auto repair", "Body shop / Collision", "Tire / Wheel", "Quick lube", "Transmission", "Detailing"],
+  "Logistics / Transport": ["Trucking / Freight", "Last-mile delivery", "Warehousing", "Moving services", "Courier"],
+  "Other": [],
+};
+
 function emptyYear(year: number) {
   return {
     year, revenue: 0, cogs: 0, gross_profit: 0, operating_expenses: 0,
