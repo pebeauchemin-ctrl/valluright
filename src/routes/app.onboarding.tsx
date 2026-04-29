@@ -364,6 +364,38 @@ function Onboarding() {
                 <NumField label="Years in business" value={yearsInBusiness} onChange={setYearsInBusiness} />
                 <NumField label="Employees (incl. owner)" value={employees} onChange={setEmployees} />
               </div>
+
+              <div className="pt-2 border-t border-border">
+                <h2 className="font-display text-lg font-semibold text-primary">Operations & owner role</h2>
+                <p className="mt-1 text-xs text-muted-foreground">These shape buyer confidence and the multiple we can apply.</p>
+              </div>
+
+              <SliderField label="Owner hours per week" value={ownerHours} min={0} max={80} step={5} onChange={setOwnerHours} suffix=" hrs" />
+              <div className="space-y-2">
+                <div className="text-sm font-medium">Owner is essential to:</div>
+                <Toggle label="Sales / business development" checked={ownerInSales} onChange={setOwnerInSales} />
+                <Toggle label="Day-to-day operations" checked={ownerInOps} onChange={setOwnerInOps} />
+                <Toggle label="Top customer relationships" checked={ownerInCustomers} onChange={setOwnerInCustomers} />
+              </div>
+              <SliderField label="Recurring revenue (contracts, subscriptions)" value={recurringPct} min={0} max={100} step={5} onChange={setRecurringPct} suffix="%" />
+              <SliderField label="Top customer % of revenue" value={topCustomerPct} min={0} max={100} step={5} onChange={setTopCustomerPct} suffix="%" />
+              <Choice label="SOP / documentation" value={sopStatus} onChange={setSopStatus} options={[
+                { value: "none", label: "None — it lives in my head" },
+                { value: "partial", label: "Partial — key things written down" },
+                { value: "complete", label: "Complete — documented playbook" },
+              ]} />
+              <Choice label="Management team depth" value={managerDepth} onChange={setManagerDepth} options={[
+                { value: "none", label: "Owner is the manager" },
+                { value: "partial", label: "Some department leads" },
+                { value: "strong", label: "Full management team in place" },
+              ]} />
+              <Choice label="Desired exit timeline" value={exitTimeline} onChange={(v) => setExitTimeline(v as never)} options={[
+                { value: "lt_1y", label: "Now — within 1 year" },
+                { value: "1_2y", label: "Within 1–2 years" },
+                { value: "2_5y", label: "2–5 years" },
+                { value: "5_plus_y", label: "5+ years" },
+                { value: "exploring", label: "Just exploring" },
+              ]} />
             </div>
           )}
 
