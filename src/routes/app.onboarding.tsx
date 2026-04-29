@@ -33,6 +33,27 @@ type Step = 0 | 1 | 2 | 3;
 
 const currentYear = new Date().getFullYear();
 
+const US_STATES = [
+  "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD",
+  "MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC",
+  "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY","DC","PR",
+];
+
+const SUB_INDUSTRY_SUGGESTIONS: Record<string, string[]> = {
+  "HVAC / Trades": ["HVAC", "Plumbing", "Electrical", "Roofing", "Landscaping", "Pest control", "General contracting"],
+  "Professional Services": ["Accounting / CPA", "Legal", "Marketing agency", "Consulting", "IT services", "Architecture / Engineering"],
+  "Healthcare Practice": ["Dental", "Veterinary", "Medical / Primary care", "Physical therapy", "Optometry", "Mental health"],
+  "Construction": ["Residential", "Commercial", "Specialty trades", "Remodeling", "Site work / excavation"],
+  "Restaurant / Hospitality": ["QSR / Fast casual", "Full service restaurant", "Bar / Pub", "Catering", "Hotel / Lodging", "Food truck"],
+  "Retail": ["Apparel", "Convenience / C-store", "Specialty retail", "Furniture / Home goods", "Liquor store", "Gas station"],
+  "Manufacturing": ["Metal fabrication", "Food & beverage", "Plastics", "Electronics", "Custom / Job shop", "Consumer products"],
+  "E-commerce / Online": ["Amazon / Marketplace seller", "DTC brand", "Subscription box", "Digital products", "Dropshipping"],
+  "Software / SaaS": ["B2B SaaS", "B2C SaaS", "Vertical SaaS", "Mobile app", "Marketplace", "Dev tools"],
+  "Auto Repair / Service": ["General auto repair", "Body shop / Collision", "Tire / Wheel", "Quick lube", "Transmission", "Detailing"],
+  "Logistics / Transport": ["Trucking / Freight", "Last-mile delivery", "Warehousing", "Moving services", "Courier"],
+  "Other": [],
+};
+
 function emptyYear(year: number) {
   return {
     year, revenue: 0, cogs: 0, gross_profit: 0, operating_expenses: 0,
@@ -60,7 +81,10 @@ function Onboarding() {
 
   // Step 0: business basics
   const [name, setName] = useState("");
+  const [anonymousDescription, setAnonymousDescription] = useState("");
   const [industry, setIndustry] = useState<string>(INDUSTRY_OPTIONS[0]);
+  const [subIndustry, setSubIndustry] = useState<string>("");
+  const [stateCode, setStateCode] = useState<string>("");
   const [region, setRegion] = useState("");
   const [yearsInBusiness, setYearsInBusiness] = useState<number>(10);
   const [employees, setEmployees] = useState<number>(10);
@@ -200,8 +224,10 @@ function Onboarding() {
         .insert({
           owner_id: user.id,
           name,
+          anonymous_description: anonymousDescription || null,
           industry,
-          region,
+          sub_industry: subIndustry || null,
+          region: [stateCode, region].filter(Boolean).join(stateCode && region ? " — " : ""),
           years_in_business: yearsInBusiness,
           employees,
           owner_hours_per_week: ownerHours,
@@ -289,13 +315,51 @@ function Onboarding() {
               </div>
               <Field label="Business name" value={name} onChange={setName} />
               <div>
-                <label className="block text-sm font-medium">Industry</label>
-                <select value={industry} onChange={(e) => setIndustry(e.target.value)}
-                  className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
-                  {INDUSTRY_OPTIONS.map((i) => <option key={i}>{i}</option>)}
-                </select>
+                <label className="block text-sm font-medium">Buyer-safe business description</label>
+                <p className="text-xs text-muted-foreground mt-0.5">Anonymous, NDA-safe — what a buyer sees first. Avoid your business name or location.</p>
+                <textarea
+                  value={anonymousDescription}
+                  onChange={(e) => setAnonymousDescription(e.target.value)}
+                  rows={3}
+                  placeholder="e.g., Established 15-year residential HVAC service company in the Pacific Northwest with recurring maintenance contracts and a tenured field team."
+                  className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                />
               </div>
-              <Field label="Region (e.g., Pacific Northwest, Texas)" value={region} onChange={setRegion} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium">Industry</label>
+                  <select value={industry} onChange={(e) => { setIndustry(e.target.value); setSubIndustry(""); }}
+                    className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+                    {INDUSTRY_OPTIONS.map((i) => <option key={i}>{i}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">Sub-industry</label>
+                  <input
+                    list="sub-industry-options"
+                    value={subIndustry}
+                    onChange={(e) => setSubIndustry(e.target.value)}
+                    placeholder="e.g., Residential HVAC"
+                    className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                  <datalist id="sub-industry-options">
+                    {(SUB_INDUSTRY_SUGGESTIONS[industry] ?? []).map((s) => <option key={s} value={s} />)}
+                  </datalist>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium">State</label>
+                  <select value={stateCode} onChange={(e) => setStateCode(e.target.value)}
+                    className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+                    <option value="">Select…</option>
+                    {US_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div className="sm:col-span-2">
+                  <Field label="Region (optional)" value={region} onChange={setRegion} />
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <NumField label="Years in business" value={yearsInBusiness} onChange={setYearsInBusiness} />
                 <NumField label="Employees (incl. owner)" value={employees} onChange={setEmployees} />
