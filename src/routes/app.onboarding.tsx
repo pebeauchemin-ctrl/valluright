@@ -224,8 +224,10 @@ function Onboarding() {
         .insert({
           owner_id: user.id,
           name,
+          anonymous_description: anonymousDescription || null,
           industry,
-          region,
+          sub_industry: subIndustry || null,
+          region: [stateCode, region].filter(Boolean).join(stateCode && region ? " — " : ""),
           years_in_business: yearsInBusiness,
           employees,
           owner_hours_per_week: ownerHours,
@@ -313,13 +315,51 @@ function Onboarding() {
               </div>
               <Field label="Business name" value={name} onChange={setName} />
               <div>
-                <label className="block text-sm font-medium">Industry</label>
-                <select value={industry} onChange={(e) => setIndustry(e.target.value)}
-                  className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
-                  {INDUSTRY_OPTIONS.map((i) => <option key={i}>{i}</option>)}
-                </select>
+                <label className="block text-sm font-medium">Buyer-safe business description</label>
+                <p className="text-xs text-muted-foreground mt-0.5">Anonymous, NDA-safe — what a buyer sees first. Avoid your business name or location.</p>
+                <textarea
+                  value={anonymousDescription}
+                  onChange={(e) => setAnonymousDescription(e.target.value)}
+                  rows={3}
+                  placeholder="e.g., Established 15-year residential HVAC service company in the Pacific Northwest with recurring maintenance contracts and a tenured field team."
+                  className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                />
               </div>
-              <Field label="Region (e.g., Pacific Northwest, Texas)" value={region} onChange={setRegion} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium">Industry</label>
+                  <select value={industry} onChange={(e) => { setIndustry(e.target.value); setSubIndustry(""); }}
+                    className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+                    {INDUSTRY_OPTIONS.map((i) => <option key={i}>{i}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">Sub-industry</label>
+                  <input
+                    list="sub-industry-options"
+                    value={subIndustry}
+                    onChange={(e) => setSubIndustry(e.target.value)}
+                    placeholder="e.g., Residential HVAC"
+                    className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                  <datalist id="sub-industry-options">
+                    {(SUB_INDUSTRY_SUGGESTIONS[industry] ?? []).map((s) => <option key={s} value={s} />)}
+                  </datalist>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium">State</label>
+                  <select value={stateCode} onChange={(e) => setStateCode(e.target.value)}
+                    className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+                    <option value="">Select…</option>
+                    {US_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div className="sm:col-span-2">
+                  <Field label="Region (optional)" value={region} onChange={setRegion} />
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <NumField label="Years in business" value={yearsInBusiness} onChange={setYearsInBusiness} />
                 <NumField label="Employees (incl. owner)" value={employees} onChange={setEmployees} />
