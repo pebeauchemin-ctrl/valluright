@@ -29,7 +29,7 @@ export const Route = createFileRoute("/app/onboarding")({
   component: Onboarding,
 });
 
-type Step = 0 | 1 | 2 | 3;
+type Step = 0 | 1 | 2;
 
 const currentYear = new Date().getFullYear();
 
@@ -291,11 +291,11 @@ function Onboarding() {
       <div className="mx-auto max-w-3xl px-6 py-10">
         {/* Stepper */}
         <div className="mb-8 flex items-center gap-2">
-          {[0, 1, 2, 3].map((i) => (
+          {[0, 1, 2].map((i) => (
             <div key={i} className="flex-1">
               <div className={`h-1.5 rounded-full ${i <= step ? "bg-accent" : "bg-secondary"}`} />
               <div className={`mt-2 text-xs font-medium ${i === step ? "text-foreground" : "text-muted-foreground"}`}>
-                {["Business", "Financials", "Operations", "Review"][i]}
+                {["Business profile", "Financials", "Review"][i]}
               </div>
             </div>
           ))}
@@ -506,42 +506,7 @@ function Onboarding() {
             </div>
           )}
 
-          {step === 2 && (
-            <div className="space-y-5">
-              <div>
-                <h1 className="font-display text-2xl font-semibold text-primary">How does the business run?</h1>
-                <p className="mt-1 text-sm text-muted-foreground">These shape buyer confidence and the multiple we can apply.</p>
-              </div>
-              <SliderField label="Owner hours per week" value={ownerHours} min={0} max={80} step={5} onChange={setOwnerHours} suffix=" hrs" />
-              <div className="space-y-2">
-                <div className="text-sm font-medium">Owner is essential to:</div>
-                <Toggle label="Sales / business development" checked={ownerInSales} onChange={setOwnerInSales} />
-                <Toggle label="Day-to-day operations" checked={ownerInOps} onChange={setOwnerInOps} />
-                <Toggle label="Top customer relationships" checked={ownerInCustomers} onChange={setOwnerInCustomers} />
-              </div>
-              <SliderField label="Recurring revenue (contracts, subscriptions)" value={recurringPct} min={0} max={100} step={5} onChange={setRecurringPct} suffix="%" />
-              <SliderField label="Top customer % of revenue" value={topCustomerPct} min={0} max={100} step={5} onChange={setTopCustomerPct} suffix="%" />
-              <Choice label="SOP / documentation" value={sopStatus} onChange={setSopStatus} options={[
-                { value: "none", label: "None — it lives in my head" },
-                { value: "partial", label: "Partial — key things written down" },
-                { value: "complete", label: "Complete — documented playbook" },
-              ]} />
-              <Choice label="Management team depth" value={managerDepth} onChange={setManagerDepth} options={[
-                { value: "none", label: "Owner is the manager" },
-                { value: "partial", label: "Some department leads" },
-                { value: "strong", label: "Full management team in place" },
-              ]} />
-              <Choice label="Exit timeline" value={exitTimeline} onChange={(v) => setExitTimeline(v as never)} options={[
-                { value: "lt_1y", label: "Now — within 1 year" },
-                { value: "1_2y", label: "Within 1–2 years" },
-                { value: "2_5y", label: "2–5 years" },
-                { value: "5_plus_y", label: "5+ years" },
-                { value: "exploring", label: "Just exploring" },
-              ]} />
-            </div>
-          )}
-
-          {step === 3 && <ReviewStep
+          {step === 2 && <ReviewStep
             data={{
               name, industry, region, yearsInBusiness, employees, years,
               ownerHours, ownerInSales, ownerInOps, ownerInCustomers,
