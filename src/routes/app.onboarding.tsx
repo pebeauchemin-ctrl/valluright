@@ -571,11 +571,11 @@ function Onboarding() {
             </button>
             {step < 2 ? (
               <button
-                onClick={() => setStep((s) => Math.min(2, s + 1) as Step)}
-                disabled={(step === 0 && !canNext0) || (step === 1 && !canNext1)}
+                onClick={saveStepAndAdvance}
+                disabled={saving || (step === 0 && !canNext0) || (step === 1 && !canNext1)}
                 className="inline-flex items-center gap-1.5 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition disabled:opacity-50"
               >
-                Continue <ArrowRight className="h-4 w-4" />
+                {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving…</> : <>Continue <ArrowRight className="h-4 w-4" /></>}
               </button>
             ) : (
               <button
