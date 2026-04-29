@@ -523,9 +523,9 @@ function Onboarding() {
             >
               <ArrowLeft className="h-4 w-4" /> Back
             </button>
-            {step < 3 ? (
+            {step < 2 ? (
               <button
-                onClick={() => setStep((s) => Math.min(3, s + 1) as Step)}
+                onClick={() => setStep((s) => Math.min(2, s + 1) as Step)}
                 disabled={(step === 0 && !canNext0) || (step === 1 && !canNext1)}
                 className="inline-flex items-center gap-1.5 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition disabled:opacity-50"
               >
