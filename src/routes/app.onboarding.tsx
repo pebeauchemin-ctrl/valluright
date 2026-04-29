@@ -60,7 +60,10 @@ function Onboarding() {
 
   // Step 0: business basics
   const [name, setName] = useState("");
+  const [anonymousDescription, setAnonymousDescription] = useState("");
   const [industry, setIndustry] = useState<string>(INDUSTRY_OPTIONS[0]);
+  const [subIndustry, setSubIndustry] = useState<string>("");
+  const [stateCode, setStateCode] = useState<string>("");
   const [region, setRegion] = useState("");
   const [yearsInBusiness, setYearsInBusiness] = useState<number>(10);
   const [employees, setEmployees] = useState<number>(10);
