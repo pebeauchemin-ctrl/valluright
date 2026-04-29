@@ -215,50 +215,96 @@ function Onboarding() {
     }));
   };
 
+  // Persisted business id once we've saved at least once during onboarding.
+  const [businessId, setBusinessId] = useState<string | null>(null);
+
+  const businessPayload = () => ({
+    name,
+    anonymous_description: anonymousDescription || null,
+    industry,
+    sub_industry: subIndustry || null,
+    region: [stateCode, region].filter(Boolean).join(stateCode && region ? " — " : ""),
+    years_in_business: yearsInBusiness,
+    employees,
+    owner_hours_per_week: ownerHours,
+    owner_in_sales: ownerInSales,
+    owner_in_operations: ownerInOps,
+    owner_in_customer_relationships: ownerInCustomers,
+    recurring_revenue_pct: recurringPct,
+    top_customer_concentration_pct: topCustomerPct,
+    sop_status: sopStatus,
+    manager_team_depth: managerDepth,
+    exit_timeline: exitTimeline,
+  });
+
+  /** Create the business row (first save) or update it (subsequent saves). */
+  const persistBusiness = async (): Promise<string | null> => {
+    if (!user) return null;
+    if (businessId) {
+      const { error } = await supabase.from("businesses").update(businessPayload()).eq("id", businessId);
+      if (error) throw error;
+      return businessId;
+    }
+    const { data, error } = await supabase
+      .from("businesses")
+      .insert({ owner_id: user.id, ...businessPayload() })
+      .select()
+      .single();
+    if (error || !data) throw error ?? new Error("Failed to create business");
+    setBusinessId(data.id);
+    return data.id;
+  };
+
+  /** Replace this business's financial_years rows with the current local state. */
+  const persistFinancials = async (bizId: string) => {
+    const yearsToInsert = years
+      .filter((y) => y.revenue > 0)
+      .map((y) => ({ ...y, business_id: bizId }));
+    // Wipe and re-insert so re-clicking Next stays idempotent.
+    await supabase.from("financial_years").delete().eq("business_id", bizId);
+    if (yearsToInsert.length) {
+      const { error } = await supabase.from("financial_years").insert(yearsToInsert);
+      if (error) throw error;
+    }
+  };
+
+  /** Autosave whatever the current step contains, then advance. */
+  const saveStepAndAdvance = async () => {
+    if (!user) return;
+    setSaving(true);
+    try {
+      const bizId = await persistBusiness();
+      if (bizId && step === 1) {
+        await persistFinancials(bizId);
+      }
+      await refresh();
+      toast.success("Saved");
+      setStep((s) => Math.min(2, s + 1) as Step);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const save = async () => {
     if (!user) return;
     setSaving(true);
     try {
-      const { data: biz, error: bizErr } = await supabase
-        .from("businesses")
-        .insert({
-          owner_id: user.id,
-          name,
-          anonymous_description: anonymousDescription || null,
-          industry,
-          sub_industry: subIndustry || null,
-          region: [stateCode, region].filter(Boolean).join(stateCode && region ? " — " : ""),
-          years_in_business: yearsInBusiness,
-          employees,
-          owner_hours_per_week: ownerHours,
-          owner_in_sales: ownerInSales,
-          owner_in_operations: ownerInOps,
-          owner_in_customer_relationships: ownerInCustomers,
-          recurring_revenue_pct: recurringPct,
-          top_customer_concentration_pct: topCustomerPct,
-          sop_status: sopStatus,
-          manager_team_depth: managerDepth,
-          exit_timeline: exitTimeline,
-        })
-        .select()
-        .single();
-      if (bizErr || !biz) throw bizErr ?? new Error("Failed to create business");
+      const bizId = await persistBusiness();
+      if (!bizId) throw new Error("Failed to create business");
+      await persistFinancials(bizId);
 
-      const yearsToInsert = years
-        .filter((y) => y.revenue > 0)
-        .map((y) => ({ ...y, business_id: biz.id }));
-      if (yearsToInsert.length) {
-        const { error: yErr } = await supabase.from("financial_years").insert(yearsToInsert);
-        if (yErr) throw yErr;
-      }
+      const { data: biz } = await supabase.from("businesses").select("*").eq("id", bizId).single();
+      const { data: yearsRows } = await supabase.from("financial_years").select("*").eq("business_id", bizId);
 
       // Compute and store first valuation
-      const inputs = toBusinessInputs(biz, yearsToInsert as never);
+      const inputs = toBusinessInputs(biz!, (yearsRows ?? []) as never);
       const v = valueBusiness(inputs);
       const h = computeHealthScore(inputs);
       const findM = (k: string) => v.methods.find((m) => m.method === k);
       await supabase.from("valuations").insert({
-        business_id: biz.id,
+        business_id: bizId,
         range_low: v.rangeLow, range_mid: v.rangeMid, range_high: v.rangeHigh,
         sde_value: findM("sde")?.value ?? null, sde_low: findM("sde")?.low ?? null, sde_high: findM("sde")?.high ?? null,
         ebitda_value: findM("ebitda")?.value ?? null, ebitda_low: findM("ebitda")?.low ?? null, ebitda_high: findM("ebitda")?.high ?? null,
@@ -272,7 +318,7 @@ function Onboarding() {
       });
 
       await refresh();
-      setCurrent(biz);
+      if (biz) setCurrent(biz);
       toast.success("Your business is saved. Welcome to your dashboard.");
       navigate({ to: "/app" });
     } catch (e) {
