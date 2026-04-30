@@ -324,14 +324,18 @@ export type Database = {
       financial_years: {
         Row: {
           addbacks: number | null
+          amortization: number | null
           assets: number | null
           business_id: string
           cogs: number | null
           created_at: string
           debt: number | null
+          depreciation: number | null
           ebitda: number | null
           gross_profit: number | null
           id: string
+          income_taxes: number | null
+          interest: number | null
           liabilities: number | null
           net_income: number | null
           operating_expenses: number | null
@@ -341,14 +345,18 @@ export type Database = {
         }
         Insert: {
           addbacks?: number | null
+          amortization?: number | null
           assets?: number | null
           business_id: string
           cogs?: number | null
           created_at?: string
           debt?: number | null
+          depreciation?: number | null
           ebitda?: number | null
           gross_profit?: number | null
           id?: string
+          income_taxes?: number | null
+          interest?: number | null
           liabilities?: number | null
           net_income?: number | null
           operating_expenses?: number | null
@@ -358,14 +366,18 @@ export type Database = {
         }
         Update: {
           addbacks?: number | null
+          amortization?: number | null
           assets?: number | null
           business_id?: string
           cogs?: number | null
           created_at?: string
           debt?: number | null
+          depreciation?: number | null
           ebitda?: number | null
           gross_profit?: number | null
           id?: string
+          income_taxes?: number | null
+          interest?: number | null
           liabilities?: number | null
           net_income?: number | null
           operating_expenses?: number | null
