@@ -26,6 +26,10 @@ function Financials() {
     setYears((prev) => prev.map((y, idx) => idx === i ? { ...y, [key]: val } : y));
   };
 
+  const calcEbitda = (y: Partial<FinancialYearRow> & Record<string, unknown>) =>
+    Number(y.net_income ?? 0) + Number(y.depreciation ?? 0) + Number(y.amortization ?? 0) +
+    Number(y.interest ?? 0) + Number(y.income_taxes ?? 0);
+
   const addYear = () => {
     if (!current) return;
     const next = (years.length ? Math.max(...years.map((y) => y.year)) : new Date().getFullYear() - 1) + 1;
@@ -33,8 +37,9 @@ function Financials() {
       id: `tmp-${next}`, business_id: current.id, year: next,
       revenue: 0, cogs: 0, gross_profit: 0, operating_expenses: 0,
       owner_salary: 0, addbacks: 0, ebitda: 0, net_income: 0,
+      depreciation: 0, amortization: 0, interest: 0, income_taxes: 0,
       assets: 0, liabilities: 0, debt: 0, created_at: new Date().toISOString(),
-    } as FinancialYearRow]);
+    } as unknown as FinancialYearRow]);
   };
 
   const save = async () => {
@@ -48,7 +53,12 @@ function Financials() {
           gross_profit: Number(y.revenue ?? 0) - Number(y.cogs ?? 0),
           operating_expenses: Number(y.operating_expenses ?? 0),
           owner_salary: Number(y.owner_salary ?? 0), addbacks: Number(y.addbacks ?? 0),
-          ebitda: Number(y.ebitda ?? 0), net_income: Number(y.net_income ?? 0),
+          depreciation: Number((y as Record<string, unknown>).depreciation ?? 0),
+          amortization: Number((y as Record<string, unknown>).amortization ?? 0),
+          interest: Number((y as Record<string, unknown>).interest ?? 0),
+          income_taxes: Number((y as Record<string, unknown>).income_taxes ?? 0),
+          ebitda: calcEbitda(y as Record<string, unknown>),
+          net_income: Number(y.net_income ?? 0),
           assets: Number(y.assets ?? 0), liabilities: Number(y.liabilities ?? 0), debt: Number(y.debt ?? 0),
         };
         if (typeof y.id === "string" && y.id.startsWith("tmp-")) {
