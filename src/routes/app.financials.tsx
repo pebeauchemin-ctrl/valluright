@@ -88,9 +88,12 @@ function Financials() {
   if (!current) return <div className="p-12 text-sm text-muted-foreground">No business selected.</div>;
 
   const rows = [
-    ["revenue", "Revenue"], ["cogs", "COGS"], ["operating_expenses", "Operating expenses"],
-    ["owner_salary", "Owner salary"], ["addbacks", "Add-backs"], ["ebitda", "EBITDA"],
-    ["net_income", "Net income"], ["assets", "Total assets"], ["liabilities", "Total liabilities"], ["debt", "Debt"],
+    ["revenue", "Gross revenue"], ["cogs", "COGS"], ["operating_expenses", "Operating expenses"],
+    ["owner_salary", "Owner's salary"], ["addbacks", "Add-backs (personal)"],
+    ["depreciation", "Depreciation"], ["amortization", "Amortization"],
+    ["interest", "Interest"], ["income_taxes", "Income taxes"],
+    ["net_income", "Net income"],
+    ["assets", "Total assets"], ["liabilities", "Total liabilities"], ["debt", "Debt"],
   ] as const;
 
   return (
