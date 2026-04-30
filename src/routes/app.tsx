@@ -23,8 +23,15 @@ function AppLayout() {
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
-    // First-time user lands on dashboard but has no business — push them to onboarding
-    if (!authLoading && !bizLoading && user && businesses.length === 0 && location.pathname === "/app") {
+    // If onboarding isn't complete, force the user back to /app/onboarding
+    // from any other /app/* page. Skip the onboarding route itself.
+    if (
+      !authLoading &&
+      !bizLoading &&
+      user &&
+      businesses.length === 0 &&
+      location.pathname !== "/app/onboarding"
+    ) {
       navigate({ to: "/app/onboarding" });
     }
   }, [authLoading, bizLoading, user, businesses, location.pathname, navigate]);
