@@ -145,15 +145,19 @@ function Financials() {
                 </tr>
               ))}
               <tr className="border-t border-border">
-                <td className="py-2 font-semibold">EBITDA margin</td>
+                <td className="py-2 font-semibold">EBITDA <span className="text-xs font-normal text-muted-foreground">(calculated)</span></td>
                 {years.map((y) => {
-                  const m = Number(y.revenue) ? (Number(y.ebitda) / Number(y.revenue)) * 100 : 0;
-                  return <td key={y.id} className="py-2 text-center text-sm font-semibold text-accent">{m.toFixed(1)}%</td>;
+                  const e = calcEbitda(y as Record<string, unknown>);
+                  return <td key={y.id} className="py-2 text-center text-sm font-semibold text-accent">{fmtCurrency(e, { compact: true })}</td>;
                 })}
               </tr>
               <tr>
-                <td className="py-2 font-semibold">Revenue</td>
-                {years.map((y) => <td key={y.id} className="py-2 text-center text-sm text-muted-foreground">{fmtCurrency(Number(y.revenue), { compact: true })}</td>)}
+                <td className="py-2 font-semibold">EBITDA margin</td>
+                {years.map((y) => {
+                  const e = calcEbitda(y as Record<string, unknown>);
+                  const m = Number(y.revenue) ? (e / Number(y.revenue)) * 100 : 0;
+                  return <td key={y.id} className="py-2 text-center text-sm text-muted-foreground">{m.toFixed(1)}%</td>;
+                })}
               </tr>
             </tbody>
           </table>
