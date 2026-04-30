@@ -26,6 +26,10 @@ function Financials() {
     setYears((prev) => prev.map((y, idx) => idx === i ? { ...y, [key]: val } : y));
   };
 
+  const calcEbitda = (y: Partial<FinancialYearRow> & Record<string, unknown>) =>
+    Number(y.net_income ?? 0) + Number(y.depreciation ?? 0) + Number(y.amortization ?? 0) +
+    Number(y.interest ?? 0) + Number(y.income_taxes ?? 0);
+
   const addYear = () => {
     if (!current) return;
     const next = (years.length ? Math.max(...years.map((y) => y.year)) : new Date().getFullYear() - 1) + 1;
@@ -33,8 +37,9 @@ function Financials() {
       id: `tmp-${next}`, business_id: current.id, year: next,
       revenue: 0, cogs: 0, gross_profit: 0, operating_expenses: 0,
       owner_salary: 0, addbacks: 0, ebitda: 0, net_income: 0,
+      depreciation: 0, amortization: 0, interest: 0, income_taxes: 0,
       assets: 0, liabilities: 0, debt: 0, created_at: new Date().toISOString(),
-    } as FinancialYearRow]);
+    } as unknown as FinancialYearRow]);
   };
 
   const save = async () => {
@@ -48,7 +53,12 @@ function Financials() {
           gross_profit: Number(y.revenue ?? 0) - Number(y.cogs ?? 0),
           operating_expenses: Number(y.operating_expenses ?? 0),
           owner_salary: Number(y.owner_salary ?? 0), addbacks: Number(y.addbacks ?? 0),
-          ebitda: Number(y.ebitda ?? 0), net_income: Number(y.net_income ?? 0),
+          depreciation: Number((y as Record<string, unknown>).depreciation ?? 0),
+          amortization: Number((y as Record<string, unknown>).amortization ?? 0),
+          interest: Number((y as Record<string, unknown>).interest ?? 0),
+          income_taxes: Number((y as Record<string, unknown>).income_taxes ?? 0),
+          ebitda: calcEbitda(y as Record<string, unknown>),
+          net_income: Number(y.net_income ?? 0),
           assets: Number(y.assets ?? 0), liabilities: Number(y.liabilities ?? 0), debt: Number(y.debt ?? 0),
         };
         if (typeof y.id === "string" && y.id.startsWith("tmp-")) {
@@ -78,9 +88,12 @@ function Financials() {
   if (!current) return <div className="p-12 text-sm text-muted-foreground">No business selected.</div>;
 
   const rows = [
-    ["revenue", "Revenue"], ["cogs", "COGS"], ["operating_expenses", "Operating expenses"],
-    ["owner_salary", "Owner salary"], ["addbacks", "Add-backs"], ["ebitda", "EBITDA"],
-    ["net_income", "Net income"], ["assets", "Total assets"], ["liabilities", "Total liabilities"], ["debt", "Debt"],
+    ["revenue", "Gross revenue"], ["cogs", "COGS"], ["operating_expenses", "Operating expenses"],
+    ["owner_salary", "Owner's salary"], ["addbacks", "Add-backs (personal)"],
+    ["depreciation", "Depreciation"], ["amortization", "Amortization"],
+    ["interest", "Interest"], ["income_taxes", "Income taxes"],
+    ["net_income", "Net income"],
+    ["assets", "Total assets"], ["liabilities", "Total liabilities"], ["debt", "Debt"],
   ] as const;
 
   return (
@@ -132,15 +145,19 @@ function Financials() {
                 </tr>
               ))}
               <tr className="border-t border-border">
-                <td className="py-2 font-semibold">EBITDA margin</td>
+                <td className="py-2 font-semibold">EBITDA <span className="text-xs font-normal text-muted-foreground">(calculated)</span></td>
                 {years.map((y) => {
-                  const m = Number(y.revenue) ? (Number(y.ebitda) / Number(y.revenue)) * 100 : 0;
-                  return <td key={y.id} className="py-2 text-center text-sm font-semibold text-accent">{m.toFixed(1)}%</td>;
+                  const e = calcEbitda(y as Record<string, unknown>);
+                  return <td key={y.id} className="py-2 text-center text-sm font-semibold text-accent">{fmtCurrency(e, { compact: true })}</td>;
                 })}
               </tr>
               <tr>
-                <td className="py-2 font-semibold">Revenue</td>
-                {years.map((y) => <td key={y.id} className="py-2 text-center text-sm text-muted-foreground">{fmtCurrency(Number(y.revenue), { compact: true })}</td>)}
+                <td className="py-2 font-semibold">EBITDA margin</td>
+                {years.map((y) => {
+                  const e = calcEbitda(y as Record<string, unknown>);
+                  const m = Number(y.revenue) ? (e / Number(y.revenue)) * 100 : 0;
+                  return <td key={y.id} className="py-2 text-center text-sm text-muted-foreground">{m.toFixed(1)}%</td>;
+                })}
               </tr>
             </tbody>
           </table>
