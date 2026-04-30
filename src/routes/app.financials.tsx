@@ -30,16 +30,29 @@ function Financials() {
     Number(y.net_income ?? 0) + Number(y.depreciation ?? 0) + Number(y.amortization ?? 0) +
     Number(y.interest ?? 0) + Number(y.income_taxes ?? 0);
 
+  const blankYear = (year: number): FinancialYearRow => ({
+    id: `tmp-${year}`, business_id: current!.id, year,
+    revenue: 0, cogs: 0, gross_profit: 0, operating_expenses: 0,
+    owner_salary: 0, addbacks: 0, ebitda: 0, net_income: 0,
+    depreciation: 0, amortization: 0, interest: 0, income_taxes: 0,
+    assets: 0, liabilities: 0, debt: 0, created_at: new Date().toISOString(),
+  } as unknown as FinancialYearRow);
+
   const addYear = () => {
     if (!current) return;
-    const next = (years.length ? Math.max(...years.map((y) => y.year)) : new Date().getFullYear() - 1) + 1;
-    setYears((prev) => [...prev, {
-      id: `tmp-${next}`, business_id: current.id, year: next,
-      revenue: 0, cogs: 0, gross_profit: 0, operating_expenses: 0,
-      owner_salary: 0, addbacks: 0, ebitda: 0, net_income: 0,
-      depreciation: 0, amortization: 0, interest: 0, income_taxes: 0,
-      assets: 0, liabilities: 0, debt: 0, created_at: new Date().toISOString(),
-    } as unknown as FinancialYearRow]);
+    const cy = new Date().getFullYear();
+    // First time — seed the three most recent completed years.
+    if (years.length === 0) {
+      setYears([blankYear(cy - 3), blankYear(cy - 2), blankYear(cy - 1)]);
+      return;
+    }
+    const existing = new Set(years.map((y) => y.year));
+    const minYear = Math.min(...years.map((y) => y.year));
+    const maxYear = Math.max(...years.map((y) => y.year));
+    // Prefer filling earlier history first (down to 5 years back), then add forward.
+    let next = minYear - 1;
+    if (cy - next > 6 || existing.has(next)) next = maxYear + 1;
+    setYears((prev) => [...prev, blankYear(next)].sort((a, b) => a.year - b.year));
   };
 
   const save = async () => {
