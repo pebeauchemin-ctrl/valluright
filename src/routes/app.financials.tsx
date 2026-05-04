@@ -138,7 +138,7 @@ function Financials() {
           const idx = headers.indexOf(key);
           if (idx >= 0) row[key] = Number(cells[idx].replace(/[$,]/g, "")) || 0;
         }
-        imported.push(row as Partial<FinancialYearRow> & { year: number });
+        imported.push(row as unknown as Partial<FinancialYearRow> & { year: number });
       }
       if (!imported.length) throw new Error("No valid rows found");
       mergeImported(imported);
