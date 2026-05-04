@@ -428,9 +428,8 @@ export async function fetchYearSummary(opts: {
   const pnl = parsePnl(pnlReport);
   const bs = parseBalanceSheet(bsReport);
 
-  // EBITDA = net income + interest + depreciation/amortization (tax add-back only if explicitly parsed later).
-  // This keeps below-the-line financing/non-cash costs from being treated as operating expenses.
-  const ebitda = pnl.net_income + pnl.interest + pnl.depreciation_amortization;
+  // EBITDA = net income + interest + depreciation + amortization + income taxes
+  const ebitda = pnl.net_income + pnl.interest + pnl.depreciation + pnl.amortization + pnl.income_taxes;
 
   return {
     year: opts.year,
@@ -442,6 +441,10 @@ export async function fetchYearSummary(opts: {
     addbacks: 0,
     ebitda: round(ebitda),
     net_income: round(pnl.net_income),
+    depreciation: round(pnl.depreciation),
+    amortization: round(pnl.amortization),
+    interest: round(pnl.interest),
+    income_taxes: round(pnl.income_taxes),
     assets: round(bs.assets),
     liabilities: round(bs.liabilities),
     debt: round(bs.debt),
