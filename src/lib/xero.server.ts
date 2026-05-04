@@ -142,6 +142,10 @@ export type ParsedYear = {
   addbacks: number;
   ebitda: number;
   net_income: number;
+  depreciation: number;
+  amortization: number;
+  interest: number;
+  income_taxes: number;
   assets: number;
   liabilities: number;
   debt: number;
