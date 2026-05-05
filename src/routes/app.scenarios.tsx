@@ -6,9 +6,28 @@ import { supabase } from "@/integrations/supabase/client";
 import { valueBusiness } from "@/lib/valuation";
 import { fmtCurrency } from "@/lib/format";
 
+type ScenarioSearch = {
+  revenueGrowth?: number;
+  marginUplift?: number;
+  recurring?: number;
+  ownerHrs?: number;
+  topCust?: number;
+  sopComplete?: boolean;
+  hireManager?: boolean;
+};
+
 export const Route = createFileRoute("/app/scenarios")({
   head: () => ({ meta: [{ title: "Scenarios — ValuRight.ai" }] }),
   component: Scenarios,
+  validateSearch: (s: Record<string, unknown>): ScenarioSearch => ({
+    revenueGrowth: s.revenueGrowth !== undefined ? Number(s.revenueGrowth) : undefined,
+    marginUplift: s.marginUplift !== undefined ? Number(s.marginUplift) : undefined,
+    recurring: s.recurring !== undefined ? Number(s.recurring) : undefined,
+    ownerHrs: s.ownerHrs !== undefined ? Number(s.ownerHrs) : undefined,
+    topCust: s.topCust !== undefined ? Number(s.topCust) : undefined,
+    sopComplete: s.sopComplete === true || s.sopComplete === "true",
+    hireManager: s.hireManager === true || s.hireManager === "true",
+  }),
 });
 
 function Scenarios() {
