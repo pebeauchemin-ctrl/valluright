@@ -32,26 +32,28 @@ export const Route = createFileRoute("/app/scenarios")({
 
 function Scenarios() {
   const { current } = useBusiness();
+  const search = Route.useSearch();
   const [financials, setFinancials] = useState<FinancialYearRow[]>([]);
 
-  // Scenario sliders
-  const [revenueGrowth, setRevenueGrowth] = useState(0);
-  const [marginUplift, setMarginUplift] = useState(0);
-  const [recurring, setRecurring] = useState<number | null>(null);
-  const [ownerHrs, setOwnerHrs] = useState<number | null>(null);
-  const [topCust, setTopCust] = useState<number | null>(null);
-  const [sopComplete, setSopComplete] = useState(false);
-  const [hireManager, setHireManager] = useState(false);
+  // Scenario sliders (seeded from query params if present)
+  const [revenueGrowth, setRevenueGrowth] = useState(search.revenueGrowth ?? 0);
+  const [marginUplift, setMarginUplift] = useState(search.marginUplift ?? 0);
+  const [recurring, setRecurring] = useState<number | null>(search.recurring ?? null);
+  const [ownerHrs, setOwnerHrs] = useState<number | null>(search.ownerHrs ?? null);
+  const [topCust, setTopCust] = useState<number | null>(search.topCust ?? null);
+  const [sopComplete, setSopComplete] = useState(search.sopComplete ?? false);
+  const [hireManager, setHireManager] = useState(search.hireManager ?? false);
 
   useEffect(() => {
     if (!current) return;
     supabase.from("financial_years").select("*").eq("business_id", current.id).order("year", { ascending: true })
       .then(({ data }) => {
         setFinancials(data ?? []);
-        setRecurring(Number(current.recurring_revenue_pct ?? 0));
-        setOwnerHrs(current.owner_hours_per_week ?? 50);
-        setTopCust(Number(current.top_customer_concentration_pct ?? 0));
+        if (search.recurring === undefined) setRecurring(Number(current.recurring_revenue_pct ?? 0));
+        if (search.ownerHrs === undefined) setOwnerHrs(current.owner_hours_per_week ?? 50);
+        if (search.topCust === undefined) setTopCust(Number(current.top_customer_concentration_pct ?? 0));
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current]);
 
   const baseline = useMemo(() => {
