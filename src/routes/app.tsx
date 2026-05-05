@@ -48,6 +48,8 @@ function AppLayout() {
     const navItems: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }> = [
       { to: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
       { to: "/app/financials", label: "Financials", icon: FileSpreadsheet },
+      { to: "/app/health-score", label: "Health Score", icon: Activity },
+      { to: "/app/improve-value", label: "Improve Value", icon: TrendingUp },
       { to: "/app/recommendations", label: "Recommendations", icon: Sparkles },
       { to: "/app/scenarios", label: "What-if Scenarios", icon: Sliders },
       { to: "/app/buyer-teaser", label: "Buyer Teaser", icon: Eye },
