@@ -134,6 +134,8 @@ export type MethodResult = {
   inputLabel?: string;
   confidence: "low" | "medium" | "high";
   notes: string;
+  formula?: string;
+  reasoning?: string;
   available: boolean;
 };
 
@@ -169,8 +171,14 @@ export function methodSDE(b: BusinessInputs): MethodResult {
     inputLabel: "Seller's Discretionary Earnings",
     confidence: confidenceFromAdj(adj, sde > 0),
     notes: "Most common method for owner-operated SMBs. Earnings reflect total benefit to a working owner.",
+    formula: `SDE × Industry Multiple\nSDE = EBITDA + Owner Salary + Add-backs = ${fmtMoney(sde)}\nMultiple range: ${lo.toFixed(2)}× – ${hi.toFixed(2)}× (median ${mid.toFixed(2)}×)`,
+    reasoning: `Industry baseline for ${b.industry ?? "Other"} is ${m.sde[0].toFixed(2)}–${m.sde[2].toFixed(2)}×. Risk adjustment ${adj >= 0 ? "+" : ""}${adj.toFixed(2)} applied based on owner dependence, recurring revenue, customer concentration, documentation, and management depth.`,
     available: sde > 0,
   };
+}
+
+function fmtMoney(n: number): string {
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
 }
 
 export function methodEBITDA(b: BusinessInputs): MethodResult {
@@ -191,6 +199,8 @@ export function methodEBITDA(b: BusinessInputs): MethodResult {
     inputLabel: "EBITDA",
     confidence: confidenceFromAdj(adj, ebitda > 0),
     notes: "Standard for businesses with a hired-out owner. Used by most strategic and PE buyers.",
+    formula: `EBITDA × Industry Multiple\nEBITDA = ${fmtMoney(ebitda)}\nMultiple range: ${lo.toFixed(2)}× – ${hi.toFixed(2)}× (median ${mid.toFixed(2)}×)`,
+    reasoning: `Industry baseline for ${b.industry ?? "Other"} is ${m.ebitda[0].toFixed(2)}–${m.ebitda[2].toFixed(2)}×. Risk adjustment ${adj >= 0 ? "+" : ""}${adj.toFixed(2)} reflects operating risk and quality of earnings.`,
     available: ebitda > 0,
   };
 }
@@ -213,6 +223,8 @@ export function methodRevenue(b: BusinessInputs): MethodResult {
     inputLabel: "Annual Revenue",
     confidence: "low",
     notes: "Useful sanity check, especially for high-growth or low-margin businesses.",
+    formula: `Revenue × Industry Multiple\nRevenue = ${fmtMoney(revenue)}\nMultiple range: ${lo.toFixed(2)}× – ${hi.toFixed(2)}× (median ${mid.toFixed(2)}×)`,
+    reasoning: `Revenue multiples ignore profitability and are a directional check only. Industry baseline ${m.revenue[0].toFixed(2)}–${m.revenue[2].toFixed(2)}× for ${b.industry ?? "Other"}.`,
     available: revenue > 0,
   };
 }
@@ -263,6 +275,8 @@ export function methodDCF(b: BusinessInputs): MethodResult {
     inputLabel: "Year-1 Free Cash Flow",
     confidence: sorted.length >= 2 ? "medium" : "low",
     notes: `5-year projection at ${(growth * 100).toFixed(1)}% growth, 20% discount rate, 2.5% terminal growth.`,
+    formula: `PV = Σ FCFₜ / (1+r)ᵗ + Terminal / (1+r)⁵\nFCF₀ = ${fmtMoney(baseFCF)}, growth = ${(growth * 100).toFixed(1)}%\nDiscount r = 20%, terminal g = 2.5%`,
+    reasoning: sorted.length >= 2 ? `Growth derived from trailing revenue CAGR across ${sorted.length} years of financials. Discount rate reflects SMB risk premium.` : "Limited history — assumed default growth rate. Add more years for higher confidence.",
     available: baseFCF > 0,
   };
 }
@@ -282,6 +296,8 @@ export function methodAsset(b: BusinessInputs): MethodResult {
     inputLabel: "Net Assets (Assets − Liabilities)",
     confidence: "medium",
     notes: "A floor for asset-heavy businesses. Most going concerns sell well above this.",
+    formula: `Net Assets = Total Assets − Total Liabilities\n= ${fmtMoney(latest.assets || 0)} − ${fmtMoney(latest.liabilities || 0)} = ${fmtMoney(netAssets)}\nRange: ±15% for liquidation vs. orderly sale`,
+    reasoning: "Asset-based valuation reflects break-up or liquidation value. Goodwill and earnings power are excluded.",
     available: value > 0,
   };
 }
@@ -303,6 +319,8 @@ export function methodComparable(b: BusinessInputs): MethodResult {
     high: Math.max(sde.high, ebitda.high) * 0.95,
     confidence: "low",
     notes: "Placeholder estimate. Live comp matching from BizBuySell / IBBA data is in development.",
+    formula: "Avg(SDE value, EBITDA value) × 0.95\n(placeholder until live comp database is wired in)",
+    reasoning: "Comparable sales typically anchor real-world buyer behavior. This blend approximates a comp-implied range until live BizBuySell / IBBA matching is enabled.",
     available: true,
   };
 }

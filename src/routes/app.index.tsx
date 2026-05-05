@@ -3,8 +3,9 @@ import { useEffect, useMemo, useState } from "react";
 import { TrendingUp, AlertTriangle, ArrowRight, Sparkles, Eye, Sliders } from "lucide-react";
 import { useBusiness, toBusinessInputs, type FinancialYearRow } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
-import { valueBusiness, computeHealthScore, type Valuation } from "@/lib/valuation";
+import { valueBusiness, computeHealthScore, type Valuation, type MethodResult } from "@/lib/valuation";
 import { fmtCurrency, fmtPct } from "@/lib/format";
+import { MethodDetailDialog, MethodRangeBar } from "@/components/MethodDetailDialog";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
   RadialBarChart, RadialBar, PolarAngleAxis,
@@ -19,6 +20,7 @@ function Dashboard() {
   const { current, loading: bizLoading } = useBusiness();
   const [financials, setFinancials] = useState<FinancialYearRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeMethod, setActiveMethod] = useState<MethodResult | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -130,8 +132,8 @@ function Dashboard() {
             {fmtCurrency(valuation.rangeHigh, { compact: true })}
           </div>
           <div className="mt-1 text-sm text-muted-foreground">Median: <span className="font-semibold text-foreground">{fmtCurrency(valuation.rangeMid)}</span></div>
-          <div className="mt-6 h-3 rounded-full bg-secondary overflow-hidden">
-            <div className="h-full w-3/4 rounded-full bg-gradient-to-r from-accent to-gold" />
+          <div className="mt-6">
+            <MethodRangeBar low={valuation.rangeLow} mid={valuation.rangeMid} high={valuation.rangeHigh} />
           </div>
           <div className="mt-6 grid grid-cols-3 gap-4">
             <KPI label="Revenue (latest)" value={fmtCurrency(Number(latest?.revenue ?? 0), { compact: true })} />
@@ -193,7 +195,12 @@ function Dashboard() {
         <h2 className="font-display text-xl font-semibold text-primary mb-4">Six valuation methods</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {valuation.methods.map((m) => (
-            <div key={m.method} className={`rounded-xl border bg-card p-5 ${m.available ? "border-border" : "border-dashed border-border opacity-60"}`}>
+            <button
+              key={m.method}
+              type="button"
+              onClick={() => setActiveMethod(m)}
+              className={`text-left rounded-xl border bg-card p-5 transition hover:shadow-md hover:border-accent/50 ${m.available ? "border-border" : "border-dashed border-border opacity-60"}`}
+            >
               <div className="flex items-center justify-between">
                 <h3 className="font-display font-semibold text-primary">{m.label}</h3>
                 <span className={`text-[10px] font-semibold uppercase tracking-wider rounded-full px-2 py-0.5 ${
@@ -206,16 +213,23 @@ function Dashboard() {
                 {m.available ? fmtCurrency(m.value, { compact: true }) : "—"}
               </div>
               {m.available && (
-                <div className="mt-1 text-xs text-muted-foreground">
-                  {fmtCurrency(m.low, { compact: true })} – {fmtCurrency(m.high, { compact: true })}
-                  {m.multipleUsed && <> · {m.multipleUsed.toFixed(2)}× multiple</>}
-                </div>
+                <>
+                  <div className="mt-3">
+                    <MethodRangeBar low={m.low} mid={m.value} high={m.high} />
+                  </div>
+                  {m.multipleUsed !== undefined && (
+                    <div className="mt-2 text-[11px] text-muted-foreground">{m.multipleUsed.toFixed(2)}× multiple applied</div>
+                  )}
+                </>
               )}
               <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{m.notes}</p>
-            </div>
+              <div className="mt-3 text-xs font-semibold text-accent">View details →</div>
+            </button>
           ))}
         </div>
       </section>
+
+      <MethodDetailDialog method={activeMethod} open={!!activeMethod} onOpenChange={(v) => !v && setActiveMethod(null)} />
 
       {/* Top concerns */}
       <section>

@@ -94,7 +94,7 @@ function Teaser() {
             <div className="mt-8">
               <h3 className="text-sm font-semibold text-primary mb-3">Revenue trend (indexed)</h3>
               <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={financials.map((f) => ({
+                <BarChart data={financials.map((f: { year: number; revenue: number | null }) => ({
                   year: String(f.year),
                   value: settings.show_exact_revenue ? Number(f.revenue) : (Number(f.revenue) / Number(financials[0]?.revenue || 1)) * 100,
                 }))}>
