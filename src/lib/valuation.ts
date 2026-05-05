@@ -171,8 +171,14 @@ export function methodSDE(b: BusinessInputs): MethodResult {
     inputLabel: "Seller's Discretionary Earnings",
     confidence: confidenceFromAdj(adj, sde > 0),
     notes: "Most common method for owner-operated SMBs. Earnings reflect total benefit to a working owner.",
+    formula: `SDE × Industry Multiple\nSDE = EBITDA + Owner Salary + Add-backs = ${fmtMoney(sde)}\nMultiple range: ${lo.toFixed(2)}× – ${hi.toFixed(2)}× (median ${mid.toFixed(2)}×)`,
+    reasoning: `Industry baseline for ${b.industry ?? "Other"} is ${m.sde[0].toFixed(2)}–${m.sde[2].toFixed(2)}×. Risk adjustment ${adj >= 0 ? "+" : ""}${adj.toFixed(2)} applied based on owner dependence, recurring revenue, customer concentration, documentation, and management depth.`,
     available: sde > 0,
   };
+}
+
+function fmtMoney(n: number): string {
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
 }
 
 export function methodEBITDA(b: BusinessInputs): MethodResult {
