@@ -20,6 +20,7 @@ import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppScenariosRouteImport } from './routes/app.scenarios'
 import { Route as AppRecommendationsRouteImport } from './routes/app.recommendations'
 import { Route as AppOnboardingRouteImport } from './routes/app.onboarding'
+import { Route as AppHealthScoreRouteImport } from './routes/app.health-score'
 import { Route as AppFinancialsRouteImport } from './routes/app.financials'
 import { Route as AppDataRoomRouteImport } from './routes/app.data-room'
 import { Route as AppBuyerTeaserRouteImport } from './routes/app.buyer-teaser'
@@ -81,6 +82,11 @@ const AppOnboardingRoute = AppOnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => AppRoute,
 } as any)
+const AppHealthScoreRoute = AppHealthScoreRouteImport.update({
+  id: '/health-score',
+  path: '/health-score',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppFinancialsRoute = AppFinancialsRouteImport.update({
   id: '/financials',
   path: '/financials',
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/app/buyer-teaser': typeof AppBuyerTeaserRoute
   '/app/data-room': typeof AppDataRoomRoute
   '/app/financials': typeof AppFinancialsRoute
+  '/app/health-score': typeof AppHealthScoreRoute
   '/app/onboarding': typeof AppOnboardingRoute
   '/app/recommendations': typeof AppRecommendationsRoute
   '/app/scenarios': typeof AppScenariosRoute
@@ -134,6 +141,7 @@ export interface FileRoutesByTo {
   '/app/buyer-teaser': typeof AppBuyerTeaserRoute
   '/app/data-room': typeof AppDataRoomRoute
   '/app/financials': typeof AppFinancialsRoute
+  '/app/health-score': typeof AppHealthScoreRoute
   '/app/onboarding': typeof AppOnboardingRoute
   '/app/recommendations': typeof AppRecommendationsRoute
   '/app/scenarios': typeof AppScenariosRoute
@@ -153,6 +161,7 @@ export interface FileRoutesById {
   '/app/buyer-teaser': typeof AppBuyerTeaserRoute
   '/app/data-room': typeof AppDataRoomRoute
   '/app/financials': typeof AppFinancialsRoute
+  '/app/health-score': typeof AppHealthScoreRoute
   '/app/onboarding': typeof AppOnboardingRoute
   '/app/recommendations': typeof AppRecommendationsRoute
   '/app/scenarios': typeof AppScenariosRoute
@@ -173,6 +182,7 @@ export interface FileRouteTypes {
     | '/app/buyer-teaser'
     | '/app/data-room'
     | '/app/financials'
+    | '/app/health-score'
     | '/app/onboarding'
     | '/app/recommendations'
     | '/app/scenarios'
@@ -190,6 +200,7 @@ export interface FileRouteTypes {
     | '/app/buyer-teaser'
     | '/app/data-room'
     | '/app/financials'
+    | '/app/health-score'
     | '/app/onboarding'
     | '/app/recommendations'
     | '/app/scenarios'
@@ -208,6 +219,7 @@ export interface FileRouteTypes {
     | '/app/buyer-teaser'
     | '/app/data-room'
     | '/app/financials'
+    | '/app/health-score'
     | '/app/onboarding'
     | '/app/recommendations'
     | '/app/scenarios'
@@ -306,6 +318,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppOnboardingRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/health-score': {
+      id: '/app/health-score'
+      path: '/health-score'
+      fullPath: '/app/health-score'
+      preLoaderRoute: typeof AppHealthScoreRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/financials': {
       id: '/app/financials'
       path: '/financials'
@@ -349,6 +368,7 @@ interface AppRouteChildren {
   AppBuyerTeaserRoute: typeof AppBuyerTeaserRoute
   AppDataRoomRoute: typeof AppDataRoomRoute
   AppFinancialsRoute: typeof AppFinancialsRoute
+  AppHealthScoreRoute: typeof AppHealthScoreRoute
   AppOnboardingRoute: typeof AppOnboardingRoute
   AppRecommendationsRoute: typeof AppRecommendationsRoute
   AppScenariosRoute: typeof AppScenariosRoute
@@ -361,6 +381,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppBuyerTeaserRoute: AppBuyerTeaserRoute,
   AppDataRoomRoute: AppDataRoomRoute,
   AppFinancialsRoute: AppFinancialsRoute,
+  AppHealthScoreRoute: AppHealthScoreRoute,
   AppOnboardingRoute: AppOnboardingRoute,
   AppRecommendationsRoute: AppRecommendationsRoute,
   AppScenariosRoute: AppScenariosRoute,

@@ -136,7 +136,7 @@ function HealthScorePage() {
               <YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
               <Tooltip
                 contentStyle={{ borderRadius: 8, border: "1px solid var(--border)" }}
-                formatter={(v: number, n: string, p: { payload: { pct: number } }) => [`${v} (${p.payload.pct}%)`, "Score"]}
+                formatter={(v: number) => [`${v}`, "Score"]}
               />
               <Bar dataKey="score" radius={[0, 4, 4, 0]} stackId="s">
                 {chartData.map((d, i) => (
