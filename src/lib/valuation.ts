@@ -275,6 +275,8 @@ export function methodDCF(b: BusinessInputs): MethodResult {
     inputLabel: "Year-1 Free Cash Flow",
     confidence: sorted.length >= 2 ? "medium" : "low",
     notes: `5-year projection at ${(growth * 100).toFixed(1)}% growth, 20% discount rate, 2.5% terminal growth.`,
+    formula: `PV = Σ FCFₜ / (1+r)ᵗ + Terminal / (1+r)⁵\nFCF₀ = ${fmtMoney(baseFCF)}, growth = ${(growth * 100).toFixed(1)}%\nDiscount r = 20%, terminal g = 2.5%`,
+    reasoning: sorted.length >= 2 ? `Growth derived from trailing revenue CAGR across ${sorted.length} years of financials. Discount rate reflects SMB risk premium.` : "Limited history — assumed default growth rate. Add more years for higher confidence.",
     available: baseFCF > 0,
   };
 }
