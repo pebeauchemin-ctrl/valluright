@@ -132,8 +132,8 @@ function Dashboard() {
             {fmtCurrency(valuation.rangeHigh, { compact: true })}
           </div>
           <div className="mt-1 text-sm text-muted-foreground">Median: <span className="font-semibold text-foreground">{fmtCurrency(valuation.rangeMid)}</span></div>
-          <div className="mt-6 h-3 rounded-full bg-secondary overflow-hidden">
-            <div className="h-full w-3/4 rounded-full bg-gradient-to-r from-accent to-gold" />
+          <div className="mt-6">
+            <MethodRangeBar low={valuation.rangeLow} mid={valuation.rangeMid} high={valuation.rangeHigh} />
           </div>
           <div className="mt-6 grid grid-cols-3 gap-4">
             <KPI label="Revenue (latest)" value={fmtCurrency(Number(latest?.revenue ?? 0), { compact: true })} />
