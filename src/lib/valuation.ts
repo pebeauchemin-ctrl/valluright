@@ -296,6 +296,8 @@ export function methodAsset(b: BusinessInputs): MethodResult {
     inputLabel: "Net Assets (Assets − Liabilities)",
     confidence: "medium",
     notes: "A floor for asset-heavy businesses. Most going concerns sell well above this.",
+    formula: `Net Assets = Total Assets − Total Liabilities\n= ${fmtMoney(latest.assets || 0)} − ${fmtMoney(latest.liabilities || 0)} = ${fmtMoney(netAssets)}\nRange: ±15% for liquidation vs. orderly sale`,
+    reasoning: "Asset-based valuation reflects break-up or liquidation value. Goodwill and earnings power are excluded.",
     available: value > 0,
   };
 }
