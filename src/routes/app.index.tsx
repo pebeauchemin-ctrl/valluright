@@ -20,6 +20,7 @@ function Dashboard() {
   const { current, loading: bizLoading } = useBusiness();
   const [financials, setFinancials] = useState<FinancialYearRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeMethod, setActiveMethod] = useState<MethodResult | null>(null);
 
   useEffect(() => {
     let cancelled = false;
