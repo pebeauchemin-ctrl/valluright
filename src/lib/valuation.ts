@@ -134,6 +134,8 @@ export type MethodResult = {
   inputLabel?: string;
   confidence: "low" | "medium" | "high";
   notes: string;
+  formula?: string;
+  reasoning?: string;
   available: boolean;
 };
 
