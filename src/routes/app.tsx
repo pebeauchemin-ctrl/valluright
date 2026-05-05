@@ -2,7 +2,8 @@ import { createFileRoute, Link, Outlet, useNavigate, useLocation } from "@tansta
 import { useEffect } from "react";
 import {
   Mountain, LayoutDashboard, FileSpreadsheet, Sparkles, Sliders, Eye,
-  Folder, Users, Settings as SettingsIcon, LogOut, ChevronDown, Plus
+  Folder, Users, Settings as SettingsIcon, LogOut, ChevronDown, Plus,
+  Activity, TrendingUp,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useBusiness } from "@/lib/business";
@@ -47,6 +48,8 @@ function AppLayout() {
     const navItems: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }> = [
       { to: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
       { to: "/app/financials", label: "Financials", icon: FileSpreadsheet },
+      { to: "/app/health-score", label: "Health Score", icon: Activity },
+      { to: "/app/improve-value", label: "Improve Value", icon: TrendingUp },
       { to: "/app/recommendations", label: "Recommendations", icon: Sparkles },
       { to: "/app/scenarios", label: "What-if Scenarios", icon: Sliders },
       { to: "/app/buyer-teaser", label: "Buyer Teaser", icon: Eye },
