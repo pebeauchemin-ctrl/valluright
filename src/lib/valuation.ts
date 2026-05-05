@@ -223,6 +223,8 @@ export function methodRevenue(b: BusinessInputs): MethodResult {
     inputLabel: "Annual Revenue",
     confidence: "low",
     notes: "Useful sanity check, especially for high-growth or low-margin businesses.",
+    formula: `Revenue × Industry Multiple\nRevenue = ${fmtMoney(revenue)}\nMultiple range: ${lo.toFixed(2)}× – ${hi.toFixed(2)}× (median ${mid.toFixed(2)}×)`,
+    reasoning: `Revenue multiples ignore profitability and are a directional check only. Industry baseline ${m.revenue[0].toFixed(2)}–${m.revenue[2].toFixed(2)}× for ${b.industry ?? "Other"}.`,
     available: revenue > 0,
   };
 }
