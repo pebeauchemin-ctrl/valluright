@@ -3,8 +3,9 @@ import { useEffect, useMemo, useState } from "react";
 import { TrendingUp, AlertTriangle, ArrowRight, Sparkles, Eye, Sliders } from "lucide-react";
 import { useBusiness, toBusinessInputs, type FinancialYearRow } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
-import { valueBusiness, computeHealthScore, type Valuation } from "@/lib/valuation";
+import { valueBusiness, computeHealthScore, type Valuation, type MethodResult } from "@/lib/valuation";
 import { fmtCurrency, fmtPct } from "@/lib/format";
+import { MethodDetailDialog, MethodRangeBar } from "@/components/MethodDetailDialog";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
   RadialBarChart, RadialBar, PolarAngleAxis,
