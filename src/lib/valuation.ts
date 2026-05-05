@@ -319,6 +319,8 @@ export function methodComparable(b: BusinessInputs): MethodResult {
     high: Math.max(sde.high, ebitda.high) * 0.95,
     confidence: "low",
     notes: "Placeholder estimate. Live comp matching from BizBuySell / IBBA data is in development.",
+    formula: "Avg(SDE value, EBITDA value) × 0.95\n(placeholder until live comp database is wired in)",
+    reasoning: "Comparable sales typically anchor real-world buyer behavior. This blend approximates a comp-implied range until live BizBuySell / IBBA matching is enabled.",
     available: true,
   };
 }
