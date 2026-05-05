@@ -199,6 +199,8 @@ export function methodEBITDA(b: BusinessInputs): MethodResult {
     inputLabel: "EBITDA",
     confidence: confidenceFromAdj(adj, ebitda > 0),
     notes: "Standard for businesses with a hired-out owner. Used by most strategic and PE buyers.",
+    formula: `EBITDA × Industry Multiple\nEBITDA = ${fmtMoney(ebitda)}\nMultiple range: ${lo.toFixed(2)}× – ${hi.toFixed(2)}× (median ${mid.toFixed(2)}×)`,
+    reasoning: `Industry baseline for ${b.industry ?? "Other"} is ${m.ebitda[0].toFixed(2)}–${m.ebitda[2].toFixed(2)}×. Risk adjustment ${adj >= 0 ? "+" : ""}${adj.toFixed(2)} reflects operating risk and quality of earnings.`,
     available: ebitda > 0,
   };
 }
