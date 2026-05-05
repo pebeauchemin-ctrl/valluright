@@ -143,7 +143,7 @@ function Dashboard() {
         </div>
 
         {/* Health score radial */}
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <Link to="/app/health-score" className="rounded-2xl border border-border bg-card p-6 shadow-sm hover:border-accent/50 hover:shadow-md transition group">
           <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Value Health Score</div>
           <div className="h-48 -mt-2">
             <ResponsiveContainer width="100%" height="100%">
@@ -154,13 +154,13 @@ function Dashboard() {
             </ResponsiveContainer>
             <div className="-mt-24 text-center">
               <div className="font-display text-4xl font-semibold text-primary">{health.total}</div>
-              <div className="text-xs text-muted-foreground">out of 100</div>
+              <div className="text-xs text-muted-foreground">out of 100 · click to explore</div>
             </div>
           </div>
-          <Link to="/app/recommendations" className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:underline">
-            See what's holding it back <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
+          <div className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-accent group-hover:underline">
+            See category breakdown <ArrowRight className="h-3.5 w-3.5" />
+          </div>
+        </Link>
       </section>
 
       {/* Chart row */}
