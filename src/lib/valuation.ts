@@ -19,8 +19,54 @@ export type FinancialYear = {
   debt: number;
 };
 
+// Business categorization for method selection
+export type BusinessCategory = "real_estate_income" | "standard_operating" | "asset_heavy";
+
+export const BUSINESS_CATEGORY_OPTIONS: { value: BusinessCategory; label: string; description: string; examples: string }[] = [
+  {
+    value: "real_estate_income",
+    label: "Income-producing real estate",
+    description: "Property operating businesses where land, location, and occupancy drive value.",
+    examples: "RV park, campground, mobile home park, self-storage, hotel/motel, marina, multifamily, commercial rental, senior housing",
+  },
+  {
+    value: "standard_operating",
+    label: "Standard operating business",
+    description: "Service, product, or knowledge businesses valued primarily on earnings.",
+    examples: "Retail, restaurant, service, contractor, agency, medical/dental practice, manufacturing, distribution, e-commerce, SaaS",
+  },
+  {
+    value: "asset_heavy",
+    label: "Asset-heavy operating business",
+    description: "Earnings matter, but tangible equipment and assets carry meaningful value.",
+    examples: "Trucking, equipment rental, construction with owned equipment, heavy manufacturing, auto repair with real estate, laundromat",
+  },
+];
+
+// Industry → category default (used as a hint, user can override)
+const REAL_ESTATE_INDUSTRY_KEYWORDS = ["rv park", "campground", "mobile home", "self-storage", "self storage", "hotel", "motel", "marina", "multifamily", "rental property", "senior housing", "assisted living"];
+
+export function inferCategory(industry?: string | null, subIndustry?: string | null): BusinessCategory {
+  const blob = `${industry ?? ""} ${subIndustry ?? ""}`.toLowerCase();
+  if (REAL_ESTATE_INDUSTRY_KEYWORDS.some((k) => blob.includes(k))) return "real_estate_income";
+  if (/trucking|equipment rental|laundromat|heavy manufactur/.test(blob)) return "asset_heavy";
+  return "standard_operating";
+}
+
+export function isRvOrCampground(industry?: string | null, subIndustry?: string | null): boolean {
+  const blob = `${industry ?? ""} ${subIndustry ?? ""}`.toLowerCase();
+  return /rv park|campground/.test(blob);
+}
+
 export type BusinessInputs = {
   industry?: string | null;
+  sub_industry?: string | null;
+  business_category?: BusinessCategory | null;
+  cap_rate_low?: number | null;       // e.g., 8 means 8%
+  cap_rate_selected?: number | null;  // e.g., 10
+  cap_rate_high?: number | null;      // e.g., 12
+  management_fee_pct?: number | null; // e.g., 5 means 5% of revenue
+  replacement_reserve_pct?: number | null; // e.g., 3 means 3% of revenue
   years_in_business?: number | null;
   employees?: number | null;
   owner_hours_per_week?: number | null;
