@@ -192,22 +192,38 @@ function Dashboard() {
 
       {/* Methods detail */}
       <section>
-        <h2 className="font-display text-xl font-semibold text-primary mb-4">Six valuation methods</h2>
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <h2 className="font-display text-xl font-semibold text-primary">Valuation methods</h2>
+          <span className="text-xs text-muted-foreground">
+            Category: <span className="font-semibold text-foreground">{
+              valuation.category === "real_estate_income" ? "Income-producing real estate" :
+              valuation.category === "asset_heavy" ? "Asset-heavy operating business" : "Standard operating business"
+            }</span>
+          </span>
+        </div>
+        {valuation.category === "real_estate_income" && valuation.isRvOrCampground && (
+          <div className="mb-4 rounded-xl border border-accent/40 bg-accent-soft p-4 text-sm leading-relaxed text-foreground">
+            <strong className="font-semibold">RV parks and campgrounds</strong> are commonly valued as income-producing real estate. Buyers typically focus on stabilized NOI and market cap rates. Generic small-business multiples may understate value because they do not fully capture land, zoning, utility infrastructure, sites/pads, occupancy quality, and location.
+          </div>
+        )}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {valuation.methods.map((m) => (
             <button
               key={m.method}
               type="button"
               onClick={() => setActiveMethod(m)}
-              className={`text-left rounded-xl border bg-card p-5 transition hover:shadow-md hover:border-accent/50 ${m.available ? "border-border" : "border-dashed border-border opacity-60"}`}
+              className={`text-left rounded-xl border bg-card p-5 transition hover:shadow-md hover:border-accent/50 ${m.available ? "border-border" : "border-dashed border-border opacity-60"} ${m.role === "primary" || m.role === "recommended" ? "ring-1 ring-accent/40" : ""}`}
             >
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <h3 className="font-display font-semibold text-primary">{m.label}</h3>
+                <RoleBadge role={m.role} />
+              </div>
+              <div className="mt-1 flex items-center gap-2">
                 <span className={`text-[10px] font-semibold uppercase tracking-wider rounded-full px-2 py-0.5 ${
                   m.confidence === "high" ? "bg-accent-soft text-accent" :
                   m.confidence === "medium" ? "bg-gold/15 text-foreground" :
                   "bg-secondary text-muted-foreground"
-                }`}>{m.confidence}</span>
+                }`}>{m.confidence} confidence</span>
               </div>
               <div className="mt-3 font-display text-2xl font-semibold text-foreground">
                 {m.available ? fmtCurrency(m.value, { compact: true }) : "—"}
@@ -220,13 +236,45 @@ function Dashboard() {
                   {m.multipleUsed !== undefined && (
                     <div className="mt-2 text-[11px] text-muted-foreground">{m.multipleUsed.toFixed(2)}× multiple applied</div>
                   )}
+                  {m.capRateUsed !== undefined && (
+                    <div className="mt-2 text-[11px] text-muted-foreground">
+                      Cap rate {m.capRateLow?.toFixed(1)}% – {m.capRateHigh?.toFixed(1)}% (selected {m.capRateUsed.toFixed(1)}%)
+                    </div>
+                  )}
                 </>
               )}
               <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{m.notes}</p>
+              {m.warning && (
+                <p className="mt-2 text-[11px] leading-relaxed text-foreground bg-gold/10 border border-gold/30 rounded p-2">
+                  ⚠ {m.warning}
+                </p>
+              )}
               <div className="mt-3 text-xs font-semibold text-accent">View details →</div>
             </button>
           ))}
         </div>
+
+        {/* Enterprise vs Equity reconciliation */}
+        {valuation.debt !== undefined && valuation.debt > 0 && (
+          <div className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-sm">
+            <h3 className="font-display font-semibold text-primary">Enterprise value vs. equity value</h3>
+            <p className="mt-1 text-xs text-muted-foreground">Method values above are property / enterprise value (before debt). Equity to the seller is enterprise value less outstanding debt.</p>
+            <dl className="mt-4 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">Property / Enterprise Value (median)</dt>
+                <dd className="font-semibold tabular-nums">{fmtCurrency(valuation.enterpriseValue ?? 0)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">Less: Outstanding debt</dt>
+                <dd className="font-semibold tabular-nums">−{fmtCurrency(valuation.debt)}</dd>
+              </div>
+              <div className="flex justify-between border-t border-border pt-2">
+                <dt className="font-semibold text-primary">Estimated Equity Value</dt>
+                <dd className="font-display text-lg font-semibold text-primary tabular-nums">{fmtCurrency(valuation.equityValue ?? 0)}</dd>
+              </div>
+            </dl>
+          </div>
+        )}
       </section>
 
       <MethodDetailDialog method={activeMethod} open={!!activeMethod} onOpenChange={(v) => !v && setActiveMethod(null)} />
