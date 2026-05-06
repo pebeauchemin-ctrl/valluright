@@ -251,6 +251,12 @@ function Onboarding() {
     sop_status: sopStatus,
     manager_team_depth: managerDepth,
     exit_timeline: exitTimeline,
+    business_category: businessCategory,
+    cap_rate_low: capRateLow,
+    cap_rate_selected: capRateSelected,
+    cap_rate_high: capRateHigh,
+    management_fee_pct: mgmtFeePct,
+    replacement_reserve_pct: reservePct,
   });
 
   /** Create the business row (first save) or update it (subsequent saves). */
