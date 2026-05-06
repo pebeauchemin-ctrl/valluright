@@ -99,6 +99,10 @@ export function toBusinessInputs(b: Business, financials: FinancialYearRow[]) {
       assets: Number(f.assets ?? 0),
       liabilities: Number(f.liabilities ?? 0),
       debt: Number(f.debt ?? 0),
+      depreciation: Number((f as any).depreciation ?? 0),
+      amortization: Number((f as any).amortization ?? 0),
+      interest: Number((f as any).interest ?? 0),
+      income_taxes: Number((f as any).income_taxes ?? 0),
     })),
   };
 }
