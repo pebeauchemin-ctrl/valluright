@@ -89,6 +89,21 @@ function Onboarding() {
   const [region, setRegion] = useState("");
   const [yearsInBusiness, setYearsInBusiness] = useState<number>(10);
   const [employees, setEmployees] = useState<number>(10);
+  const [businessCategory, setBusinessCategory] = useState<BusinessCategory>("standard_operating");
+  const [categoryTouched, setCategoryTouched] = useState(false);
+  const [capRateLow, setCapRateLow] = useState<number>(8);
+  const [capRateSelected, setCapRateSelected] = useState<number>(10);
+  const [capRateHigh, setCapRateHigh] = useState<number>(12);
+  const [mgmtFeePct, setMgmtFeePct] = useState<number>(0);
+  const [reservePct, setReservePct] = useState<number>(0);
+
+  // Auto-infer category from industry/sub-industry until the user manually changes it
+  useEffect(() => {
+    if (!categoryTouched) {
+      setBusinessCategory(inferCategory(industry, subIndustry));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [industry, subIndustry]);
 
   // Step 1: financials (3 yrs) — most recent completed year is last year
   const [years, setYears] = useState([
