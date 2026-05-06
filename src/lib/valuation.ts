@@ -448,10 +448,15 @@ export function methodCapRate(b: BusinessInputs): MethodResult {
       ? "NOI is negative — cap-rate valuation may not be meaningful without stabilized or normalized NOI."
       : "";
 
+  const noiFormulaLine = noiSource === "EBITDA proxy"
+    ? `NOI = EBITDA + Owner/One-time Addbacks − Mgmt Fee − Replacement Reserve\n    = ${fmtMoney(ebitda)} + ${fmtMoney(addbacks)} − ${fmtMoney(mgmtFee)} − ${fmtMoney(reserve)}`
+    : noiSource === "Gross profit bridge"
+      ? `NOI = Gross Profit − Operating Expenses + Depreciation + Amortization + Interest + Income Taxes + Owner/One-time Addbacks − Mgmt Fee − Replacement Reserve\n    = ${fmtMoney(grossProfit)} − ${fmtMoney(opex)} + ${fmtMoney(depreciation)} + ${fmtMoney(amortization)} + ${fmtMoney(interest)} + ${fmtMoney(taxes)} + ${fmtMoney(addbacks)} − ${fmtMoney(mgmtFee)} − ${fmtMoney(reserve)}`
+      : `NOI = Net Income + Depreciation + Amortization + Interest + Income Taxes + Owner/One-time Addbacks − Mgmt Fee − Replacement Reserve\n    = ${fmtMoney(netIncome)} + ${fmtMoney(depreciation)} + ${fmtMoney(amortization)} + ${fmtMoney(interest)} + ${fmtMoney(taxes)} + ${fmtMoney(addbacks)} − ${fmtMoney(mgmtFee)} − ${fmtMoney(reserve)}`;
+
   const formula = `Value = Stabilized NOI ÷ Cap Rate
 NOI source: ${noiSource}
-NOI = Net Income + Depreciation + Amortization + Interest + Income Taxes + Owner/One-time Addbacks − Mgmt Fee − Replacement Reserve
-    = ${fmtMoney(netIncome)} + ${fmtMoney(depreciation)} + ${fmtMoney(amortization)} + ${fmtMoney(interest)} + ${fmtMoney(taxes)} + ${fmtMoney(addbacks)} − ${fmtMoney(mgmtFee)} − ${fmtMoney(reserve)}
+${noiFormulaLine}
     = ${fmtMoney(noi)}
 (NOI excludes debt service / loan principal payments, interest, depreciation, amortization, income taxes, owner personal expenses, and one-time/nonrecurring expenses. Debt affects equity value, not property value.)
 Selected cap: ${capMid.toFixed(2)}% → ${fmtMoney(value)}
