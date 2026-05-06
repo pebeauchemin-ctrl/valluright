@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   INDUSTRY_OPTIONS, valueBusiness, computeHealthScore,
   SAMPLE_HVAC_BUSINESS, SAMPLE_HVAC_FINANCIALS,
+  BUSINESS_CATEGORY_OPTIONS, inferCategory, isRvOrCampground, type BusinessCategory,
 } from "@/lib/valuation";
 import { fmtCurrency } from "@/lib/format";
 import { toast } from "sonner";
