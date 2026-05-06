@@ -395,7 +395,11 @@ export function methodCapRate(b: BusinessInputs): MethodResult {
   if (!latest) return blankMethod("cap_rate", "Cap Rate / Income Approach", "Add financials to compute.");
 
   const revenue = latest.revenue || 0;
+  const cogs = latest.cogs || 0;
+  const grossProfit = latest.gross_profit || revenue - cogs;
   const opex = latest.operating_expenses || 0;
+  const netIncome = latest.net_income || 0;
+  const ebitda = latest.ebitda || 0;
   const depreciation = latest.depreciation || 0;
   const amortization = latest.amortization || 0;
   const interest = latest.interest || 0;
@@ -408,19 +412,22 @@ export function methodCapRate(b: BusinessInputs): MethodResult {
 
   // NOI excludes: debt service, interest, depreciation, amortization, income taxes,
   // owner personal expenses, and one-time/non-recurring items.
-  // Start from revenue − opex, then add back any non-operating items that may be
-  // sitting inside opex (D, A, interest, taxes, owner/one-time addbacks).
-  // Then deduct a market management fee and replacement reserve.
-  const noiBeforeAdjust = revenue - opex + depreciation + amortization + interest + taxes + addbacks;
-  let noi = noiBeforeAdjust - mgmtFee - reserve;
-  let usedEbitdaProxy = false;
-  let proxyNote = "";
-  if ((revenue <= 0 || opex <= 0) && latest.ebitda > 0) {
-    // Fall back to EBITDA as NOI proxy (EBITDA already excludes I/D/A/taxes)
-    noi = latest.ebitda + addbacks - mgmtFee - reserve;
-    usedEbitdaProxy = true;
-    proxyNote = "Using EBITDA (+ addbacks − mgmt fee − reserve) as NOI proxy. Review expenses for real estate-specific normalization.";
+  // Use the earnings bridge first because it correctly includes COGS and all operating
+  // expenses before adding back excluded/non-operating items. Do not calculate NOI as
+  // revenue − operating expenses because that can ignore COGS or double-count imports.
+  let noiBeforeAdjust = netIncome + depreciation + amortization + interest + taxes + addbacks;
+  let noiSource = "Net income bridge";
+  if (noiBeforeAdjust === 0 && ebitda !== 0) {
+    noiBeforeAdjust = ebitda + addbacks;
+    noiSource = "EBITDA proxy";
+  } else if (noiBeforeAdjust === 0 && (grossProfit !== 0 || opex !== 0)) {
+    noiBeforeAdjust = grossProfit - opex + depreciation + amortization + interest + taxes + addbacks;
+    noiSource = "Gross profit bridge";
   }
+  const noi = noiBeforeAdjust - mgmtFee - reserve;
+  const proxyNote = noiSource === "EBITDA proxy"
+    ? "Using EBITDA (+ addbacks − mgmt fee − reserve) as NOI proxy. Review expenses for real estate-specific normalization."
+    : "";
 
   const capLow = b.cap_rate_low ?? 8;       // % — produces high value
   const capMid = b.cap_rate_selected ?? 10; // % — selected
@@ -442,14 +449,15 @@ export function methodCapRate(b: BusinessInputs): MethodResult {
       : "";
 
   const formula = `Value = Stabilized NOI ÷ Cap Rate
-NOI = Revenue − Operating Expenses + Depreciation + Amortization + Interest + Income Taxes + Owner/One-time Addbacks − Mgmt Fee − Replacement Reserve
-    = ${fmtMoney(revenue)} − ${fmtMoney(opex)} + ${fmtMoney(depreciation)} + ${fmtMoney(amortization)} + ${fmtMoney(interest)} + ${fmtMoney(taxes)} + ${fmtMoney(addbacks)} − ${fmtMoney(mgmtFee)} − ${fmtMoney(reserve)}
+NOI source: ${noiSource}
+NOI = Net Income + Depreciation + Amortization + Interest + Income Taxes + Owner/One-time Addbacks − Mgmt Fee − Replacement Reserve
+    = ${fmtMoney(netIncome)} + ${fmtMoney(depreciation)} + ${fmtMoney(amortization)} + ${fmtMoney(interest)} + ${fmtMoney(taxes)} + ${fmtMoney(addbacks)} − ${fmtMoney(mgmtFee)} − ${fmtMoney(reserve)}
     = ${fmtMoney(noi)}
-(NOI excludes debt service / loan principal payments — those affect equity value, not property value.)
+(NOI excludes debt service / loan principal payments, interest, depreciation, amortization, income taxes, owner personal expenses, and one-time/nonrecurring expenses. Debt affects equity value, not property value.)
 Selected cap: ${capMid.toFixed(2)}% → ${fmtMoney(value)}
 Range: ${capLow.toFixed(2)}% (high value ${fmtMoney(high)}) to ${capHigh.toFixed(2)}% (low value ${fmtMoney(low)})`;
 
-  const reasoning = `Income-producing real estate is typically valued by capitalizing stabilized NOI at a market cap rate. Lower cap rates imply stronger location, occupancy, and lower risk; higher cap rates imply seasonality, deferred maintenance, or weaker location. ${usedEbitdaProxy ? proxyNote : ""}`.trim();
+  const reasoning = `Income-producing real estate is typically valued by capitalizing stabilized NOI at a market cap rate. Lower cap rates imply stronger location, occupancy, and lower risk; higher cap rates imply seasonality, deferred maintenance, or weaker location. ${proxyNote}`.trim();
 
   return {
     method: "cap_rate",
@@ -458,9 +466,9 @@ Range: ${capLow.toFixed(2)}% (high value ${fmtMoney(high)}) to ${capHigh.toFixed
     low,
     high,
     inputUsed: noi,
-    inputLabel: usedEbitdaProxy ? "NOI (EBITDA proxy)" : "Stabilized NOI",
+    inputLabel: noiSource === "EBITDA proxy" ? "NOI (EBITDA proxy)" : "Stabilized NOI",
     confidence: available && noi > 0 ? "high" : "low",
-    notes: usedEbitdaProxy
+    notes: noiSource === "EBITDA proxy"
       ? proxyNote
       : "Capitalizes stabilized NOI at a market cap rate. Standard for income-producing real estate.",
     formula,
