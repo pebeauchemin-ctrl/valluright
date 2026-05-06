@@ -330,3 +330,26 @@ function ChartCard({ title, children }: { title: string; children: React.ReactNo
     </div>
   );
 }
+
+function RoleBadge({ role }: { role?: MethodResult["role"] }) {
+  if (!role) return null;
+  const styles: Record<string, string> = {
+    primary: "bg-accent text-accent-foreground",
+    recommended: "bg-accent text-accent-foreground",
+    supporting: "bg-secondary text-muted-foreground",
+    sanity_check: "bg-secondary text-muted-foreground",
+    floor: "bg-gold/15 text-foreground",
+  };
+  const labels: Record<string, string> = {
+    primary: "Primary",
+    recommended: "Recommended",
+    supporting: "Supporting",
+    sanity_check: "Sanity check",
+    floor: "Floor",
+  };
+  return (
+    <span className={`text-[10px] font-semibold uppercase tracking-wider rounded-full px-2 py-0.5 whitespace-nowrap ${styles[role]}`}>
+      {labels[role]}
+    </span>
+  );
+}
