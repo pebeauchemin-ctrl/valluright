@@ -392,23 +392,30 @@ export function methodCapRate(b: BusinessInputs): MethodResult {
 
   const revenue = latest.revenue || 0;
   const opex = latest.operating_expenses || 0;
+  const depreciation = latest.depreciation || 0;
+  const amortization = latest.amortization || 0;
+  const interest = latest.interest || 0;
+  const taxes = latest.income_taxes || 0;
+  const addbacks = latest.addbacks || 0; // owner personal + one-time/non-recurring
   const mgmtFeePct = b.management_fee_pct ?? 0;
   const reservePct = b.replacement_reserve_pct ?? 0;
   const mgmtFee = revenue * (mgmtFeePct / 100);
   const reserve = revenue * (reservePct / 100);
 
-  // NOI = Revenue - opex - mgmt fee - reserve.
-  // Excludes interest, depreciation, amortization, taxes, owner addbacks.
-  let noi = revenue - opex - mgmtFee - reserve;
+  // NOI excludes: debt service, interest, depreciation, amortization, income taxes,
+  // owner personal expenses, and one-time/non-recurring items.
+  // Start from revenue − opex, then add back any non-operating items that may be
+  // sitting inside opex (D, A, interest, taxes, owner/one-time addbacks).
+  // Then deduct a market management fee and replacement reserve.
+  const noiBeforeAdjust = revenue - opex + depreciation + amortization + interest + taxes + addbacks;
+  let noi = noiBeforeAdjust - mgmtFee - reserve;
   let usedEbitdaProxy = false;
   let proxyNote = "";
-  if (revenue <= 0 || opex <= 0) {
-    // Fall back to EBITDA as NOI proxy
-    if (latest.ebitda > 0) {
-      noi = latest.ebitda;
-      usedEbitdaProxy = true;
-      proxyNote = "Using EBITDA as NOI proxy. Review expenses for real estate-specific normalization.";
-    }
+  if ((revenue <= 0 || opex <= 0) && latest.ebitda > 0) {
+    // Fall back to EBITDA as NOI proxy (EBITDA already excludes I/D/A/taxes)
+    noi = latest.ebitda + addbacks - mgmtFee - reserve;
+    usedEbitdaProxy = true;
+    proxyNote = "Using EBITDA (+ addbacks − mgmt fee − reserve) as NOI proxy. Review expenses for real estate-specific normalization.";
   }
 
   const capLow = b.cap_rate_low ?? 8;       // % — produces high value
