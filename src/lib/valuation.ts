@@ -169,8 +169,10 @@ function shiftMultiple(range: [number, number, number], adj: number): [number, n
 // ---------------------------------------------------------------------------
 // METHODS
 // ---------------------------------------------------------------------------
+export type MethodRole = "primary" | "recommended" | "supporting" | "sanity_check" | "floor";
+
 export type MethodResult = {
-  method: "sde" | "ebitda" | "revenue" | "dcf" | "asset" | "comparable";
+  method: "sde" | "ebitda" | "revenue" | "dcf" | "asset" | "comparable" | "cap_rate";
   label: string;
   value: number;
   low: number;
@@ -183,6 +185,16 @@ export type MethodResult = {
   formula?: string;
   reasoning?: string;
   available: boolean;
+  role?: MethodRole;
+  warning?: string;
+  // Cap rate specific
+  noi?: number;
+  capRateUsed?: number;
+  capRateLow?: number;
+  capRateHigh?: number;
+  enterpriseValue?: number;
+  debt?: number;
+  equityValue?: number;
 };
 
 function latestFinancials(b: BusinessInputs): FinancialYear | null {
