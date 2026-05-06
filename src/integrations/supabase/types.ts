@@ -92,12 +92,17 @@ export type Database = {
           anonymous_description: string | null
           asking_price_high: number | null
           asking_price_low: number | null
+          business_category: string | null
+          cap_rate_high: number | null
+          cap_rate_low: number | null
+          cap_rate_selected: number | null
           created_at: string
           employees: number | null
           exit_timeline: Database["public"]["Enums"]["exit_timeline"] | null
           id: string
           industry: string | null
           is_sample: boolean
+          management_fee_pct: number | null
           manager_team_depth: string | null
           name: string
           owner_hours_per_week: number | null
@@ -109,6 +114,7 @@ export type Database = {
           reason_for_sale: string | null
           recurring_revenue_pct: number | null
           region: string | null
+          replacement_reserve_pct: number | null
           sop_status: string | null
           sub_industry: string | null
           top_customer_concentration_pct: number | null
@@ -119,12 +125,17 @@ export type Database = {
           anonymous_description?: string | null
           asking_price_high?: number | null
           asking_price_low?: number | null
+          business_category?: string | null
+          cap_rate_high?: number | null
+          cap_rate_low?: number | null
+          cap_rate_selected?: number | null
           created_at?: string
           employees?: number | null
           exit_timeline?: Database["public"]["Enums"]["exit_timeline"] | null
           id?: string
           industry?: string | null
           is_sample?: boolean
+          management_fee_pct?: number | null
           manager_team_depth?: string | null
           name: string
           owner_hours_per_week?: number | null
@@ -136,6 +147,7 @@ export type Database = {
           reason_for_sale?: string | null
           recurring_revenue_pct?: number | null
           region?: string | null
+          replacement_reserve_pct?: number | null
           sop_status?: string | null
           sub_industry?: string | null
           top_customer_concentration_pct?: number | null
@@ -146,12 +158,17 @@ export type Database = {
           anonymous_description?: string | null
           asking_price_high?: number | null
           asking_price_low?: number | null
+          business_category?: string | null
+          cap_rate_high?: number | null
+          cap_rate_low?: number | null
+          cap_rate_selected?: number | null
           created_at?: string
           employees?: number | null
           exit_timeline?: Database["public"]["Enums"]["exit_timeline"] | null
           id?: string
           industry?: string | null
           is_sample?: boolean
+          management_fee_pct?: number | null
           manager_team_depth?: string | null
           name?: string
           owner_hours_per_week?: number | null
@@ -163,6 +180,7 @@ export type Database = {
           reason_for_sale?: string | null
           recurring_revenue_pct?: number | null
           region?: string | null
+          replacement_reserve_pct?: number | null
           sop_status?: string | null
           sub_industry?: string | null
           top_customer_concentration_pct?: number | null

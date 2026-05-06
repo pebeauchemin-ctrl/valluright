@@ -19,8 +19,54 @@ export type FinancialYear = {
   debt: number;
 };
 
+// Business categorization for method selection
+export type BusinessCategory = "real_estate_income" | "standard_operating" | "asset_heavy";
+
+export const BUSINESS_CATEGORY_OPTIONS: { value: BusinessCategory; label: string; description: string; examples: string }[] = [
+  {
+    value: "real_estate_income",
+    label: "Income-producing real estate",
+    description: "Property operating businesses where land, location, and occupancy drive value.",
+    examples: "RV park, campground, mobile home park, self-storage, hotel/motel, marina, multifamily, commercial rental, senior housing",
+  },
+  {
+    value: "standard_operating",
+    label: "Standard operating business",
+    description: "Service, product, or knowledge businesses valued primarily on earnings.",
+    examples: "Retail, restaurant, service, contractor, agency, medical/dental practice, manufacturing, distribution, e-commerce, SaaS",
+  },
+  {
+    value: "asset_heavy",
+    label: "Asset-heavy operating business",
+    description: "Earnings matter, but tangible equipment and assets carry meaningful value.",
+    examples: "Trucking, equipment rental, construction with owned equipment, heavy manufacturing, auto repair with real estate, laundromat",
+  },
+];
+
+// Industry → category default (used as a hint, user can override)
+const REAL_ESTATE_INDUSTRY_KEYWORDS = ["rv park", "campground", "mobile home", "self-storage", "self storage", "hotel", "motel", "marina", "multifamily", "rental property", "senior housing", "assisted living"];
+
+export function inferCategory(industry?: string | null, subIndustry?: string | null): BusinessCategory {
+  const blob = `${industry ?? ""} ${subIndustry ?? ""}`.toLowerCase();
+  if (REAL_ESTATE_INDUSTRY_KEYWORDS.some((k) => blob.includes(k))) return "real_estate_income";
+  if (/trucking|equipment rental|laundromat|heavy manufactur/.test(blob)) return "asset_heavy";
+  return "standard_operating";
+}
+
+export function isRvOrCampground(industry?: string | null, subIndustry?: string | null): boolean {
+  const blob = `${industry ?? ""} ${subIndustry ?? ""}`.toLowerCase();
+  return /rv park|campground/.test(blob);
+}
+
 export type BusinessInputs = {
   industry?: string | null;
+  sub_industry?: string | null;
+  business_category?: BusinessCategory | null;
+  cap_rate_low?: number | null;       // e.g., 8 means 8%
+  cap_rate_selected?: number | null;  // e.g., 10
+  cap_rate_high?: number | null;      // e.g., 12
+  management_fee_pct?: number | null; // e.g., 5 means 5% of revenue
+  replacement_reserve_pct?: number | null; // e.g., 3 means 3% of revenue
   years_in_business?: number | null;
   employees?: number | null;
   owner_hours_per_week?: number | null;
@@ -123,8 +169,10 @@ function shiftMultiple(range: [number, number, number], adj: number): [number, n
 // ---------------------------------------------------------------------------
 // METHODS
 // ---------------------------------------------------------------------------
+export type MethodRole = "primary" | "recommended" | "supporting" | "sanity_check" | "floor";
+
 export type MethodResult = {
-  method: "sde" | "ebitda" | "revenue" | "dcf" | "asset" | "comparable";
+  method: "sde" | "ebitda" | "revenue" | "dcf" | "asset" | "comparable" | "cap_rate";
   label: string;
   value: number;
   low: number;
@@ -137,6 +185,16 @@ export type MethodResult = {
   formula?: string;
   reasoning?: string;
   available: boolean;
+  role?: MethodRole;
+  warning?: string;
+  // Cap rate specific
+  noi?: number;
+  capRateUsed?: number;
+  capRateLow?: number;
+  capRateHigh?: number;
+  enterpriseValue?: number;
+  debt?: number;
+  equityValue?: number;
 };
 
 function latestFinancials(b: BusinessInputs): FinancialYear | null {
@@ -325,6 +383,88 @@ export function methodComparable(b: BusinessInputs): MethodResult {
   };
 }
 
+// ---------------------------------------------------------------------------
+// CAP RATE / INCOME APPROACH
+// ---------------------------------------------------------------------------
+export function methodCapRate(b: BusinessInputs): MethodResult {
+  const latest = latestFinancials(b);
+  if (!latest) return blankMethod("cap_rate", "Cap Rate / Income Approach", "Add financials to compute.");
+
+  const revenue = latest.revenue || 0;
+  const opex = latest.operating_expenses || 0;
+  const mgmtFeePct = b.management_fee_pct ?? 0;
+  const reservePct = b.replacement_reserve_pct ?? 0;
+  const mgmtFee = revenue * (mgmtFeePct / 100);
+  const reserve = revenue * (reservePct / 100);
+
+  // NOI = Revenue - opex - mgmt fee - reserve.
+  // Excludes interest, depreciation, amortization, taxes, owner addbacks.
+  let noi = revenue - opex - mgmtFee - reserve;
+  let usedEbitdaProxy = false;
+  let proxyNote = "";
+  if (revenue <= 0 || opex <= 0) {
+    // Fall back to EBITDA as NOI proxy
+    if (latest.ebitda > 0) {
+      noi = latest.ebitda;
+      usedEbitdaProxy = true;
+      proxyNote = "Using EBITDA as NOI proxy. Review expenses for real estate-specific normalization.";
+    }
+  }
+
+  const capLow = b.cap_rate_low ?? 8;       // % — produces high value
+  const capMid = b.cap_rate_selected ?? 10; // % — selected
+  const capHigh = b.cap_rate_high ?? 12;    // % — produces low value
+
+  const safe = (cap: number) => (cap > 0 ? noi / (cap / 100) : 0);
+  const value = safe(capMid);
+  const low = safe(capHigh);
+  const high = safe(capLow);
+
+  const debt = latest.debt || 0;
+  const equity = value - debt;
+
+  const available = noi !== 0 && capMid > 0;
+  const warning = !available
+    ? capMid <= 0 ? "Selected cap rate must be greater than 0." : ""
+    : noi < 0
+      ? "NOI is negative — cap-rate valuation may not be meaningful without stabilized or normalized NOI."
+      : "";
+
+  const formula = `Value = Stabilized NOI ÷ Cap Rate
+NOI = Revenue − Operating Expenses − Mgmt Fee − Replacement Reserve
+    = ${fmtMoney(revenue)} − ${fmtMoney(opex)} − ${fmtMoney(mgmtFee)} − ${fmtMoney(reserve)}
+    = ${fmtMoney(noi)}
+Selected cap: ${capMid.toFixed(2)}% → ${fmtMoney(value)}
+Range: ${capLow.toFixed(2)}% (high value ${fmtMoney(high)}) to ${capHigh.toFixed(2)}% (low value ${fmtMoney(low)})`;
+
+  const reasoning = `Income-producing real estate is typically valued by capitalizing stabilized NOI at a market cap rate. Lower cap rates imply stronger location, occupancy, and lower risk; higher cap rates imply seasonality, deferred maintenance, or weaker location. ${usedEbitdaProxy ? proxyNote : ""}`.trim();
+
+  return {
+    method: "cap_rate",
+    label: "Cap Rate / Income Approach",
+    value,
+    low,
+    high,
+    inputUsed: noi,
+    inputLabel: usedEbitdaProxy ? "NOI (EBITDA proxy)" : "Stabilized NOI",
+    confidence: available && noi > 0 ? "high" : "low",
+    notes: usedEbitdaProxy
+      ? proxyNote
+      : "Capitalizes stabilized NOI at a market cap rate. Standard for income-producing real estate.",
+    formula,
+    reasoning,
+    available,
+    warning: warning || undefined,
+    noi,
+    capRateUsed: capMid,
+    capRateLow: capLow,
+    capRateHigh: capHigh,
+    enterpriseValue: value,
+    debt,
+    equityValue: equity,
+  };
+}
+
 function blankMethod(method: MethodResult["method"], label: string, notes: string): MethodResult {
   return { method, label, value: 0, low: 0, high: 0, confidence: "low", notes, available: false };
 }
@@ -337,6 +477,39 @@ function confidenceFromAdj(adj: number, hasInput: boolean): "low" | "medium" | "
 }
 
 // ---------------------------------------------------------------------------
+// METHOD ROLE ASSIGNMENT BY CATEGORY
+// ---------------------------------------------------------------------------
+function assignRoles(methods: MethodResult[], category: BusinessCategory, isRv: boolean): MethodResult[] {
+  return methods.map((m) => {
+    let role: MethodRole = "supporting";
+    if (category === "real_estate_income") {
+      if (m.method === "cap_rate") role = isRv ? "recommended" : "primary";
+      else if (m.method === "asset") role = "floor";
+      else if (m.method === "revenue") role = "sanity_check";
+      else if (m.method === "sde" || m.method === "ebitda") {
+        role = "supporting";
+        m.warning = m.warning ?? "May understate value — does not fully capture land, location, occupancy, or infrastructure.";
+      }
+      else role = "supporting";
+    } else if (category === "asset_heavy") {
+      if (m.method === "asset") role = "primary";
+      else if (m.method === "sde" || m.method === "ebitda") role = "primary";
+      else if (m.method === "cap_rate") role = "supporting";
+      else role = "supporting";
+    } else {
+      // standard_operating
+      if (m.method === "sde" || m.method === "ebitda") role = "primary";
+      else if (m.method === "comparable") role = "supporting";
+      else if (m.method === "dcf") role = "supporting";
+      else if (m.method === "revenue") role = "sanity_check";
+      else if (m.method === "asset") role = "floor";
+      else if (m.method === "cap_rate") role = "supporting";
+    }
+    return { ...m, role };
+  });
+}
+
+// ---------------------------------------------------------------------------
 // COMBINED VALUATION
 // ---------------------------------------------------------------------------
 export type Valuation = {
@@ -345,46 +518,59 @@ export type Valuation = {
   rangeMid: number;
   rangeHigh: number;
   weights: Record<string, number>;
+  category: BusinessCategory;
+  isRvOrCampground: boolean;
+  enterpriseValue?: number;
+  debt?: number;
+  equityValue?: number;
 };
 
 export function valueBusiness(b: BusinessInputs): Valuation {
-  const methods = [
+  const category = (b.business_category as BusinessCategory) || inferCategory(b.industry, b.sub_industry);
+  const isRv = isRvOrCampground(b.industry, b.sub_industry);
+
+  let methods = [
     methodSDE(b),
     methodEBITDA(b),
     methodRevenue(b),
     methodDCF(b),
     methodAsset(b),
     methodComparable(b),
+    methodCapRate(b),
   ];
+  methods = assignRoles(methods, category, isRv);
 
-  const weights: Record<string, number> = {
-    sde: 0.30,
-    ebitda: 0.25,
-    revenue: 0.10,
-    dcf: 0.15,
-    asset: 0.05,
-    comparable: 0.15,
-  };
+  // Hide cap rate for standard operating businesses unless explicitly applicable
+  if (category === "standard_operating") {
+    methods = methods.filter((m) => m.method !== "cap_rate");
+  }
+
+  // Weights based on category
+  const weights: Record<string, number> = category === "real_estate_income"
+    ? { cap_rate: 0.45, dcf: 0.15, comparable: 0.15, asset: 0.10, ebitda: 0.075, sde: 0.05, revenue: 0.025 }
+    : category === "asset_heavy"
+      ? { sde: 0.25, ebitda: 0.25, asset: 0.20, comparable: 0.15, dcf: 0.10, revenue: 0.05, cap_rate: 0 }
+      : { sde: 0.30, ebitda: 0.25, revenue: 0.10, dcf: 0.15, asset: 0.05, comparable: 0.15 };
 
   let totalWeight = 0;
-  let mid = 0;
-  let lo = 0;
-  let hi = 0;
+  let mid = 0, lo = 0, hi = 0;
   for (const m of methods) {
     if (!m.available) continue;
     const w = weights[m.method] ?? 0;
+    if (w <= 0) continue;
     mid += m.value * w;
     lo += m.low * w;
     hi += m.high * w;
     totalWeight += w;
   }
-  if (totalWeight > 0) {
-    mid /= totalWeight;
-    lo /= totalWeight;
-    hi /= totalWeight;
-  }
+  if (totalWeight > 0) { mid /= totalWeight; lo /= totalWeight; hi /= totalWeight; }
 
-  return { methods, rangeLow: lo, rangeMid: mid, rangeHigh: hi, weights };
+  const latest = latestFinancials(b);
+  const debt = latest?.debt || 0;
+  const enterpriseValue = mid;
+  const equityValue = enterpriseValue - debt;
+
+  return { methods, rangeLow: lo, rangeMid: mid, rangeHigh: hi, weights, category, isRvOrCampground: isRv, enterpriseValue, debt, equityValue };
 }
 
 // ---------------------------------------------------------------------------

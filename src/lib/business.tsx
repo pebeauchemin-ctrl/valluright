@@ -67,6 +67,13 @@ export function useBusiness() {
 export function toBusinessInputs(b: Business, financials: FinancialYearRow[]) {
   return {
     industry: b.industry,
+    sub_industry: b.sub_industry,
+    business_category: (b as any).business_category ?? null,
+    cap_rate_low: (b as any).cap_rate_low != null ? Number((b as any).cap_rate_low) : null,
+    cap_rate_selected: (b as any).cap_rate_selected != null ? Number((b as any).cap_rate_selected) : null,
+    cap_rate_high: (b as any).cap_rate_high != null ? Number((b as any).cap_rate_high) : null,
+    management_fee_pct: (b as any).management_fee_pct != null ? Number((b as any).management_fee_pct) : null,
+    replacement_reserve_pct: (b as any).replacement_reserve_pct != null ? Number((b as any).replacement_reserve_pct) : null,
     years_in_business: b.years_in_business,
     employees: b.employees,
     owner_hours_per_week: b.owner_hours_per_week,

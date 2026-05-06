@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   INDUSTRY_OPTIONS, valueBusiness, computeHealthScore,
   SAMPLE_HVAC_BUSINESS, SAMPLE_HVAC_FINANCIALS,
+  BUSINESS_CATEGORY_OPTIONS, inferCategory, isRvOrCampground, type BusinessCategory,
 } from "@/lib/valuation";
 import { fmtCurrency } from "@/lib/format";
 import { toast } from "sonner";
@@ -88,6 +89,21 @@ function Onboarding() {
   const [region, setRegion] = useState("");
   const [yearsInBusiness, setYearsInBusiness] = useState<number>(10);
   const [employees, setEmployees] = useState<number>(10);
+  const [businessCategory, setBusinessCategory] = useState<BusinessCategory>("standard_operating");
+  const [categoryTouched, setCategoryTouched] = useState(false);
+  const [capRateLow, setCapRateLow] = useState<number>(8);
+  const [capRateSelected, setCapRateSelected] = useState<number>(10);
+  const [capRateHigh, setCapRateHigh] = useState<number>(12);
+  const [mgmtFeePct, setMgmtFeePct] = useState<number>(0);
+  const [reservePct, setReservePct] = useState<number>(0);
+
+  // Auto-infer category from industry/sub-industry until the user manually changes it
+  useEffect(() => {
+    if (!categoryTouched) {
+      setBusinessCategory(inferCategory(industry, subIndustry));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [industry, subIndustry]);
 
   // Step 1: financials (3 yrs) — most recent completed year is last year
   const [years, setYears] = useState([
@@ -235,6 +251,12 @@ function Onboarding() {
     sop_status: sopStatus,
     manager_team_depth: managerDepth,
     exit_timeline: exitTimeline,
+    business_category: businessCategory,
+    cap_rate_low: capRateLow,
+    cap_rate_selected: capRateSelected,
+    cap_rate_high: capRateHigh,
+    management_fee_pct: mgmtFeePct,
+    replacement_reserve_pct: reservePct,
   });
 
   /** Create the business row (first save) or update it (subsequent saves). */
@@ -410,6 +432,50 @@ function Onboarding() {
                 <NumField label="Years in business" value={yearsInBusiness} onChange={setYearsInBusiness} />
                 <NumField label="Employees (incl. owner)" value={employees} onChange={setEmployees} />
               </div>
+
+              <div className="space-y-2 pt-2">
+                <label className="block text-sm font-medium">Business category</label>
+                <p className="text-xs text-muted-foreground">Determines which valuation methods are most appropriate. We've inferred a default — adjust if needed.</p>
+                <div className="grid gap-2">
+                  {BUSINESS_CATEGORY_OPTIONS.map((opt) => (
+                    <label key={opt.value} className={`flex gap-3 rounded-lg border p-3 cursor-pointer transition ${businessCategory === opt.value ? "border-accent bg-accent-soft" : "border-border hover:border-accent/40"}`}>
+                      <input
+                        type="radio"
+                        name="business_category"
+                        className="mt-1"
+                        checked={businessCategory === opt.value}
+                        onChange={() => { setBusinessCategory(opt.value); setCategoryTouched(true); }}
+                      />
+                      <div className="text-sm">
+                        <div className="font-semibold text-foreground">{opt.label}</div>
+                        <div className="text-xs text-muted-foreground">{opt.description}</div>
+                        <div className="text-xs text-muted-foreground mt-0.5"><span className="font-medium">Examples:</span> {opt.examples}</div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {businessCategory === "real_estate_income" && (
+                <div className="rounded-lg border border-border bg-secondary/40 p-4 space-y-3">
+                  <div>
+                    <h3 className="font-display font-semibold text-primary text-sm">Cap Rate / Income Approach inputs</h3>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Lower cap rates generally imply stronger location, better occupancy, lower risk, and higher value. Higher cap rates imply weaker location, seasonality, operational risk, or deferred maintenance.
+                      {isRvOrCampground(industry, subIndustry) && " RV park / campground default range: 8% – 12%, selected 10%."}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <NumField label="Low cap rate (%)" value={capRateLow} onChange={setCapRateLow} />
+                    <NumField label="Selected cap rate (%)" value={capRateSelected} onChange={setCapRateSelected} />
+                    <NumField label="High cap rate (%)" value={capRateHigh} onChange={setCapRateHigh} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <NumField label="Mgmt fee normalization (% of revenue)" value={mgmtFeePct} onChange={setMgmtFeePct} />
+                    <NumField label="Replacement reserve (% of revenue)" value={reservePct} onChange={setReservePct} />
+                  </div>
+                </div>
+              )}
 
               <div className="pt-2 border-t border-border">
                 <h2 className="font-display text-lg font-semibold text-primary">Operations & owner role</h2>
