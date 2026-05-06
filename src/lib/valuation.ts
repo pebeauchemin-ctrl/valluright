@@ -17,6 +17,10 @@ export type FinancialYear = {
   assets: number;
   liabilities: number;
   debt: number;
+  depreciation?: number;
+  amortization?: number;
+  interest?: number;
+  income_taxes?: number;
 };
 
 // Business categorization for method selection
