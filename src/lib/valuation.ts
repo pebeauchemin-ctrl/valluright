@@ -442,9 +442,10 @@ export function methodCapRate(b: BusinessInputs): MethodResult {
       : "";
 
   const formula = `Value = Stabilized NOI ÷ Cap Rate
-NOI = Revenue − Operating Expenses − Mgmt Fee − Replacement Reserve
-    = ${fmtMoney(revenue)} − ${fmtMoney(opex)} − ${fmtMoney(mgmtFee)} − ${fmtMoney(reserve)}
+NOI = Revenue − Operating Expenses + Depreciation + Amortization + Interest + Income Taxes + Owner/One-time Addbacks − Mgmt Fee − Replacement Reserve
+    = ${fmtMoney(revenue)} − ${fmtMoney(opex)} + ${fmtMoney(depreciation)} + ${fmtMoney(amortization)} + ${fmtMoney(interest)} + ${fmtMoney(taxes)} + ${fmtMoney(addbacks)} − ${fmtMoney(mgmtFee)} − ${fmtMoney(reserve)}
     = ${fmtMoney(noi)}
+(NOI excludes debt service / loan principal payments — those affect equity value, not property value.)
 Selected cap: ${capMid.toFixed(2)}% → ${fmtMoney(value)}
 Range: ${capLow.toFixed(2)}% (high value ${fmtMoney(high)}) to ${capHigh.toFixed(2)}% (low value ${fmtMoney(low)})`;
 
