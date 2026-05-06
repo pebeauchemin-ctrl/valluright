@@ -433,6 +433,50 @@ function Onboarding() {
                 <NumField label="Employees (incl. owner)" value={employees} onChange={setEmployees} />
               </div>
 
+              <div className="space-y-2 pt-2">
+                <label className="block text-sm font-medium">Business category</label>
+                <p className="text-xs text-muted-foreground">Determines which valuation methods are most appropriate. We've inferred a default — adjust if needed.</p>
+                <div className="grid gap-2">
+                  {BUSINESS_CATEGORY_OPTIONS.map((opt) => (
+                    <label key={opt.value} className={`flex gap-3 rounded-lg border p-3 cursor-pointer transition ${businessCategory === opt.value ? "border-accent bg-accent-soft" : "border-border hover:border-accent/40"}`}>
+                      <input
+                        type="radio"
+                        name="business_category"
+                        className="mt-1"
+                        checked={businessCategory === opt.value}
+                        onChange={() => { setBusinessCategory(opt.value); setCategoryTouched(true); }}
+                      />
+                      <div className="text-sm">
+                        <div className="font-semibold text-foreground">{opt.label}</div>
+                        <div className="text-xs text-muted-foreground">{opt.description}</div>
+                        <div className="text-xs text-muted-foreground mt-0.5"><span className="font-medium">Examples:</span> {opt.examples}</div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {businessCategory === "real_estate_income" && (
+                <div className="rounded-lg border border-border bg-secondary/40 p-4 space-y-3">
+                  <div>
+                    <h3 className="font-display font-semibold text-primary text-sm">Cap Rate / Income Approach inputs</h3>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Lower cap rates generally imply stronger location, better occupancy, lower risk, and higher value. Higher cap rates imply weaker location, seasonality, operational risk, or deferred maintenance.
+                      {isRvOrCampground(industry, subIndustry) && " RV park / campground default range: 8% – 12%, selected 10%."}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <NumField label="Low cap rate (%)" value={capRateLow} onChange={setCapRateLow} />
+                    <NumField label="Selected cap rate (%)" value={capRateSelected} onChange={setCapRateSelected} />
+                    <NumField label="High cap rate (%)" value={capRateHigh} onChange={setCapRateHigh} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <NumField label="Mgmt fee normalization (% of revenue)" value={mgmtFeePct} onChange={setMgmtFeePct} />
+                    <NumField label="Replacement reserve (% of revenue)" value={reservePct} onChange={setReservePct} />
+                  </div>
+                </div>
+              )}
+
               <div className="pt-2 border-t border-border">
                 <h2 className="font-display text-lg font-semibold text-primary">Operations & owner role</h2>
                 <p className="mt-1 text-xs text-muted-foreground">These shape buyer confidence and the multiple we can apply.</p>
