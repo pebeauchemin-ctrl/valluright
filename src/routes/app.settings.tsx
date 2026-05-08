@@ -174,7 +174,7 @@ function Settings() {
           {/* Company Basics */}
           <section className="rounded-xl border border-border bg-card p-6 space-y-5">
             <div>
-              <h2 className="font-display font-semibold text-primary">Company Basics</h2>
+              <h2 className="font-display font-semibold text-primary">Company Basis</h2>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Edits update the business profile and feed the valuation engine. Financial history is managed in the Financials tab.
               </p>
