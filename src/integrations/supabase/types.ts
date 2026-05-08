@@ -93,6 +93,7 @@ export type Database = {
           asking_price_high: number | null
           asking_price_low: number | null
           business_category: string | null
+          business_subtype: string | null
           cap_rate_high: number | null
           cap_rate_low: number | null
           cap_rate_selected: number | null
@@ -126,6 +127,7 @@ export type Database = {
           asking_price_high?: number | null
           asking_price_low?: number | null
           business_category?: string | null
+          business_subtype?: string | null
           cap_rate_high?: number | null
           cap_rate_low?: number | null
           cap_rate_selected?: number | null
@@ -159,6 +161,7 @@ export type Database = {
           asking_price_high?: number | null
           asking_price_low?: number | null
           business_category?: string | null
+          business_subtype?: string | null
           cap_rate_high?: number | null
           cap_rate_low?: number | null
           cap_rate_selected?: number | null
