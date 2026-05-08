@@ -606,12 +606,31 @@ export function valueBusiness(b: BusinessInputs): Valuation {
     methods = methods.filter((m) => m.method !== "cap_rate");
   }
 
-  // Weights based on category
+  // Weights — ONLY the methods appropriate for this business category contribute
+  // to the aggregated range and enterprise value. Methods with a "sanity_check"
+  // or "floor" role are shown to the user but excluded from aggregation so
+  // generic small-business multiples don't dilute (or inflate) the headline value.
+  // Examples:
+  //  • Real-estate income → cap rate drives value; SDE/EBITDA/Revenue/Asset are reference only.
+  //  • Asset-heavy → earnings + asset floor; cap rate and revenue excluded.
+  //  • Standard operating → SDE/EBITDA + DCF + comparables; asset floor and revenue excluded.
   const weights: Record<string, number> = category === "real_estate_income"
-    ? { cap_rate: 0.45, dcf: 0.15, comparable: 0.15, asset: 0.10, ebitda: 0.075, sde: 0.05, revenue: 0.025 }
+    ? { cap_rate: 0.70, dcf: 0.15, comparable: 0.15 }
     : category === "asset_heavy"
-      ? { sde: 0.25, ebitda: 0.25, asset: 0.20, comparable: 0.15, dcf: 0.10, revenue: 0.05, cap_rate: 0 }
-      : { sde: 0.30, ebitda: 0.25, revenue: 0.10, dcf: 0.15, asset: 0.05, comparable: 0.15 };
+      ? { sde: 0.35, ebitda: 0.35, asset: 0.15, comparable: 0.15 }
+      : { sde: 0.35, ebitda: 0.30, dcf: 0.15, comparable: 0.20 };
+
+  // Cap-rate fallback: if real-estate cap rate is unavailable (missing NOI or cap rate),
+  // fall back to DCF + comparable + EBITDA so the range is still meaningful.
+  if (category === "real_estate_income") {
+    const cap = methods.find((m) => m.method === "cap_rate");
+    if (!cap?.available) {
+      weights.cap_rate = 0;
+      weights.ebitda = 0.30;
+      weights.dcf = 0.35;
+      weights.comparable = 0.35;
+    }
+  }
 
   let totalWeight = 0;
   let mid = 0, lo = 0, hi = 0;
