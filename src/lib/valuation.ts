@@ -29,7 +29,7 @@ export type BusinessCategory = "real_estate_income" | "standard_operating" | "as
 export const BUSINESS_CATEGORY_OPTIONS: { value: BusinessCategory; label: string; description: string; examples: string }[] = [
   {
     value: "real_estate_income",
-    label: "Income-producing real estate",
+    label: "Income-producing real estate / property operating business",
     description: "Property operating businesses where land, location, and occupancy drive value.",
     examples: "RV park, campground, mobile home park, self-storage, hotel/motel, marina, multifamily, commercial rental, senior housing",
   },
@@ -46,6 +46,42 @@ export const BUSINESS_CATEGORY_OPTIONS: { value: BusinessCategory; label: string
     examples: "Trucking, equipment rental, construction with owned equipment, heavy manufacturing, auto repair with real estate, laundromat",
   },
 ];
+
+// Detailed subtypes that live under each business category. Used by Settings to
+// let owners pick exactly what kind of business they run (e.g. RV park, restaurant).
+export const BUSINESS_SUBTYPES: Record<BusinessCategory, string[]> = {
+  real_estate_income: [
+    "RV park",
+    "Campground",
+    "Mobile home park",
+    "Self-storage",
+    "Hotel / motel",
+    "Marina",
+    "Multifamily rental property",
+    "Commercial rental property",
+    "Senior housing / assisted living (real estate included)",
+  ],
+  standard_operating: [
+    "Retail store",
+    "Restaurant",
+    "Service business",
+    "Contractor",
+    "Agency",
+    "Medical / dental practice",
+    "Manufacturing",
+    "Distribution",
+    "E-commerce",
+    "SaaS",
+  ],
+  asset_heavy: [
+    "Trucking / freight",
+    "Equipment rental",
+    "Construction with owned equipment",
+    "Heavy manufacturing",
+    "Auto repair with real estate",
+    "Laundromat",
+  ],
+};
 
 // Industry → category default (used as a hint, user can override)
 const REAL_ESTATE_INDUSTRY_KEYWORDS = ["rv park", "campground", "mobile home", "self-storage", "self storage", "hotel", "motel", "marina", "multifamily", "rental property", "senior housing", "assisted living"];
