@@ -59,7 +59,138 @@ const CATEGORY_META: Record<keyof HealthBreakdown, { label: string; description:
   },
 };
 
+type Priority = "high" | "medium" | "low";
+type Difficulty = "easy" | "medium" | "hard";
+type RecTemplate = {
+  key: string; title: string; category: string; priority: Priority;
+  difficulty: Difficulty; time_required: string; description: string;
+  buyer_concern: string; action_steps: string[]; impact_pct: [number, number];
+  applies: (b: BusinessInputs) => boolean;
+  scenario: Record<string, string | number | boolean>;
+};
+
+const TEMPLATES: RecTemplate[] = [
+  {
+    key: "owner_dependence", title: "Reduce owner dependence", category: "Operations",
+    priority: "high", difficulty: "hard", time_required: "6–12 months",
+    description: "Delegate sales, operations, and customer relationships so the business runs without you. The single biggest multiple-mover for owner-operated SMBs.",
+    buyer_concern: "If the owner is the business, the buyer is buying a job — not an asset. Multiples drop 0.5–1.0× when the owner holds all key relationships.",
+    action_steps: [
+      "Identify the 3 functions you currently own (sales, ops, customer).",
+      "Assign each to a named team member with a 90-day handoff plan.",
+      "Move yourself to ≤40 hours/week within 6 months.",
+      "Document the routines you take with you so they don't break.",
+    ],
+    impact_pct: [0.10, 0.20],
+    applies: (b) => (b.owner_hours_per_week ?? 50) >= 45 ||
+      [b.owner_in_sales, b.owner_in_operations, b.owner_in_customer_relationships].filter(Boolean).length >= 2,
+    scenario: { ownerHrs: 35, sopComplete: true },
+  },
+  {
+    key: "recurring_revenue", title: "Add recurring revenue", category: "Revenue",
+    priority: "high", difficulty: "medium", time_required: "3–9 months",
+    description: "Convert one-off transactions into service contracts, retainers, or subscriptions. Recurring revenue is the highest-multiple type of revenue.",
+    buyer_concern: "Buyers and lenders pay a premium for predictable revenue. Below 30% recurring is a yellow flag for SMB acquirers.",
+    action_steps: [
+      "Package your most repeated service into a monthly or quarterly plan.",
+      "Pitch the plan to your top 20 customers first.",
+      "Set a target: 40% of revenue under contract within 12 months.",
+      "Track MRR and renewal rate monthly.",
+    ],
+    impact_pct: [0.08, 0.18],
+    applies: (b) => (b.recurring_revenue_pct ?? 0) < 40,
+    scenario: { recurring: 50 },
+  },
+  {
+    key: "improve_margins", title: "Improve margins", category: "Financials",
+    priority: "medium", difficulty: "medium", time_required: "3–6 months",
+    description: "Push EBITDA margin past 15% by reviewing pricing, vendor costs, and discretionary opex. Margin directly drives every multiple-based valuation.",
+    buyer_concern: "Thin margins leave no cushion for the buyer's debt service and signal weak pricing power.",
+    action_steps: [
+      "Raise prices 5–8% on your lowest-margin product or service line.",
+      "Re-bid your top 3 supplier contracts.",
+      "Cut or renegotiate the bottom-quartile of recurring software spend.",
+      "Set a 15% EBITDA margin floor as the new internal target.",
+    ],
+    impact_pct: [0.06, 0.14],
+    applies: (b) => {
+      const latest = b.financials.at(-1);
+      if (!latest || latest.revenue <= 0) return true;
+      return latest.ebitda / latest.revenue < 0.15;
+    },
+    scenario: { marginUplift: 5 },
+  },
+  {
+    key: "clean_financials", title: "Clean up the financials", category: "Financials",
+    priority: "medium", difficulty: "easy", time_required: "1–2 months",
+    description: "Get three full years of clean books, separate personal from business expenses, and build a clear add-back schedule. Raises confidence on every multiple.",
+    buyer_concern: "Messy books trigger price chips and broken deals. Buyers discount what they can't verify.",
+    action_steps: [
+      "Reconcile all bank and credit card accounts through the latest month.",
+      "Move personal expenses out and document remaining add-backs.",
+      "Produce P&L and balance sheet for the last 3 fiscal years.",
+      "Have a CPA do a quality-of-earnings light review.",
+    ],
+    impact_pct: [0.03, 0.08],
+    applies: (b) => b.financials.length < 3 || b.financials.some((f) => f.assets === 0 || f.ebitda === 0),
+    scenario: {},
+  },
+  {
+    key: "customer_concentration", title: "Reduce customer concentration", category: "Revenue",
+    priority: "high", difficulty: "hard", time_required: "6–18 months",
+    description: "Diversify so no single customer is more than 15% of revenue. The most common reason SMB deals fall apart in diligence.",
+    buyer_concern: "Losing one customer post-close could cripple the business — buyers either pass or demand large escrows.",
+    action_steps: [
+      "Identify your top customer's % of revenue today.",
+      "Build a 90-day plan to add 5+ new accounts in adjacent verticals.",
+      "Diversify the sales pipeline so no prospect exceeds 10% of forecast.",
+      "Aim for top customer ≤15% within a year.",
+    ],
+    impact_pct: [0.05, 0.12],
+    applies: (b) => (b.top_customer_concentration_pct ?? 0) >= 15,
+    scenario: { topCust: 12 },
+  },
+  {
+    key: "documentation", title: "Document operations", category: "Operations",
+    priority: "medium", difficulty: "easy", time_required: "2–4 months",
+    description: "Build SOPs and a playbook for the top 10 repeatable processes. A documented business is a transferable business.",
+    buyer_concern: "Without SOPs the buyer has to relearn the company from scratch — they discount for transition risk.",
+    action_steps: [
+      "List the top 10 routines that keep the business running.",
+      "Record screen-share or video walk-throughs for each.",
+      "Convert each into a one-page written SOP.",
+      "Store everything in a single shared library.",
+    ],
+    impact_pct: [0.04, 0.10],
+    applies: (b) => b.sop_status !== "complete",
+    scenario: { sopComplete: true },
+  },
+  {
+    key: "management_team", title: "Strengthen management team", category: "Team",
+    priority: "high", difficulty: "hard", time_required: "6–12 months",
+    description: "Hire or promote a strong general manager or second-in-command who can run day-to-day operations.",
+    buyer_concern: "A thin bench means the business breaks the moment the owner leaves. A capable #2 is one of the highest-leverage value drivers.",
+    action_steps: [
+      "Define the GM / Ops Lead role and decision rights.",
+      "Promote internally if you have a candidate; recruit externally if not.",
+      "Hand off operational decisions over 90 days.",
+      "Confirm the team can run a full month without owner input.",
+    ],
+    impact_pct: [0.07, 0.15],
+    applies: (b) => b.manager_team_depth !== "strong",
+    scenario: { hireManager: true },
+  },
+];
+
+function priorityBadge(p: Priority) {
+  return p === "high" ? "bg-destructive/10 text-destructive"
+    : p === "medium" ? "bg-gold/15 text-foreground"
+    : "bg-accent-soft text-accent";
+}
+
 function HealthScorePage() {
+  const navigate = useNavigate();
+  const [roadmap, setRoadmap] = useState<Set<string>>(new Set());
   const { current } = useBusiness();
   const [financials, setFinancials] = useState<FinancialYearRow[]>([]);
   const [loading, setLoading] = useState(true);
