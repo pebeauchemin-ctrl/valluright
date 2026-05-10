@@ -1,9 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, TrendingUp, TrendingDown, Sparkles } from "lucide-react";
+import { ArrowLeft, TrendingUp, TrendingDown, Sparkles, AlertTriangle, ArrowRight, Plus, Sliders, Check } from "lucide-react";
 import { useBusiness, toBusinessInputs, type FinancialYearRow } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
-import { computeHealthScore, type HealthBreakdown } from "@/lib/valuation";
+import { computeHealthScore, valueBusiness, type HealthBreakdown, type BusinessInputs } from "@/lib/valuation";
+import { fmtCurrency } from "@/lib/format";
+import { toast } from "sonner";
 import {
   ResponsiveContainer, RadialBarChart, RadialBar, PolarAngleAxis,
   BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell,
