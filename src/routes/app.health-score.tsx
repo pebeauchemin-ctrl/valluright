@@ -344,6 +344,82 @@ function HealthScorePage() {
         })}
       </section>
 
+      <section className="space-y-4 pt-2">
+        <div className="flex items-end justify-between gap-4 flex-wrap">
+          <div>
+            <h2 className="font-display text-2xl font-semibold text-primary">Improve your value</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Targeted moves to raise each driver above, ranked by impact for your business today.
+              {valuation ? <> Baseline value: <span className="font-semibold text-foreground">{fmtCurrency(valuation.rangeLow, { compact: true })} – {fmtCurrency(valuation.rangeHigh, { compact: true })}</span>.</> : null}
+            </p>
+          </div>
+          <Link to="/app/scenarios" className="text-sm font-semibold text-accent hover:underline">Combine in scenarios →</Link>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-5">
+          {recs.map((r) => {
+            const inRoadmap = roadmap.has(r.key);
+            return (
+              <div key={r.key} className={`rounded-xl border bg-card p-6 transition ${r.relevant ? "border-border" : "border-dashed border-border opacity-70"}`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex gap-3 min-w-0">
+                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${priorityBadge(r.priority)}`}>
+                      <AlertTriangle className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-display font-semibold text-primary">{r.title}</h3>
+                      <div className="mt-1 flex items-center gap-2 flex-wrap">
+                        <span className="text-[10px] uppercase tracking-wider font-semibold rounded-full bg-secondary px-2 py-0.5 text-muted-foreground">{r.category}</span>
+                        <span className={`text-[10px] uppercase tracking-wider font-semibold rounded-full px-2 py-0.5 ${priorityBadge(r.priority)}`}>{r.priority} priority</span>
+                        <span className="text-[10px] uppercase tracking-wider font-semibold rounded-full bg-secondary px-2 py-0.5 text-muted-foreground">{r.difficulty} · {r.time_required}</span>
+                        {!r.relevant && <span className="text-[10px] uppercase tracking-wider font-semibold rounded-full bg-secondary px-2 py-0.5 text-muted-foreground">Already strong</span>}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Est. value impact</div>
+                    <div className="font-display text-lg font-semibold text-accent">+{fmtCurrency(r.impact_low, { compact: true })} – {fmtCurrency(r.impact_high, { compact: true })}</div>
+                  </div>
+                </div>
+
+                <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{r.description}</p>
+
+                <div className="mt-3 rounded-md bg-secondary/40 border border-border p-3">
+                  <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">Buyer concern</div>
+                  <p className="mt-1 text-xs italic text-foreground/80">{r.buyer_concern}</p>
+                </div>
+
+                <div className="mt-3">
+                  <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mb-1.5">Action steps</div>
+                  <ul className="space-y-1 text-sm">
+                    {r.action_steps.map((s, i) => (
+                      <li key={i} className="flex gap-2"><ArrowRight className="h-3.5 w-3.5 mt-1 text-accent shrink-0" /><span>{s}</span></li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={() => toggleRoadmap(r.key)}
+                    className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+                      inRoadmap ? "bg-accent text-accent-foreground hover:bg-accent/90" : "border border-border bg-card hover:bg-secondary"
+                    }`}
+                  >
+                    {inRoadmap ? <><Check className="h-3.5 w-3.5" /> In roadmap</> : <><Plus className="h-3.5 w-3.5" /> Add to roadmap</>}
+                  </button>
+                  <button
+                    onClick={() => runScenario(r)}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-semibold hover:bg-secondary"
+                  >
+                    <Sliders className="h-3.5 w-3.5" /> Run scenario
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
       <p className="text-xs text-muted-foreground text-center pt-4">
         Software-generated diagnostic. Not a certified business appraisal.
       </p>
