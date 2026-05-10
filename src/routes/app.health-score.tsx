@@ -203,13 +203,41 @@ function HealthScorePage() {
       .then(({ data }) => { setFinancials(data ?? []); setLoading(false); });
   }, [current]);
 
-  const result = useMemo(() => {
-    if (!current) return null;
-    return computeHealthScore(toBusinessInputs(current, financials));
-  }, [current, financials]);
+  const inputs = useMemo(() => current ? toBusinessInputs(current, financials) : null, [current, financials]);
+  const result = useMemo(() => inputs ? computeHealthScore(inputs) : null, [inputs]);
+  const valuation = useMemo(() => inputs ? valueBusiness(inputs) : null, [inputs]);
 
   if (!current || loading) return <div className="p-12 text-sm text-muted-foreground">Loading…</div>;
-  if (!result) return null;
+  if (!result || !inputs) return null;
+
+  const baselineMid = valuation?.rangeMid || 0;
+  const recs = TEMPLATES.map((t) => ({
+    ...t,
+    impact_low: baselineMid * t.impact_pct[0],
+    impact_high: baselineMid * t.impact_pct[1],
+    relevant: t.applies(inputs),
+  })).sort((a, b) => {
+    if (a.relevant !== b.relevant) return a.relevant ? -1 : 1;
+    const pri = { high: 0, medium: 1, low: 2 };
+    if (pri[a.priority] !== pri[b.priority]) return pri[a.priority] - pri[b.priority];
+    return b.impact_high - a.impact_high;
+  });
+
+  const toggleRoadmap = (key: string) => {
+    setRoadmap((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) { next.delete(key); toast("Removed from roadmap"); }
+      else { next.add(key); toast.success("Added to roadmap"); }
+      return next;
+    });
+  };
+
+  const runScenario = (rec: typeof recs[number]) => {
+    const params = new URLSearchParams();
+    Object.entries(rec.scenario).forEach(([k, v]) => params.set(k, String(v)));
+    navigate({ to: "/app/scenarios", search: Object.fromEntries(params) as Record<string, string> });
+  };
+
 
   const { total, breakdown } = result;
   const entries = (Object.keys(breakdown) as (keyof HealthBreakdown)[]).map((k) => ({
