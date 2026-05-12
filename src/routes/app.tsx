@@ -52,6 +52,7 @@ function AppLayout() {
       { to: "/app/improve-value", label: "Improve Value", icon: TrendingUp },
       { to: "/app/recommendations", label: "Recommendations", icon: Sparkles },
       { to: "/app/scenarios", label: "What-if Scenarios", icon: Sliders },
+      { to: "/app/roadmap", label: "Roadmap", icon: Map },
       { to: "/app/buyer-teaser", label: "Buyer Teaser", icon: Eye },
       { to: "/app/data-room", label: "Data Room", icon: Folder },
       { to: "/app/advisors", label: "Advisors", icon: Users },
