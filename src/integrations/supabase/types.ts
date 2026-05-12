@@ -514,6 +514,7 @@ export type Database = {
       }
       scenarios: {
         Row: {
+          action_steps: string[]
           business_id: string
           created_at: string
           current_value: number | null
@@ -528,12 +529,14 @@ export type Database = {
           projected_value: number | null
           recurring_revenue_pct: number | null
           revenue_growth_pct: number | null
+          roadmap_phase: string | null
           sop_score: number | null
           timeline_months: number | null
           updated_at: string
           value_delta: number | null
         }
         Insert: {
+          action_steps?: string[]
           business_id: string
           created_at?: string
           current_value?: number | null
@@ -548,12 +551,14 @@ export type Database = {
           projected_value?: number | null
           recurring_revenue_pct?: number | null
           revenue_growth_pct?: number | null
+          roadmap_phase?: string | null
           sop_score?: number | null
           timeline_months?: number | null
           updated_at?: string
           value_delta?: number | null
         }
         Update: {
+          action_steps?: string[]
           business_id?: string
           created_at?: string
           current_value?: number | null
@@ -568,6 +573,7 @@ export type Database = {
           projected_value?: number | null
           recurring_revenue_pct?: number | null
           revenue_growth_pct?: number | null
+          roadmap_phase?: string | null
           sop_score?: number | null
           timeline_months?: number | null
           updated_at?: string
