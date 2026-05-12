@@ -18,6 +18,7 @@ import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as TeaserPublicIdRouteImport } from './routes/teaser.$publicId'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppScenariosRouteImport } from './routes/app.scenarios'
+import { Route as AppRoadmapRouteImport } from './routes/app.roadmap'
 import { Route as AppRecommendationsRouteImport } from './routes/app.recommendations'
 import { Route as AppOnboardingRouteImport } from './routes/app.onboarding'
 import { Route as AppImproveValueRouteImport } from './routes/app.improve-value'
@@ -71,6 +72,11 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
 const AppScenariosRoute = AppScenariosRouteImport.update({
   id: '/scenarios',
   path: '/scenarios',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRoadmapRoute = AppRoadmapRouteImport.update({
+  id: '/roadmap',
+  path: '/roadmap',
   getParentRoute: () => AppRoute,
 } as any)
 const AppRecommendationsRoute = AppRecommendationsRouteImport.update({
@@ -133,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/app/improve-value': typeof AppImproveValueRoute
   '/app/onboarding': typeof AppOnboardingRoute
   '/app/recommendations': typeof AppRecommendationsRoute
+  '/app/roadmap': typeof AppRoadmapRoute
   '/app/scenarios': typeof AppScenariosRoute
   '/app/settings': typeof AppSettingsRoute
   '/teaser/$publicId': typeof TeaserPublicIdRoute
@@ -152,6 +159,7 @@ export interface FileRoutesByTo {
   '/app/improve-value': typeof AppImproveValueRoute
   '/app/onboarding': typeof AppOnboardingRoute
   '/app/recommendations': typeof AppRecommendationsRoute
+  '/app/roadmap': typeof AppRoadmapRoute
   '/app/scenarios': typeof AppScenariosRoute
   '/app/settings': typeof AppSettingsRoute
   '/teaser/$publicId': typeof TeaserPublicIdRoute
@@ -173,6 +181,7 @@ export interface FileRoutesById {
   '/app/improve-value': typeof AppImproveValueRoute
   '/app/onboarding': typeof AppOnboardingRoute
   '/app/recommendations': typeof AppRecommendationsRoute
+  '/app/roadmap': typeof AppRoadmapRoute
   '/app/scenarios': typeof AppScenariosRoute
   '/app/settings': typeof AppSettingsRoute
   '/teaser/$publicId': typeof TeaserPublicIdRoute
@@ -195,6 +204,7 @@ export interface FileRouteTypes {
     | '/app/improve-value'
     | '/app/onboarding'
     | '/app/recommendations'
+    | '/app/roadmap'
     | '/app/scenarios'
     | '/app/settings'
     | '/teaser/$publicId'
@@ -214,6 +224,7 @@ export interface FileRouteTypes {
     | '/app/improve-value'
     | '/app/onboarding'
     | '/app/recommendations'
+    | '/app/roadmap'
     | '/app/scenarios'
     | '/app/settings'
     | '/teaser/$publicId'
@@ -234,6 +245,7 @@ export interface FileRouteTypes {
     | '/app/improve-value'
     | '/app/onboarding'
     | '/app/recommendations'
+    | '/app/roadmap'
     | '/app/scenarios'
     | '/app/settings'
     | '/teaser/$publicId'
@@ -316,6 +328,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppScenariosRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/roadmap': {
+      id: '/app/roadmap'
+      path: '/roadmap'
+      fullPath: '/app/roadmap'
+      preLoaderRoute: typeof AppRoadmapRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/recommendations': {
       id: '/app/recommendations'
       path: '/recommendations'
@@ -391,6 +410,7 @@ interface AppRouteChildren {
   AppImproveValueRoute: typeof AppImproveValueRoute
   AppOnboardingRoute: typeof AppOnboardingRoute
   AppRecommendationsRoute: typeof AppRecommendationsRoute
+  AppRoadmapRoute: typeof AppRoadmapRoute
   AppScenariosRoute: typeof AppScenariosRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -405,6 +425,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppImproveValueRoute: AppImproveValueRoute,
   AppOnboardingRoute: AppOnboardingRoute,
   AppRecommendationsRoute: AppRecommendationsRoute,
+  AppRoadmapRoute: AppRoadmapRoute,
   AppScenariosRoute: AppScenariosRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
