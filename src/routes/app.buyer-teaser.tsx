@@ -162,14 +162,6 @@ function BuyerTeaser() {
             <li>Debt schedule</li>
           </ul>
         </Section>
-            <label key={k} className="flex items-center justify-between rounded-md border border-border px-3 py-2 text-sm cursor-pointer hover:bg-secondary/40">
-              <span>{label}</span>
-              <input type="checkbox" checked={(settings as Record<string, boolean | string>)[k] as boolean}
-                onChange={(e) => setSettings((s) => ({ ...s, [k]: e.target.checked }))}
-                className="accent-[oklch(0.45_0.1_158)]" />
-            </label>
-          ))}
-        </Section>
 
         <Section title="Publish">
           <label className="flex items-center justify-between rounded-md border border-accent/30 bg-accent-soft px-3 py-2.5 text-sm cursor-pointer">
