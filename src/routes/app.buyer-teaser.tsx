@@ -21,6 +21,8 @@ function BuyerTeaser() {
     show_sde: false,
     show_valuation_breakdown: false,
     show_scenarios: false,
+    show_customer_concentration: false,
+    show_photos: false,
     transition_support: "Owner willing to support a 90-day transition.",
   });
   const [highlights, setHighlights] = useState("Established 12+ year operating history\nLoyal repeat customer base\nExperienced field team in place\nGrowing margins year-over-year");
