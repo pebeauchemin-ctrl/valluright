@@ -115,16 +115,53 @@ function BuyerTeaser() {
           <Textarea label="Transition support" value={settings.transition_support} onChange={(v) => setSettings((s) => ({ ...s, transition_support: v }))} rows={2} />
         </Section>
 
-        <Section title="What buyers can see">
+        <Section title="Always visible to buyers">
+          <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+            <li>Anonymous business description</li>
+            <li>Industry & general region</li>
+            <li>Years in business</li>
+            <li>Revenue range (band)</li>
+            <li>Asking price range</li>
+            <li>Reason for sale</li>
+            <li>High-level strengths</li>
+          </ul>
+        </Section>
+
+        <Section title="Optional toggles — what buyers can see">
           {[
             ["show_revenue_chart", "Revenue trend chart"],
-            ["show_employee_count", "Employee count"],
             ["show_exact_revenue", "Exact revenue figures"],
             ["show_profit_margin", "Profit margin"],
-            ["show_sde", "Seller's Discretionary Earnings"],
+            ["show_sde", "Seller's Discretionary Earnings (SDE)"],
+            ["show_employee_count", "Employee count"],
+            ["show_customer_concentration", "Customer concentration"],
             ["show_valuation_breakdown", "Valuation method breakdown"],
-            ["show_scenarios", "Scenario projections"],
+            ["show_scenarios", "Improvement scenarios"],
+            ["show_photos", "Photos / assets"],
           ].map(([k, label]) => (
+            <label key={k} className="flex items-center justify-between rounded-md border border-border px-3 py-2 text-sm cursor-pointer hover:bg-secondary/40">
+              <span>{label}</span>
+              <input type="checkbox" checked={(settings as Record<string, boolean | string>)[k] as boolean}
+                onChange={(e) => setSettings((s) => ({ ...s, [k]: e.target.checked }))}
+                className="accent-[oklch(0.45_0.1_158)]" />
+            </label>
+          ))}
+        </Section>
+
+        <Section title="NDA-gated — never shown publicly">
+          <p className="text-xs text-muted-foreground">These are only released to buyers who request access and sign your NDA.</p>
+          <ul className="text-sm text-muted-foreground grid sm:grid-cols-2 gap-x-4 gap-y-1 list-disc list-inside">
+            <li>Business name</li>
+            <li>Address / exact location</li>
+            <li>Full P&L</li>
+            <li>Tax returns</li>
+            <li>Customer list</li>
+            <li>Lease agreements</li>
+            <li>Employee details</li>
+            <li>Vendor list</li>
+            <li>Debt schedule</li>
+          </ul>
+        </Section>
             <label key={k} className="flex items-center justify-between rounded-md border border-border px-3 py-2 text-sm cursor-pointer hover:bg-secondary/40">
               <span>{label}</span>
               <input type="checkbox" checked={(settings as Record<string, boolean | string>)[k] as boolean}
