@@ -51,6 +51,8 @@ function BuyerTeaser() {
             show_sde: data.show_sde,
             show_valuation_breakdown: data.show_valuation_breakdown,
             show_scenarios: data.show_scenarios,
+            show_customer_concentration: (data as { show_customer_concentration?: boolean }).show_customer_concentration ?? false,
+            show_photos: (data as { show_photos?: boolean }).show_photos ?? false,
             transition_support: data.transition_support ?? settings.transition_support,
           });
           if (Array.isArray(data.business_highlights)) setHighlights((data.business_highlights as string[]).join("\n"));
