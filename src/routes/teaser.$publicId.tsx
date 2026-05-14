@@ -54,8 +54,8 @@ function Teaser() {
       name,
       email,
       phone: phone || null,
-      buyer_type: (buyerType || null) as "individual" | "strategic" | "financial" | "other" | null,
-      financing_status: (financing || null) as "cash" | "sba_prequalified" | "needs_financing" | "exploring" | null,
+      buyer_type: (buyerType || null) as never,
+      financing_status: (financing || null) as never,
       message,
     });
     setSubmitting(false);
