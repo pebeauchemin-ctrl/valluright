@@ -164,9 +164,32 @@ function Teaser() {
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
               <input required type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+              <input type="tel" placeholder="Phone (optional)" value={phone} onChange={(e) => setPhone(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+              <select value={buyerType} onChange={(e) => setBuyerType(e.target.value)} required
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                <option value="">Buyer type…</option>
+                <option value="individual">Individual buyer</option>
+                <option value="strategic">Strategic acquirer</option>
+                <option value="financial">Financial / PE</option>
+                <option value="search_fund">Search fund</option>
+                <option value="other">Other</option>
+              </select>
+              <select value={financing} onChange={(e) => setFinancing(e.target.value)} required
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                <option value="">Financing status…</option>
+                <option value="cash">Cash</option>
+                <option value="sba_prequalified">SBA pre-qualified</option>
+                <option value="needs_financing">Needs financing</option>
+                <option value="exploring">Just exploring</option>
+              </select>
               <textarea placeholder="Brief message (optional)" value={message} onChange={(e) => setMessage(e.target.value)} rows={3}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
-              <button type="submit" disabled={submitting}
+              <label className="flex items-start gap-2 text-xs text-muted-foreground">
+                <input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} className="mt-0.5 accent-[oklch(0.45_0.1_158)]" />
+                <span>I acknowledge this listing is confidential. I will not disclose, share, or contact employees, customers, or vendors of this business based on information learned here, and will sign an NDA before receiving sensitive financials.</span>
+              </label>
+              <button type="submit" disabled={submitting || !ack}
                 className="w-full rounded-md bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 disabled:opacity-60">
                 {submitting ? "Sending…" : "Submit request"}
               </button>
