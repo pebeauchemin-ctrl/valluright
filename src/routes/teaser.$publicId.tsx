@@ -35,7 +35,11 @@ function Teaser() {
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [buyerType, setBuyerType] = useState("");
+  const [financing, setFinancing] = useState("");
   const [message, setMessage] = useState("");
+  const [ack, setAck] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -43,9 +47,16 @@ function Teaser() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!ack) { toast.error("Please acknowledge confidentiality."); return; }
     setSubmitting(true);
     const { error } = await supabase.from("buyer_access_requests").insert({
-      business_id: business.id, name, email, message,
+      business_id: business.id,
+      name,
+      email,
+      phone: phone || null,
+      buyer_type: (buyerType || null) as "individual" | "strategic" | "financial" | "other" | null,
+      financing_status: (financing || null) as "cash" | "sba_prequalified" | "needs_financing" | "exploring" | null,
+      message,
     });
     setSubmitting(false);
     if (error) { toast.error(error.message); return; }
