@@ -35,7 +35,11 @@ function Teaser() {
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [buyerType, setBuyerType] = useState("");
+  const [financing, setFinancing] = useState("");
   const [message, setMessage] = useState("");
+  const [ack, setAck] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -43,9 +47,16 @@ function Teaser() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!ack) { toast.error("Please acknowledge confidentiality."); return; }
     setSubmitting(true);
     const { error } = await supabase.from("buyer_access_requests").insert({
-      business_id: business.id, name, email, message,
+      business_id: business.id,
+      name,
+      email,
+      phone: phone || null,
+      buyer_type: (buyerType || null) as never,
+      financing_status: (financing || null) as never,
+      message,
     });
     setSubmitting(false);
     if (error) { toast.error(error.message); return; }
@@ -85,6 +96,9 @@ function Teaser() {
             {settings.show_employee_count && <KPI label="Employees" value={String(business.employees ?? "—")} />}
             {settings.show_profit_margin && latest && <KPI label="EBITDA margin" value={`${((Number(latest.ebitda) / Number(latest.revenue)) * 100).toFixed(0)}%`} />}
             {settings.show_sde && latest && <KPI label="SDE" value={fmtCurrency(Number(latest.ebitda) + Number(latest.owner_salary ?? 0), { compact: true })} />}
+            {(settings as { show_customer_concentration?: boolean }).show_customer_concentration && business.top_customer_concentration_pct != null && (
+              <KPI label="Top-customer concentration" value={`${Number(business.top_customer_concentration_pct).toFixed(0)}%`} />
+            )}
             {business.asking_price_low && business.asking_price_high && (
               <KPI label="Asking price" value={`${fmtCurrency(Number(business.asking_price_low), { compact: true })} – ${fmtCurrency(Number(business.asking_price_high), { compact: true })}`} />
             )}
@@ -150,9 +164,32 @@ function Teaser() {
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
               <input required type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+              <input type="tel" placeholder="Phone (optional)" value={phone} onChange={(e) => setPhone(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+              <select value={buyerType} onChange={(e) => setBuyerType(e.target.value)} required
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                <option value="">Buyer type…</option>
+                <option value="individual">Individual buyer</option>
+                <option value="strategic">Strategic acquirer</option>
+                <option value="financial">Financial / PE</option>
+                <option value="search_fund">Search fund</option>
+                <option value="other">Other</option>
+              </select>
+              <select value={financing} onChange={(e) => setFinancing(e.target.value)} required
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                <option value="">Financing status…</option>
+                <option value="cash">Cash</option>
+                <option value="sba_prequalified">SBA pre-qualified</option>
+                <option value="needs_financing">Needs financing</option>
+                <option value="exploring">Just exploring</option>
+              </select>
               <textarea placeholder="Brief message (optional)" value={message} onChange={(e) => setMessage(e.target.value)} rows={3}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
-              <button type="submit" disabled={submitting}
+              <label className="flex items-start gap-2 text-xs text-muted-foreground">
+                <input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} className="mt-0.5 accent-[oklch(0.45_0.1_158)]" />
+                <span>I acknowledge this listing is confidential. I will not disclose, share, or contact employees, customers, or vendors of this business based on information learned here, and will sign an NDA before receiving sensitive financials.</span>
+              </label>
+              <button type="submit" disabled={submitting || !ack}
                 className="w-full rounded-md bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 disabled:opacity-60">
                 {submitting ? "Sending…" : "Submit request"}
               </button>
