@@ -96,6 +96,9 @@ function Teaser() {
             {settings.show_employee_count && <KPI label="Employees" value={String(business.employees ?? "—")} />}
             {settings.show_profit_margin && latest && <KPI label="EBITDA margin" value={`${((Number(latest.ebitda) / Number(latest.revenue)) * 100).toFixed(0)}%`} />}
             {settings.show_sde && latest && <KPI label="SDE" value={fmtCurrency(Number(latest.ebitda) + Number(latest.owner_salary ?? 0), { compact: true })} />}
+            {(settings as { show_customer_concentration?: boolean }).show_customer_concentration && business.top_customer_concentration_pct != null && (
+              <KPI label="Top-customer concentration" value={`${Number(business.top_customer_concentration_pct).toFixed(0)}%`} />
+            )}
             {business.asking_price_low && business.asking_price_high && (
               <KPI label="Asking price" value={`${fmtCurrency(Number(business.asking_price_low), { compact: true })} – ${fmtCurrency(Number(business.asking_price_high), { compact: true })}`} />
             )}
