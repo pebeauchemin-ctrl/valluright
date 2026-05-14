@@ -251,8 +251,10 @@ export type Database = {
           business_id: string
           growth_opportunities: Json | null
           is_published: boolean
+          show_customer_concentration: boolean
           show_employee_count: boolean
           show_exact_revenue: boolean
+          show_photos: boolean
           show_profit_margin: boolean
           show_revenue_chart: boolean
           show_scenarios: boolean
@@ -266,8 +268,10 @@ export type Database = {
           business_id: string
           growth_opportunities?: Json | null
           is_published?: boolean
+          show_customer_concentration?: boolean
           show_employee_count?: boolean
           show_exact_revenue?: boolean
+          show_photos?: boolean
           show_profit_margin?: boolean
           show_revenue_chart?: boolean
           show_scenarios?: boolean
@@ -281,8 +285,10 @@ export type Database = {
           business_id?: string
           growth_opportunities?: Json | null
           is_published?: boolean
+          show_customer_concentration?: boolean
           show_employee_count?: boolean
           show_exact_revenue?: boolean
+          show_photos?: boolean
           show_profit_margin?: boolean
           show_revenue_chart?: boolean
           show_scenarios?: boolean
