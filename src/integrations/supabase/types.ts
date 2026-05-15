@@ -53,27 +53,33 @@ export type Database = {
         Row: {
           advisor_email: string
           advisor_id: string | null
+          advisor_role: string | null
           business_id: string
           id: string
           invited_at: string
+          permission_level: string
           responded_at: string | null
           status: Database["public"]["Enums"]["advisor_invite_status"]
         }
         Insert: {
           advisor_email: string
           advisor_id?: string | null
+          advisor_role?: string | null
           business_id: string
           id?: string
           invited_at?: string
+          permission_level?: string
           responded_at?: string | null
           status?: Database["public"]["Enums"]["advisor_invite_status"]
         }
         Update: {
           advisor_email?: string
           advisor_id?: string | null
+          advisor_role?: string | null
           business_id?: string
           id?: string
           invited_at?: string
+          permission_level?: string
           responded_at?: string | null
           status?: Database["public"]["Enums"]["advisor_invite_status"]
         }

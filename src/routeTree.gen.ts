@@ -19,6 +19,7 @@ import { Route as TeaserPublicIdRouteImport } from './routes/teaser.$publicId'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppScenariosRouteImport } from './routes/app.scenarios'
 import { Route as AppRoadmapRouteImport } from './routes/app.roadmap'
+import { Route as AppReportsRouteImport } from './routes/app.reports'
 import { Route as AppRecommendationsRouteImport } from './routes/app.recommendations'
 import { Route as AppOnboardingRouteImport } from './routes/app.onboarding'
 import { Route as AppImproveValueRouteImport } from './routes/app.improve-value'
@@ -77,6 +78,11 @@ const AppScenariosRoute = AppScenariosRouteImport.update({
 const AppRoadmapRoute = AppRoadmapRouteImport.update({
   id: '/roadmap',
   path: '/roadmap',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppReportsRoute = AppReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
   getParentRoute: () => AppRoute,
 } as any)
 const AppRecommendationsRoute = AppRecommendationsRouteImport.update({
@@ -139,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/app/improve-value': typeof AppImproveValueRoute
   '/app/onboarding': typeof AppOnboardingRoute
   '/app/recommendations': typeof AppRecommendationsRoute
+  '/app/reports': typeof AppReportsRoute
   '/app/roadmap': typeof AppRoadmapRoute
   '/app/scenarios': typeof AppScenariosRoute
   '/app/settings': typeof AppSettingsRoute
@@ -159,6 +166,7 @@ export interface FileRoutesByTo {
   '/app/improve-value': typeof AppImproveValueRoute
   '/app/onboarding': typeof AppOnboardingRoute
   '/app/recommendations': typeof AppRecommendationsRoute
+  '/app/reports': typeof AppReportsRoute
   '/app/roadmap': typeof AppRoadmapRoute
   '/app/scenarios': typeof AppScenariosRoute
   '/app/settings': typeof AppSettingsRoute
@@ -181,6 +189,7 @@ export interface FileRoutesById {
   '/app/improve-value': typeof AppImproveValueRoute
   '/app/onboarding': typeof AppOnboardingRoute
   '/app/recommendations': typeof AppRecommendationsRoute
+  '/app/reports': typeof AppReportsRoute
   '/app/roadmap': typeof AppRoadmapRoute
   '/app/scenarios': typeof AppScenariosRoute
   '/app/settings': typeof AppSettingsRoute
@@ -204,6 +213,7 @@ export interface FileRouteTypes {
     | '/app/improve-value'
     | '/app/onboarding'
     | '/app/recommendations'
+    | '/app/reports'
     | '/app/roadmap'
     | '/app/scenarios'
     | '/app/settings'
@@ -224,6 +234,7 @@ export interface FileRouteTypes {
     | '/app/improve-value'
     | '/app/onboarding'
     | '/app/recommendations'
+    | '/app/reports'
     | '/app/roadmap'
     | '/app/scenarios'
     | '/app/settings'
@@ -245,6 +256,7 @@ export interface FileRouteTypes {
     | '/app/improve-value'
     | '/app/onboarding'
     | '/app/recommendations'
+    | '/app/reports'
     | '/app/roadmap'
     | '/app/scenarios'
     | '/app/settings'
@@ -335,6 +347,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRoadmapRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/reports': {
+      id: '/app/reports'
+      path: '/reports'
+      fullPath: '/app/reports'
+      preLoaderRoute: typeof AppReportsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/recommendations': {
       id: '/app/recommendations'
       path: '/recommendations'
@@ -410,6 +429,7 @@ interface AppRouteChildren {
   AppImproveValueRoute: typeof AppImproveValueRoute
   AppOnboardingRoute: typeof AppOnboardingRoute
   AppRecommendationsRoute: typeof AppRecommendationsRoute
+  AppReportsRoute: typeof AppReportsRoute
   AppRoadmapRoute: typeof AppRoadmapRoute
   AppScenariosRoute: typeof AppScenariosRoute
   AppSettingsRoute: typeof AppSettingsRoute
@@ -425,6 +445,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppImproveValueRoute: AppImproveValueRoute,
   AppOnboardingRoute: AppOnboardingRoute,
   AppRecommendationsRoute: AppRecommendationsRoute,
+  AppReportsRoute: AppReportsRoute,
   AppRoadmapRoute: AppRoadmapRoute,
   AppScenariosRoute: AppScenariosRoute,
   AppSettingsRoute: AppSettingsRoute,

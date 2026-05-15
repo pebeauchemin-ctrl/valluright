@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import {
   Mountain, LayoutDashboard, FileSpreadsheet, Sparkles, Sliders, Eye,
   Folder, Users, Settings as SettingsIcon, LogOut, ChevronDown, Plus,
-  Activity, TrendingUp, Map,
+  Activity, TrendingUp, Map, FileText,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useBusiness } from "@/lib/business";
@@ -55,6 +55,7 @@ function AppLayout() {
       { to: "/app/roadmap", label: "Roadmap", icon: Map },
       { to: "/app/buyer-teaser", label: "Buyer Teaser", icon: Eye },
       { to: "/app/data-room", label: "Data Room", icon: Folder },
+      { to: "/app/reports", label: "Reports", icon: FileText },
       { to: "/app/advisors", label: "Advisors", icon: Users },
       { to: "/app/settings", label: "Settings", icon: SettingsIcon },
     ];
