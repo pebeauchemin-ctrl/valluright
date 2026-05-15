@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import {
   Mountain, LayoutDashboard, FileSpreadsheet, Sparkles, Sliders, Eye,
   Folder, Users, Settings as SettingsIcon, LogOut, ChevronDown, Plus,
-  Activity, TrendingUp, Map,
+  Activity, TrendingUp, Map, FileText,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useBusiness } from "@/lib/business";
