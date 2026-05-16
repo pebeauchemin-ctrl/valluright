@@ -5,6 +5,7 @@ import { useBusiness, toBusinessInputs, type FinancialYearRow } from "@/lib/busi
 import { supabase } from "@/integrations/supabase/client";
 import { computeHealthScore, valueBusiness, type HealthBreakdown, type BusinessInputs } from "@/lib/valuation";
 import { fmtCurrency } from "@/lib/format";
+import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 import { toast } from "sonner";
 import {
   ResponsiveContainer, RadialBarChart, RadialBar, PolarAngleAxis,
