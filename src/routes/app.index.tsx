@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { valueBusiness, computeHealthScore, type Valuation, type MethodResult } from "@/lib/valuation";
 import { fmtCurrency, fmtPct } from "@/lib/format";
 import { MethodDetailDialog, MethodRangeBar } from "@/components/MethodDetailDialog";
+import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
   RadialBarChart, RadialBar, PolarAngleAxis,
