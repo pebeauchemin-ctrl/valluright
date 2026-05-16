@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { valueBusiness, computeHealthScore, type Valuation, type MethodResult } from "@/lib/valuation";
 import { fmtCurrency, fmtPct } from "@/lib/format";
 import { MethodDetailDialog, MethodRangeBar } from "@/components/MethodDetailDialog";
+import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
   RadialBarChart, RadialBar, PolarAngleAxis,
@@ -306,9 +307,7 @@ function Dashboard() {
         </div>
       </section>
 
-      <p className="text-xs text-muted-foreground text-center pt-4">
-        ValuRight.ai outputs are software-generated planning estimates. Not a certified appraisal, tax advice, legal advice, or guaranteed sale price.
-      </p>
+      <ValuationDisclaimer className="mt-4" />
     </div>
   );
 }

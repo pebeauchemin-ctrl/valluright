@@ -5,6 +5,7 @@ import { useBusiness, toBusinessInputs, type FinancialYearRow } from "@/lib/busi
 import { supabase } from "@/integrations/supabase/client";
 import { computeHealthScore, valueBusiness, type HealthBreakdown, type BusinessInputs } from "@/lib/valuation";
 import { fmtCurrency } from "@/lib/format";
+import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 import { toast } from "sonner";
 import {
   ResponsiveContainer, RadialBarChart, RadialBar, PolarAngleAxis,
@@ -420,9 +421,7 @@ function HealthScorePage() {
         </div>
       </section>
 
-      <p className="text-xs text-muted-foreground text-center pt-4">
-        Software-generated diagnostic. Not a certified business appraisal.
-      </p>
+      <ValuationDisclaimer className="mt-4" />
     </div>
   );
 }

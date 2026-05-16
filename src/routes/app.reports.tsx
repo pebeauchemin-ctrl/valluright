@@ -5,6 +5,7 @@ import { useBusiness } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
 import { fmtCurrency, fmtPct } from "@/lib/format";
 import { toast } from "sonner";
+import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 
 export const Route = createFileRoute("/app/reports")({
   head: () => ({ meta: [{ title: "Reports — ValuRight.ai" }] }),
@@ -238,9 +239,7 @@ function ReportPreview({ reportKey, bundle, onClose }: { reportKey: ReportKey; b
             </>
           )}
 
-          <footer className="border-t border-neutral-200 pt-4 text-[10px] text-neutral-500">
-            Software-generated estimate prepared by ValuRight.ai. Not a certified appraisal.
-          </footer>
+          <ValuationDisclaimer variant="print" />
         </div>
       </div>
     </div>
