@@ -5,6 +5,7 @@ import { useBusiness } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
 import { fmtCurrency, fmtPct } from "@/lib/format";
 import { toast } from "sonner";
+import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 
 export const Route = createFileRoute("/app/reports")({
   head: () => ({ meta: [{ title: "Reports — ValuRight.ai" }] }),
