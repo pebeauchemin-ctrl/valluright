@@ -4,6 +4,7 @@ import { Mountain, Mail, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { fmtCurrency } from "@/lib/format";
 import { toast } from "sonner";
+import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
 } from "recharts";
