@@ -306,9 +306,7 @@ function Dashboard() {
         </div>
       </section>
 
-      <p className="text-xs text-muted-foreground text-center pt-4">
-        ValuRight.ai outputs are software-generated planning estimates. Not a certified appraisal, tax advice, legal advice, or guaranteed sale price.
-      </p>
+      <ValuationDisclaimer className="mt-4" />
     </div>
   );
 }
