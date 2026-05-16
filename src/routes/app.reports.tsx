@@ -238,9 +238,7 @@ function ReportPreview({ reportKey, bundle, onClose }: { reportKey: ReportKey; b
             </>
           )}
 
-          <footer className="border-t border-neutral-200 pt-4 text-[10px] text-neutral-500">
-            Software-generated estimate prepared by ValuRight.ai. Not a certified appraisal.
-          </footer>
+          <ValuationDisclaimer variant="print" />
         </div>
       </div>
     </div>
