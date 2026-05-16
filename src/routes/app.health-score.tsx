@@ -420,9 +420,7 @@ function HealthScorePage() {
         </div>
       </section>
 
-      <p className="text-xs text-muted-foreground text-center pt-4">
-        Software-generated diagnostic. Not a certified business appraisal.
-      </p>
+      <ValuationDisclaimer className="mt-4" />
     </div>
   );
 }
