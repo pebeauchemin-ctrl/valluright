@@ -524,6 +524,53 @@ export type Database = {
           },
         ]
       }
+      reports: {
+        Row: {
+          business_id: string
+          created_at: string
+          generated_at: string
+          generated_by: string | null
+          id: string
+          include_recommendations: boolean
+          include_scenarios: boolean
+          report_type: string
+          snapshot: Json | null
+          title: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          include_recommendations?: boolean
+          include_scenarios?: boolean
+          report_type: string
+          snapshot?: Json | null
+          title: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          include_recommendations?: boolean
+          include_scenarios?: boolean
+          report_type?: string
+          snapshot?: Json | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scenarios: {
         Row: {
           action_steps: string[]
@@ -621,6 +668,63 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      valuation_method_results: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          is_selected: boolean
+          method: string
+          multiple_or_rate: number | null
+          notes: string | null
+          valuation_id: string
+          value_high: number | null
+          value_low: number | null
+          value_mid: number | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          is_selected?: boolean
+          method: string
+          multiple_or_rate?: number | null
+          notes?: string | null
+          valuation_id: string
+          value_high?: number | null
+          value_low?: number | null
+          value_mid?: number | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          is_selected?: boolean
+          method?: string
+          multiple_or_rate?: number | null
+          notes?: string | null
+          valuation_id?: string
+          value_high?: number | null
+          value_low?: number | null
+          value_mid?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "valuation_method_results_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "valuation_method_results_valuation_id_fkey"
+            columns: ["valuation_id"]
+            isOneToOne: false
+            referencedRelation: "valuations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       valuations: {
         Row: {
