@@ -189,6 +189,8 @@ function BuyerTeaser() {
             <Save className="h-4 w-4" /> {saving ? "Saving…" : "Save changes"}
           </button>
         </div>
+
+        <ValuationDisclaimer />
       </div>
     </div>
   );
