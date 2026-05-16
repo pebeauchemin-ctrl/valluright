@@ -4,6 +4,7 @@ import { Eye, Copy, ExternalLink, Save } from "lucide-react";
 import { useBusiness } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 
 export const Route = createFileRoute("/app/buyer-teaser")({
   head: () => ({ meta: [{ title: "Buyer Teaser — ValuRight.ai" }] }),
