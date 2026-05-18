@@ -13,15 +13,7 @@ function Landing() {
       <header className="border-b border-border/60 bg-background/80 backdrop-blur sticky top-0 z-50">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Mountain className="h-5 w-5" />
-            </div>
-            <div className="flex flex-col leading-none">
-              <span className="font-display text-lg font-semibold tracking-tight text-primary">
-                valuright<span className="text-accent">.ai</span>
-              </span>
-              <span className="text-[10px] uppercase tracking-[0.18em] text-accent font-medium">SMB Exit Guide</span>
-            </div>
+            <BrandLogo size={40} withTagline />
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
             <a href="#how-it-works" className="hover:text-foreground transition">How it works</a>
