@@ -68,11 +68,8 @@ function AuthPage() {
   return (
     <div className="min-h-screen flex bg-background">
       <div className="hidden lg:flex lg:w-1/2 bg-primary text-primary-foreground p-12 flex-col justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground">
-            <Mountain className="h-5 w-5" />
-          </div>
-          <span className="font-display text-lg font-semibold">valuright.ai</span>
+        <Link to="/" className="flex items-center">
+          <BrandLogo size={36} variant="onDark" withTagline />
         </Link>
         <div>
           <h2 className="font-display text-4xl font-semibold leading-tight">
