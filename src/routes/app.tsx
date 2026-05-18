@@ -1,10 +1,11 @@
 import { createFileRoute, Link, Outlet, useNavigate, useLocation } from "@tanstack/react-router";
 import { useEffect } from "react";
 import {
-  Mountain, LayoutDashboard, FileSpreadsheet, Sparkles, Sliders, Eye,
+  LayoutDashboard, FileSpreadsheet, Sparkles, Sliders, Eye,
   Folder, Users, Settings as SettingsIcon, LogOut, ChevronDown, Plus,
   Activity, TrendingUp, Map, FileText,
 } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 import { useAuth } from "@/lib/auth";
 import { useBusiness } from "@/lib/business";
 
