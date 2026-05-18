@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, ShieldCheck, TrendingUp, Users, FileCheck, Sparkles, Mountain } from "lucide-react";
+import { ArrowRight, ShieldCheck, TrendingUp, Users, FileCheck, Sparkles } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export const Route = createFileRoute("/")({
   component: Landing,
