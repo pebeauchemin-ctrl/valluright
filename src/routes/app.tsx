@@ -1,10 +1,11 @@
 import { createFileRoute, Link, Outlet, useNavigate, useLocation } from "@tanstack/react-router";
 import { useEffect } from "react";
 import {
-  Mountain, LayoutDashboard, FileSpreadsheet, Sparkles, Sliders, Eye,
+  LayoutDashboard, FileSpreadsheet, Sparkles, Sliders, Eye,
   Folder, Users, Settings as SettingsIcon, LogOut, ChevronDown, Plus,
   Activity, TrendingUp, Map, FileText,
 } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 import { useAuth } from "@/lib/auth";
 import { useBusiness } from "@/lib/business";
 
@@ -64,11 +65,8 @@ function AppLayout() {
     <div className="min-h-screen flex bg-secondary/40">
       {/* Sidebar */}
       <aside className="w-64 shrink-0 bg-sidebar text-sidebar-foreground flex flex-col">
-        <Link to="/" className="flex items-center gap-2 px-5 py-5 border-b border-sidebar-border">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-accent text-accent-foreground">
-            <Mountain className="h-4 w-4" />
-          </div>
-          <span className="font-display font-semibold">valuright.ai</span>
+        <Link to="/" className="flex items-center px-5 py-5 border-b border-sidebar-border">
+          <BrandLogo size={32} variant="onDark" />
         </Link>
 
         {/* Business switcher */}

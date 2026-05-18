@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Mountain } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -68,11 +68,8 @@ function AuthPage() {
   return (
     <div className="min-h-screen flex bg-background">
       <div className="hidden lg:flex lg:w-1/2 bg-primary text-primary-foreground p-12 flex-col justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground">
-            <Mountain className="h-5 w-5" />
-          </div>
-          <span className="font-display text-lg font-semibold">valuright.ai</span>
+        <Link to="/" className="flex items-center">
+          <BrandLogo size={36} variant="onDark" withTagline />
         </Link>
         <div>
           <h2 className="font-display text-4xl font-semibold leading-tight">
@@ -87,11 +84,8 @@ function AuthPage() {
 
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
-          <Link to="/" className="lg:hidden flex items-center gap-2 mb-8">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              <Mountain className="h-4 w-4" />
-            </div>
-            <span className="font-display font-semibold text-primary">valuright.ai</span>
+          <Link to="/" className="lg:hidden flex items-center mb-8">
+            <BrandLogo size={32} />
           </Link>
 
           <h1 className="font-display text-3xl font-semibold text-primary">{heading}</h1>

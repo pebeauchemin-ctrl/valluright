@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, ShieldCheck, TrendingUp, Users, FileCheck, Sparkles, Mountain } from "lucide-react";
+import { ArrowRight, ShieldCheck, TrendingUp, Users, FileCheck, Sparkles } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -12,15 +13,7 @@ function Landing() {
       <header className="border-b border-border/60 bg-background/80 backdrop-blur sticky top-0 z-50">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Mountain className="h-5 w-5" />
-            </div>
-            <div className="flex flex-col leading-none">
-              <span className="font-display text-lg font-semibold tracking-tight text-primary">
-                valuright<span className="text-accent">.ai</span>
-              </span>
-              <span className="text-[10px] uppercase tracking-[0.18em] text-accent font-medium">SMB Exit Guide</span>
-            </div>
+            <BrandLogo size={40} withTagline />
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
             <a href="#how-it-works" className="hover:text-foreground transition">How it works</a>
@@ -162,12 +155,8 @@ function Landing() {
         <div className="mx-auto max-w-7xl px-6 py-12">
           <div className="flex flex-col md:flex-row justify-between gap-8">
             <div>
-              <div className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground">
-                  <Mountain className="h-5 w-5" />
-                </div>
-                <span className="font-display text-lg font-semibold">valuright.ai</span>
-              </div>
+              <BrandLogo size={36} variant="onDark" />
+
               <p className="mt-3 text-sm text-primary-foreground/70 max-w-md">
                 Helping business owners over 60 get the value they've built.
               </p>
