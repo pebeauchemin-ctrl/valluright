@@ -155,12 +155,8 @@ function Landing() {
         <div className="mx-auto max-w-7xl px-6 py-12">
           <div className="flex flex-col md:flex-row justify-between gap-8">
             <div>
-              <div className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground">
-                  <Mountain className="h-5 w-5" />
-                </div>
-                <span className="font-display text-lg font-semibold">valuright.ai</span>
-              </div>
+              <BrandLogo size={36} variant="onDark" />
+
               <p className="mt-3 text-sm text-primary-foreground/70 max-w-md">
                 Helping business owners over 60 get the value they've built.
               </p>
