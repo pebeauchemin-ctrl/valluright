@@ -9,15 +9,57 @@ import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
 } from "recharts";
 
+type PublicBusiness = {
+  id: string;
+  public_id: string;
+  industry: string | null;
+  region: string | null;
+  years_in_business: number | null;
+  employees: number | null;
+  anonymous_description: string | null;
+  asking_price_low: number | null;
+  asking_price_high: number | null;
+  reason_for_sale: string | null;
+  top_customer_concentration_pct: number | null;
+};
+
+type PublicTeaserSettings = {
+  show_exact_revenue: boolean;
+  show_revenue_chart: boolean;
+  show_profit_margin: boolean;
+  show_sde: boolean;
+  show_employee_count: boolean;
+  show_customer_concentration?: boolean;
+  business_highlights: string[] | null;
+  growth_opportunities: string[] | null;
+  transition_support: string | null;
+  is_published: boolean;
+};
+
+type PublicFinancial = {
+  year: number;
+  revenue: number | null;
+  revenue_band: string | null;
+  revenue_index: number | null;
+  ebitda_margin_pct: number | null;
+  sde: number | null;
+};
+
+type PublicTeaserPayload = {
+  business: PublicBusiness;
+  settings: PublicTeaserSettings;
+  financials: PublicFinancial[];
+};
+
 export const Route = createFileRoute("/teaser/$publicId")({
   head: () => ({ meta: [{ title: "Confidential Business Profile — ValuRight.ai" }] }),
   loader: async ({ params }) => {
-    const { data: biz } = await supabase.from("businesses").select("*").eq("public_id", params.publicId).maybeSingle();
-    if (!biz) throw notFound();
-    const { data: settings } = await supabase.from("buyer_view_settings").select("*").eq("business_id", biz.id).maybeSingle();
-    if (!settings || !settings.is_published) throw notFound();
-    const { data: financials } = await supabase.from("financial_years").select("*").eq("business_id", biz.id).order("year", { ascending: true });
-    return { business: biz, settings, financials: financials ?? [] };
+    const { data, error } = await (supabase as unknown as {
+      rpc: (fn: "get_public_teaser", args: { _public_id: string }) => Promise<{ data: PublicTeaserPayload | null; error: Error | null }>;
+    }).rpc("get_public_teaser", { _public_id: params.publicId });
+
+    if (error || !data?.business || !data?.settings?.is_published) throw notFound();
+    return { business: data.business, settings: data.settings, financials: data.financials ?? [] };
   },
   component: Teaser,
   notFoundComponent: () => (
@@ -68,7 +110,7 @@ function Teaser() {
   const opps = (settings.growth_opportunities as string[] | null) ?? [];
 
   const latest = financials[financials.length - 1];
-  const revBand = latest && Number(latest.revenue) > 0 ? bandFor(Number(latest.revenue)) : null;
+  const revBand = latest?.revenue_band ?? null;
 
   return (
     <div className="min-h-screen bg-secondary/30">
@@ -93,10 +135,10 @@ function Teaser() {
           <p className="mt-6 text-foreground leading-relaxed">{business.anonymous_description || "Established business available for acquisition."}</p>
 
           <div className="mt-8 grid sm:grid-cols-3 gap-4">
-            <KPI label="Revenue" value={settings.show_exact_revenue && latest ? fmtCurrency(Number(latest.revenue), { compact: true }) : revBand ?? "Available under NDA"} />
+            <KPI label="Revenue" value={settings.show_exact_revenue && latest?.revenue != null ? fmtCurrency(Number(latest.revenue), { compact: true }) : revBand ?? "Available under NDA"} />
             {settings.show_employee_count && <KPI label="Employees" value={String(business.employees ?? "—")} />}
-            {settings.show_profit_margin && latest && <KPI label="EBITDA margin" value={`${((Number(latest.ebitda) / Number(latest.revenue)) * 100).toFixed(0)}%`} />}
-            {settings.show_sde && latest && <KPI label="SDE" value={fmtCurrency(Number(latest.ebitda) + Number(latest.owner_salary ?? 0), { compact: true })} />}
+            {settings.show_profit_margin && latest?.ebitda_margin_pct != null && <KPI label="EBITDA margin" value={`${Number(latest.ebitda_margin_pct).toFixed(0)}%`} />}
+            {settings.show_sde && latest?.sde != null && <KPI label="SDE" value={fmtCurrency(Number(latest.sde), { compact: true })} />}
             {(settings as { show_customer_concentration?: boolean }).show_customer_concentration && business.top_customer_concentration_pct != null && (
               <KPI label="Top-customer concentration" value={`${Number(business.top_customer_concentration_pct).toFixed(0)}%`} />
             )}
@@ -109,9 +151,9 @@ function Teaser() {
             <div className="mt-8">
               <h3 className="text-sm font-semibold text-primary mb-3">Revenue trend (indexed)</h3>
               <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={financials.map((f: { year: number; revenue: number | null }) => ({
+                <BarChart data={financials.map((f: PublicFinancial) => ({
                   year: String(f.year),
-                  value: settings.show_exact_revenue ? Number(f.revenue) : (Number(f.revenue) / Number(financials[0]?.revenue || 1)) * 100,
+                  value: settings.show_exact_revenue ? Number(f.revenue ?? 0) : Number(f.revenue_index ?? 0),
                 }))}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                   <XAxis dataKey="year" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} />
@@ -226,13 +268,4 @@ function Block({ title, items }: { title: string; items: string[] }) {
       </ul>
     </div>
   );
-}
-
-function bandFor(revenue: number): string {
-  if (revenue < 500_000) return "Under $500K";
-  if (revenue < 1_000_000) return "$500K – $1M";
-  if (revenue < 2_500_000) return "$1M – $2.5M";
-  if (revenue < 5_000_000) return "$2.5M – $5M";
-  if (revenue < 10_000_000) return "$5M – $10M";
-  return "$10M+";
 }
