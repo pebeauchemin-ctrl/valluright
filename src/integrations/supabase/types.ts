@@ -892,6 +892,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_public_teaser: { Args: { _public_id: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -903,6 +904,7 @@ export type Database = {
         Args: { _business_id: string; _user_id: string }
         Returns: boolean
       }
+      revenue_band: { Args: { _revenue: number }; Returns: string }
     }
     Enums: {
       access_request_status: "pending" | "approved" | "denied"
