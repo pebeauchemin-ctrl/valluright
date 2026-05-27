@@ -1,12 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { TrendingUp, AlertTriangle, ArrowRight, Sparkles, Eye, Sliders } from "lucide-react";
+import { TrendingUp, AlertTriangle, ArrowRight, Sparkles, Eye, Sliders, Loader2 } from "lucide-react";
 import { useBusiness, toBusinessInputs, type FinancialYearRow } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
 import { valueBusiness, computeHealthScore, type Valuation, type MethodResult } from "@/lib/valuation";
+import { buildValuationInsert } from "@/lib/valuation-persistence";
 import { fmtCurrency, fmtPct } from "@/lib/format";
 import { MethodDetailDialog, MethodRangeBar } from "@/components/MethodDetailDialog";
 import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
+import { toast } from "sonner";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
   RadialBarChart, RadialBar, PolarAngleAxis,
@@ -22,19 +24,34 @@ function Dashboard() {
   const [financials, setFinancials] = useState<FinancialYearRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeMethod, setActiveMethod] = useState<MethodResult | null>(null);
+  const [hasSavedValuation, setHasSavedValuation] = useState<boolean | null>(null);
+  const [savingValuation, setSavingValuation] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    if (!current) { setFinancials([]); setLoading(false); return; }
+    if (!current) {
+      setFinancials([]);
+      setHasSavedValuation(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    supabase
-      .from("financial_years")
-      .select("*")
-      .eq("business_id", current.id)
-      .order("year", { ascending: true })
-      .then(({ data }) => {
+    Promise.all([
+      supabase
+        .from("financial_years")
+        .select("*")
+        .eq("business_id", current.id)
+        .order("year", { ascending: true }),
+      supabase
+        .from("valuations")
+        .select("id")
+        .eq("business_id", current.id)
+        .order("computed_at", { ascending: false })
+        .limit(1),
+    ]).then(([financialsResult, valuationsResult]) => {
         if (cancelled) return;
-        setFinancials(data ?? []);
+        setFinancials(financialsResult.data ?? []);
+        setHasSavedValuation(Boolean(valuationsResult.data?.length));
         setLoading(false);
       });
     return () => { cancelled = true; };
@@ -47,10 +64,27 @@ function Dashboard() {
   const valuation: Valuation | null = useMemo(() => inputs ? valueBusiness(inputs) : null, [inputs]);
   const health = useMemo(() => inputs ? computeHealthScore(inputs) : null, [inputs]);
 
+  const saveCurrentValuation = async () => {
+    if (!current || !inputs || !valuation || !health) return;
+    setSavingValuation(true);
+    try {
+      const { error } = await supabase
+        .from("valuations")
+        .insert(buildValuationInsert(current.id, inputs, valuation, health));
+      if (error) throw error;
+      setHasSavedValuation(true);
+      toast.success("Valuation generated and saved.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not generate valuation");
+    } finally {
+      setSavingValuation(false);
+    }
+  };
+
   if (bizLoading || loading) {
     return <div className="p-12 text-sm text-muted-foreground">Loading your dashboard…</div>;
   }
-  if (!current || !valuation || !health || !inputs) {
+  if (!current) {
     return (
       <div className="p-12">
         <div className="rounded-2xl border border-border bg-card p-10 text-center max-w-lg mx-auto">
@@ -58,6 +92,32 @@ function Dashboard() {
           <p className="mt-2 text-sm text-muted-foreground">It takes about 15 minutes to enter the basics, three years of financials, and your operations details.</p>
           <Link to="/app/onboarding" className="mt-6 inline-flex items-center gap-1.5 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90">
             Start onboarding <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </div>
+    );
+  }
+  if (financials.length === 0) {
+    return (
+      <div className="p-12">
+        <div className="rounded-2xl border border-border bg-card p-10 text-center max-w-lg mx-auto">
+          <h1 className="font-display text-2xl font-semibold text-primary">Resume financial setup</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Your business profile is saved, but the dashboard needs at least one year of financials before it can generate a valuation.</p>
+          <Link to="/app/onboarding" className="mt-6 inline-flex items-center gap-1.5 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90">
+            Add financials <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </div>
+    );
+  }
+  if (!valuation || !health || !inputs) {
+    return (
+      <div className="p-12">
+        <div className="rounded-2xl border border-border bg-card p-10 text-center max-w-lg mx-auto">
+          <h1 className="font-display text-2xl font-semibold text-primary">Fix missing valuation</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Your business and financials are saved, but the valuation could not be generated. Review your setup and try again.</p>
+          <Link to="/app/onboarding" className="mt-6 inline-flex items-center gap-1.5 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90">
+            Resume review <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </div>
@@ -117,6 +177,28 @@ function Dashboard() {
           </Link>
         </div>
       </div>
+
+      {hasSavedValuation === false && (
+        <div className="rounded-xl border border-accent/40 bg-accent-soft p-4 shadow-sm">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="font-display text-base font-semibold text-primary">Valuation snapshot missing</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                This dashboard is using your saved business and financial data to regenerate the estimate. Save a valuation snapshot so reports and history have a durable record.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={saveCurrentValuation}
+              disabled={savingValuation}
+              className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90 disabled:opacity-60"
+            >
+              {savingValuation ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              Generate valuation
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Range hero */}
       <section className="grid lg:grid-cols-3 gap-6">
