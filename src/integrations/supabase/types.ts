@@ -905,6 +905,10 @@ export type Database = {
         Returns: boolean
       }
       revenue_band: { Args: { _revenue: number }; Returns: string }
+      user_owns_business_path: {
+        Args: { _object_name: string }
+        Returns: boolean
+      }
     }
     Enums: {
       access_request_status: "pending" | "approved" | "denied"
