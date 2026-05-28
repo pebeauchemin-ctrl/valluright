@@ -605,7 +605,9 @@ function Onboarding() {
                   </tbody>
                 </table>
               </div>
-              <p className="text-xs text-muted-foreground">All values in USD. EBITDA = earnings before interest, tax, depreciation, amortization. Add-backs are personal expenses run through the business that a buyer wouldn't continue.</p>
+              <p className="text-xs text-muted-foreground">
+                All values in USD. EBITDA should exclude interest, taxes, depreciation, and amortization. SDE adds one working owner's compensation and buyer-acceptable one-time add-backs to EBITDA, so do not include owner salary again inside add-backs.
+              </p>
             </div>
           )}
 
