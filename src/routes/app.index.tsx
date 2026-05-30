@@ -400,6 +400,12 @@ function Dashboard() {
                 {categoryLabel.toLowerCase()}. Methods marked as sanity checks or floors are shown
                 for context but do not drive the final range.
               </p>
+              <Link
+                to="/methodology"
+                className="mt-3 inline-flex text-sm font-semibold text-accent hover:underline"
+              >
+                View valuation methodology
+              </Link>
             </div>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold text-muted-foreground">
               <FileText className="h-3.5 w-3.5" /> Audit trail
