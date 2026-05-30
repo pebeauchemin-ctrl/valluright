@@ -31,6 +31,9 @@ export function PublicPageShell({
             <Link to="/security" className="hover:text-foreground transition">
               Security
             </Link>
+            <Link to="/methodology" className="hover:text-foreground transition">
+              Methodology
+            </Link>
             <Link to="/demo" className="hover:text-foreground transition">
               Demo
             </Link>
@@ -47,9 +50,7 @@ export function PublicPageShell({
       <main>
         <section className="border-b border-border/60 bg-secondary/40">
           <div className="mx-auto max-w-4xl px-6 py-14">
-            <p className="text-sm font-semibold uppercase tracking-wider text-accent">
-              {eyebrow}
-            </p>
+            <p className="text-sm font-semibold uppercase tracking-wider text-accent">{eyebrow}</p>
             <h1 className="mt-3 font-display text-4xl font-semibold text-primary md:text-5xl">
               {title}
             </h1>
@@ -80,6 +81,9 @@ export function PublicPageShell({
             <Link to="/security" className="hover:text-primary-foreground">
               Security
             </Link>
+            <Link to="/methodology" className="hover:text-primary-foreground">
+              Methodology
+            </Link>
           </div>
         </div>
       </footer>
@@ -87,19 +91,11 @@ export function PublicPageShell({
   );
 }
 
-export function LegalSection({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+export function LegalSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="border-b border-border/60 py-7 last:border-0">
       <h2 className="font-display text-xl font-semibold text-primary">{title}</h2>
-      <div className="mt-3 space-y-3 text-sm leading-relaxed text-muted-foreground">
-        {children}
-      </div>
+      <div className="mt-3 space-y-3 text-sm leading-relaxed text-muted-foreground">{children}</div>
     </section>
   );
 }

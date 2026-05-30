@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -13,13 +14,21 @@ export function ValuationDisclaimer({ variant = "card", className }: Props) {
   if (variant === "inline") {
     return (
       <p className={cn("text-xs leading-relaxed text-muted-foreground", className)}>
-        <span className="font-semibold">Disclaimer.</span> {VALUATION_DISCLAIMER_TEXT}
+        <span className="font-semibold">Disclaimer.</span> {VALUATION_DISCLAIMER_TEXT}{" "}
+        <Link to="/methodology" className="font-semibold text-accent hover:underline">
+          View methodology.
+        </Link>
       </p>
     );
   }
   if (variant === "print") {
     return (
-      <div className={cn("mt-8 border-t border-border pt-4 text-[10px] leading-relaxed text-muted-foreground", className)}>
+      <div
+        className={cn(
+          "mt-8 border-t border-border pt-4 text-[10px] leading-relaxed text-muted-foreground",
+          className,
+        )}
+      >
         <span className="font-semibold uppercase tracking-wider">Important Disclaimer — </span>
         {VALUATION_DISCLAIMER_TEXT}
       </div>
@@ -27,17 +36,17 @@ export function ValuationDisclaimer({ variant = "card", className }: Props) {
   }
   return (
     <div
-      className={cn(
-        "rounded-lg border border-border bg-secondary/40 p-4 flex gap-3",
-        className,
-      )}
+      className={cn("rounded-lg border border-border bg-secondary/40 p-4 flex gap-3", className)}
       role="note"
       aria-label="Valuation disclaimer"
     >
       <Info className="h-4 w-4 mt-0.5 flex-shrink-0 text-muted-foreground" aria-hidden />
       <p className="text-xs leading-relaxed text-muted-foreground">
         <span className="font-semibold text-foreground">Disclaimer. </span>
-        {VALUATION_DISCLAIMER_TEXT}
+        {VALUATION_DISCLAIMER_TEXT}{" "}
+        <Link to="/methodology" className="font-semibold text-accent hover:underline">
+          View methodology.
+        </Link>
       </p>
     </div>
   );
