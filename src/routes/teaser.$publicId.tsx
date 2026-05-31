@@ -48,6 +48,48 @@ type PublicTeaserPayload = {
   financials: PublicFinancial[];
 };
 
+type PublicBusiness = {
+  id: string;
+  public_id: string;
+  industry: string | null;
+  region: string | null;
+  years_in_business: number | null;
+  employees: number | null;
+  anonymous_description: string | null;
+  asking_price_low: number | null;
+  asking_price_high: number | null;
+  reason_for_sale: string | null;
+  top_customer_concentration_pct: number | null;
+};
+
+type PublicTeaserSettings = {
+  show_exact_revenue: boolean;
+  show_revenue_chart: boolean;
+  show_profit_margin: boolean;
+  show_sde: boolean;
+  show_employee_count: boolean;
+  show_customer_concentration?: boolean;
+  business_highlights: string[] | null;
+  growth_opportunities: string[] | null;
+  transition_support: string | null;
+  is_published: boolean;
+};
+
+type PublicFinancial = {
+  year: number;
+  revenue: number | null;
+  revenue_band: string | null;
+  revenue_index: number | null;
+  ebitda_margin_pct: number | null;
+  sde: number | null;
+};
+
+type PublicTeaserPayload = {
+  business: PublicBusiness;
+  settings: PublicTeaserSettings;
+  financials: PublicFinancial[];
+};
+
 export const Route = createFileRoute("/teaser/$publicId")({
   head: () => ({ meta: [{ title: "Confidential Business Profile — ValuRight.ai" }] }),
   loader: async ({ params }) => {

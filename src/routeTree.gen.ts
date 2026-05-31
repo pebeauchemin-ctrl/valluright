@@ -9,7 +9,12 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as SecurityRouteImport } from './routes/security'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as MethodologyRouteImport } from './routes/methodology'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
@@ -30,9 +35,34 @@ import { Route as AppBuyerTeaserRouteImport } from './routes/app.buyer-teaser'
 import { Route as AppAdvisorsRouteImport } from './routes/app.advisors'
 import { Route as ApiPublicXeroCallbackRouteImport } from './routes/api.public.xero.callback'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SecurityRoute = SecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MethodologyRoute = MethodologyRouteImport.update({
+  id: '/methodology',
+  path: '/methodology',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoRoute = DemoRouteImport.update({
@@ -136,7 +166,12 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
+  '/methodology': typeof MethodologyRoute
+  '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/security': typeof SecurityRoute
+  '/terms': typeof TermsRoute
   '/app/advisors': typeof AppAdvisorsRoute
   '/app/buyer-teaser': typeof AppBuyerTeaserRoute
   '/app/data-room': typeof AppDataRoomRoute
@@ -157,7 +192,12 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
+  '/methodology': typeof MethodologyRoute
+  '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/security': typeof SecurityRoute
+  '/terms': typeof TermsRoute
   '/app/advisors': typeof AppAdvisorsRoute
   '/app/buyer-teaser': typeof AppBuyerTeaserRoute
   '/app/data-room': typeof AppDataRoomRoute
@@ -180,7 +220,12 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
+  '/methodology': typeof MethodologyRoute
+  '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/security': typeof SecurityRoute
+  '/terms': typeof TermsRoute
   '/app/advisors': typeof AppAdvisorsRoute
   '/app/buyer-teaser': typeof AppBuyerTeaserRoute
   '/app/data-room': typeof AppDataRoomRoute
@@ -204,7 +249,12 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/demo'
+    | '/methodology'
+    | '/pricing'
+    | '/privacy'
     | '/reset-password'
+    | '/security'
+    | '/terms'
     | '/app/advisors'
     | '/app/buyer-teaser'
     | '/app/data-room'
@@ -225,7 +275,12 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/demo'
+    | '/methodology'
+    | '/pricing'
+    | '/privacy'
     | '/reset-password'
+    | '/security'
+    | '/terms'
     | '/app/advisors'
     | '/app/buyer-teaser'
     | '/app/data-room'
@@ -247,7 +302,12 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/demo'
+    | '/methodology'
+    | '/pricing'
+    | '/privacy'
     | '/reset-password'
+    | '/security'
+    | '/terms'
     | '/app/advisors'
     | '/app/buyer-teaser'
     | '/app/data-room'
@@ -270,18 +330,58 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
   DemoRoute: typeof DemoRoute
+  MethodologyRoute: typeof MethodologyRoute
+  PricingRoute: typeof PricingRoute
+  PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SecurityRoute: typeof SecurityRoute
+  TermsRoute: typeof TermsRoute
   TeaserPublicIdRoute: typeof TeaserPublicIdRoute
   ApiPublicXeroCallbackRoute: typeof ApiPublicXeroCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/security': {
+      id: '/security'
+      path: '/security'
+      fullPath: '/security'
+      preLoaderRoute: typeof SecurityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/methodology': {
+      id: '/methodology'
+      path: '/methodology'
+      fullPath: '/methodology'
+      preLoaderRoute: typeof MethodologyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo': {
@@ -459,19 +559,15 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
   DemoRoute: DemoRoute,
+  MethodologyRoute: MethodologyRoute,
+  PricingRoute: PricingRoute,
+  PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SecurityRoute: SecurityRoute,
+  TermsRoute: TermsRoute,
   TeaserPublicIdRoute: TeaserPublicIdRoute,
   ApiPublicXeroCallbackRoute: ApiPublicXeroCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

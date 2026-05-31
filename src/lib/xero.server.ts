@@ -24,10 +24,7 @@ export function getXeroCreds() {
   return { clientId, clientSecret };
 }
 
-export function buildAuthorizeUrl(opts: {
-  state: string;
-  redirectUri: string;
-}) {
+export function buildAuthorizeUrl(opts: { state: string; redirectUri: string }) {
   const { clientId } = getXeroCreds();
   const params = new URLSearchParams({
     response_type: "code",
@@ -48,7 +45,10 @@ type TokenResponse = {
   id_token?: string;
 };
 
-export async function exchangeCodeForToken(code: string, redirectUri: string): Promise<TokenResponse> {
+export async function exchangeCodeForToken(
+  code: string,
+  redirectUri: string,
+): Promise<TokenResponse> {
   const { clientId, clientSecret } = getXeroCreds();
   const basic = btoa(`${clientId}:${clientSecret}`);
   const res = await fetch(XERO_TOKEN_URL, {
@@ -64,7 +64,7 @@ export async function exchangeCodeForToken(code: string, redirectUri: string): P
     }),
   });
   if (!res.ok) {
-    throw new Error(`Xero token exchange failed [${res.status}]: ${await res.text()}`);
+    throw new Error(`Xero token exchange failed [${res.status}]`);
   }
   return res.json() as Promise<TokenResponse>;
 }
@@ -81,7 +81,7 @@ export async function refreshAccessToken(refreshToken: string): Promise<TokenRes
     body: new URLSearchParams({ grant_type: "refresh_token", refresh_token: refreshToken }),
   });
   if (!res.ok) {
-    throw new Error(`Xero token refresh failed [${res.status}]: ${await res.text()}`);
+    throw new Error(`Xero token refresh failed [${res.status}]`);
   }
   return res.json() as Promise<TokenResponse>;
 }
@@ -104,7 +104,7 @@ export async function listTenants(accessToken: string): Promise<XeroTenant[]> {
     },
   });
   if (!res.ok) {
-    throw new Error(`Xero connections list failed [${res.status}]: ${await res.text()}`);
+    throw new Error(`Xero connections list failed [${res.status}]`);
   }
   return res.json() as Promise<XeroTenant[]>;
 }
@@ -127,7 +127,7 @@ async function xeroReport(opts: {
     },
   });
   if (!res.ok) {
-    throw new Error(`Xero ${opts.report} failed [${res.status}]: ${await res.text()}`);
+    throw new Error(`Xero ${opts.report} failed [${res.status}]`);
   }
   return res.json();
 }
@@ -301,7 +301,10 @@ function parsePnl(report: unknown): {
     revenue - cogs;
 
   const net_income =
-    summaryByLabel(rows, /^(net\s+(profit|income|earnings|loss)|profit\s+for the (year|period))/i) ??
+    summaryByLabel(
+      rows,
+      /^(net\s+(profit|income|earnings|loss)|profit\s+for the (year|period))/i,
+    ) ??
     rowByLabel(rows, /^net\s+income$/i) ??
     rowByLabel(rows, /^(net\s+(profit|income|earnings|loss)|profit\s+for the (year|period))/i) ??
     null;
@@ -365,21 +368,18 @@ function parseBalanceSheet(report: unknown): {
   const rows = reports?.[0]?.Rows ?? [];
 
   // Total assets / liabilities — Xero emits these as top-level SummaryRows OR "Section" titled accordingly.
-  const assets =
-    summaryByLabel(rows, /^total\s+assets/i) ??
-    sectionSummary(rows, /^assets$/i) ??
-    0;
+  const assets = summaryByLabel(rows, /^total\s+assets/i) ?? sectionSummary(rows, /^assets$/i) ?? 0;
 
   let liabilities =
-    summaryByLabel(rows, /^total\s+liabilities/i) ??
-    sectionSummary(rows, /^liabilities$/i) ??
-    0;
+    summaryByLabel(rows, /^total\s+liabilities/i) ?? sectionSummary(rows, /^liabilities$/i) ?? 0;
 
   // If still 0, sum any liability-style section summaries (current + non-current + bank overdrafts).
   if (liabilities === 0) {
     for (const r of rows) {
       if (r.RowType !== "Section" || !r.Title) continue;
-      if (/(current\s+liabilities|non.?current\s+liabilities|long.?term\s+liabilities)/i.test(r.Title)) {
+      if (
+        /(current\s+liabilities|non.?current\s+liabilities|long.?term\s+liabilities)/i.test(r.Title)
+      ) {
         const summary = (r.Rows ?? []).find((x) => x.RowType === "SummaryRow");
         if (summary) liabilities += rowValue(summary);
       }
@@ -388,14 +388,15 @@ function parseBalanceSheet(report: unknown): {
 
   // Debt: prefer "Total Non-Current Liabilities" / "Total Long-Term Liabilities" section total
   // (these are dominated by loans). Fall back to summing rows whose labels look like loans.
-  let debt =
-    summaryByLabel(rows, /^total\s+(non.?current|long.?term)\s+liabilities/i) ?? 0;
+  let debt = summaryByLabel(rows, /^total\s+(non.?current|long.?term)\s+liabilities/i) ?? 0;
 
   if (debt === 0) {
     for (const r of walkRows(rows)) {
       if (r.RowType !== "Row") continue;
       const label = r.Cells?.[0]?.Value ?? "";
-      if (/(loan|borrowing|note[s]?\s+payable|long.?term\s+debt|bank\s+debt|mortgage)/i.test(label)) {
+      if (
+        /(loan|borrowing|note[s]?\s+payable|long.?term\s+debt|bank\s+debt|mortgage)/i.test(label)
+      ) {
         debt += Math.abs(rowValue(r));
       }
     }
@@ -429,7 +430,8 @@ export async function fetchYearSummary(opts: {
   const bs = parseBalanceSheet(bsReport);
 
   // EBITDA = net income + interest + depreciation + amortization + income taxes
-  const ebitda = pnl.net_income + pnl.interest + pnl.depreciation + pnl.amortization + pnl.income_taxes;
+  const ebitda =
+    pnl.net_income + pnl.interest + pnl.depreciation + pnl.amortization + pnl.income_taxes;
 
   return {
     year: opts.year,
