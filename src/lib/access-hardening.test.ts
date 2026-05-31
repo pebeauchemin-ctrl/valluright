@@ -1,0 +1,33 @@
+import { readFileSync } from "node:fs";
+import { test } from "node:test";
+import assert from "node:assert/strict";
+
+const migration = readFileSync(
+  "supabase/migrations/20260531021500_harden_role_access_and_public_teasers.sql",
+  "utf8",
+);
+const teaserRoute = readFileSync("src/routes/teaser.$publicId.tsx", "utf8");
+
+test("public teaser does not expose internal business ids", () => {
+  assert.match(migration, /create or replace function public\.get_public_teaser/);
+  assert.doesNotMatch(teaserRoute, /business_id:\s*business\.id/);
+  assert.doesNotMatch(teaserRoute, /\bid:\s*string/);
+  assert.doesNotMatch(migration, /'id', p\.id/);
+});
+
+test("buyer leads must go through the published-teaser RPC", () => {
+  assert.match(
+    migration,
+    /revoke insert on public\.buyer_access_requests from anon, authenticated/,
+  );
+  assert.match(migration, /create or replace function public\.submit_buyer_access_request/);
+  assert.match(migration, /s\.is_published = true/);
+  assert.match(teaserRoute, /rpc\("submit_buyer_access_request"/);
+});
+
+test("advisor permissions are explicit and enforced before comments", () => {
+  assert.match(migration, /advisor_invites_permission_level_check/);
+  assert.match(migration, /create or replace function public\.can_advisor_access/);
+  assert.match(migration, /public\.can_advisor_access\(business_id, auth\.uid\(\), 'comment'\)/);
+  assert.match(migration, /drop policy if exists "advisors can update their invites"/);
+});
