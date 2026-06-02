@@ -726,47 +726,6 @@ export type Database = {
           },
         ]
       }
-      security_audit_events: {
-        Row: {
-          action: string
-          actor_user_id: string
-          business_id: string | null
-          created_at: string
-          id: string
-          metadata: Json
-          target_id: string | null
-          target_type: string | null
-        }
-        Insert: {
-          action: string
-          actor_user_id: string
-          business_id?: string | null
-          created_at?: string
-          id?: string
-          metadata?: Json
-          target_id?: string | null
-          target_type?: string | null
-        }
-        Update: {
-          action?: string
-          actor_user_id?: string
-          business_id?: string | null
-          created_at?: string
-          id?: string
-          metadata?: Json
-          target_id?: string | null
-          target_type?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "security_audit_events_business_id_fkey"
-            columns: ["business_id"]
-            isOneToOne: false
-            referencedRelation: "businesses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       valuations: {
         Row: {
           asset_high: number | null
@@ -941,33 +900,9 @@ export type Database = {
         }
         Returns: boolean
       }
-      advisor_permission_rank: {
-        Args: { _permission_level: string }
-        Returns: number
-      }
-      can_advisor_access: {
-        Args: {
-          _business_id: string
-          _minimum_permission?: string
-          _user_id: string
-        }
-        Returns: boolean
-      }
       is_advisor_of: {
         Args: { _business_id: string; _user_id: string }
         Returns: boolean
-      }
-      submit_buyer_access_request: {
-        Args: {
-          _buyer_type?: Database["public"]["Enums"]["buyer_type"] | null
-          _email: string
-          _financing_status?: Database["public"]["Enums"]["financing_status"] | null
-          _message?: string | null
-          _name: string
-          _phone?: string | null
-          _public_id: string
-        }
-        Returns: string
       }
       revenue_band: { Args: { _revenue: number }; Returns: string }
       user_owns_business_path: {
