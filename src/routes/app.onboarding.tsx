@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Check, Sparkles, Loader2, Upload, Link2 } from "
 import { useAuth } from "@/lib/auth";
 import { useBusiness, toBusinessInputs } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
+import { buildValuationInsert } from "@/lib/valuation-persistence";
 import {
   INDUSTRY_OPTIONS,
   valueBusiness,
@@ -484,32 +485,10 @@ function Onboarding() {
       const inputs = toBusinessInputs(biz!, (yearsRows ?? []) as never);
       const v = valueBusiness(inputs);
       const h = computeHealthScore(inputs);
-      const findM = (k: string) => v.methods.find((m) => m.method === k);
-      await supabase.from("valuations").insert({
-        business_id: bizId,
-        range_low: v.rangeLow,
-        range_mid: v.rangeMid,
-        range_high: v.rangeHigh,
-        sde_value: findM("sde")?.value ?? null,
-        sde_low: findM("sde")?.low ?? null,
-        sde_high: findM("sde")?.high ?? null,
-        ebitda_value: findM("ebitda")?.value ?? null,
-        ebitda_low: findM("ebitda")?.low ?? null,
-        ebitda_high: findM("ebitda")?.high ?? null,
-        revenue_value: findM("revenue")?.value ?? null,
-        revenue_low: findM("revenue")?.low ?? null,
-        revenue_high: findM("revenue")?.high ?? null,
-        dcf_value: findM("dcf")?.value ?? null,
-        dcf_low: findM("dcf")?.low ?? null,
-        dcf_high: findM("dcf")?.high ?? null,
-        asset_value: findM("asset")?.value ?? null,
-        asset_low: findM("asset")?.low ?? null,
-        asset_high: findM("asset")?.high ?? null,
-        comparable_value: findM("comparable")?.value ?? null,
-        health_score: h.total,
-        health_breakdown: h.breakdown as never,
-        inputs_snapshot: inputs as never,
-      });
+      const { error: valuationError } = await supabase
+        .from("valuations")
+        .insert(buildValuationInsert(bizId, inputs, v, h));
+      if (valuationError) throw valuationError;
 
       await refresh();
       if (biz) setCurrent(biz);
@@ -951,9 +930,7 @@ function Onboarding() {
                 </table>
               </div>
               <p className="text-xs text-muted-foreground">
-                All values in USD. EBITDA = earnings before interest, tax, depreciation,
-                amortization. Add-backs are personal expenses run through the business that a buyer
-                wouldn't continue.
+                All values in USD. EBITDA should exclude interest, taxes, depreciation, and amortization. SDE adds one working owner's compensation and buyer-acceptable one-time add-backs to EBITDA, so do not include owner salary again inside add-backs.
               </p>
             </div>
           )}

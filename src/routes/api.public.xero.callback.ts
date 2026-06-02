@@ -1,6 +1,8 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { exchangeCodeForToken, listTenants } from "@/lib/xero.server";
+import { encryptToken } from "@/lib/token-crypto.server";
+import { recordSecurityAuditEvent } from "@/lib/security-audit.server";
 
 export const Route = createFileRoute("/api/public/xero/callback")({
   server: {
@@ -38,19 +40,21 @@ export const Route = createFileRoute("/api/public/xero/callback")({
         let tokens;
         try {
           tokens = await exchangeCodeForToken(code, stateRow.redirect_uri);
-        } catch (e) {
-          throw failRedirect(e instanceof Error ? e.message : "token_exchange_failed");
+        } catch {
+          throw failRedirect("token_exchange_failed");
         }
 
         let tenants;
         try {
           tenants = await listTenants(tokens.access_token);
-        } catch (e) {
-          throw failRedirect(e instanceof Error ? e.message : "tenants_failed");
+        } catch {
+          throw failRedirect("tenants_failed");
         }
         if (!tenants.length) throw failRedirect("no_tenants");
 
         const expiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
+        const encryptedAccessToken = await encryptToken(tokens.access_token);
+        const encryptedRefreshToken = await encryptToken(tokens.refresh_token);
 
         // Save one row per tenant (so user can pick which org to import from).
         for (const t of tenants) {
@@ -74,14 +78,22 @@ export const Route = createFileRoute("/api/public/xero/callback")({
             business_id: stateRow.business_id,
             tenant_id: t.tenantId,
             tenant_name: t.tenantName,
-            access_token: tokens.access_token,
-            refresh_token: tokens.refresh_token,
+            access_token: encryptedAccessToken,
+            refresh_token: encryptedRefreshToken,
             expires_at: expiresAt,
             scope: tokens.scope,
           });
           if (insertErr) {
-            throw failRedirect(`save_failed:${insertErr.message}`);
+            throw failRedirect("save_failed");
           }
+          await recordSecurityAuditEvent({
+            actorUserId: stateRow.user_id,
+            businessId: stateRow.business_id,
+            action: "xero_oauth_connected",
+            targetType: "xero_connection",
+            targetId: t.tenantId,
+            metadata: { tenant_name: t.tenantName },
+          });
         }
 
         await supabaseAdmin.from("xero_oauth_states").delete().eq("state", state);

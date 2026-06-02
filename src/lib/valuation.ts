@@ -242,11 +242,58 @@ function latestFinancials(b: BusinessInputs): FinancialYear | null {
   return [...b.financials].sort((a, c) => c.year - a.year)[0];
 }
 
-function computeSDE(latest: FinancialYear): number {
-  // SDE ≈ Net income + owner salary + interest + taxes + depreciation + addbacks
-  // We approximate using owner_salary + addbacks + ebitda when available, else net_income + owner_salary + addbacks
-  const base = latest.ebitda || latest.net_income;
-  return Math.max(0, base + (latest.owner_salary || 0) + (latest.addbacks || 0));
+export type NormalizedEarnings = {
+  netIncome: number;
+  interest: number;
+  incomeTaxes: number;
+  depreciation: number;
+  amortization: number;
+  ownerCompensation: number;
+  addbacks: number;
+  ebitda: number;
+  sde: number;
+  usedEnteredEbitda: boolean;
+  ebitdaFormula: string;
+  sdeFormula: string;
+  plainEnglish: string;
+};
+
+function amount(value: number | null | undefined): number {
+  return Number(value ?? 0);
+}
+
+export function calculateNormalizedEarnings(latest: FinancialYear): NormalizedEarnings {
+  const netIncome = amount(latest.net_income);
+  const interest = amount(latest.interest);
+  const incomeTaxes = amount(latest.income_taxes);
+  const depreciation = amount(latest.depreciation);
+  const amortization = amount(latest.amortization);
+  const ownerCompensation = amount(latest.owner_salary);
+  const addbacks = amount(latest.addbacks);
+  const enteredEbitda = amount(latest.ebitda);
+  const hasBridgeInputs = [interest, incomeTaxes, depreciation, amortization].some((v) => v !== 0);
+  const useBridge = hasBridgeInputs || enteredEbitda === 0;
+  const bridgeEbitda = netIncome + interest + incomeTaxes + depreciation + amortization;
+  const ebitda = useBridge ? bridgeEbitda : enteredEbitda;
+  const sde = ebitda + ownerCompensation + addbacks;
+
+  return {
+    netIncome,
+    interest,
+    incomeTaxes,
+    depreciation,
+    amortization,
+    ownerCompensation,
+    addbacks,
+    ebitda,
+    sde,
+    usedEnteredEbitda: !useBridge,
+    ebitdaFormula: useBridge
+      ? `EBITDA = Net Income + Interest + Income Taxes + Depreciation + Amortization\n= ${fmtMoney(netIncome)} + ${fmtMoney(interest)} + ${fmtMoney(incomeTaxes)} + ${fmtMoney(depreciation)} + ${fmtMoney(amortization)} = ${fmtMoney(ebitda)}`
+      : `EBITDA = Entered EBITDA = ${fmtMoney(ebitda)}\nNo interest, tax, depreciation, or amortization bridge was provided for this year.`,
+    sdeFormula: `SDE = EBITDA + Owner Compensation + One-time Add-backs\n= ${fmtMoney(ebitda)} + ${fmtMoney(ownerCompensation)} + ${fmtMoney(addbacks)} = ${fmtMoney(sde)}`,
+    plainEnglish: "EBITDA adds back interest, income taxes, depreciation, and amortization to net income. SDE then adds one working owner's compensation and buyer-acceptable one-time add-backs. Owner compensation is not included in EBITDA, so it is not double-counted.",
+  };
 }
 
 export function methodSDE(b: BusinessInputs): MethodResult {
@@ -255,7 +302,8 @@ export function methodSDE(b: BusinessInputs): MethodResult {
   if (!latest) {
     return blankMethod("sde", "SDE Multiple", "Add a year of financials to compute.");
   }
-  const sde = computeSDE(latest);
+  const normalized = calculateNormalizedEarnings(latest);
+  const sde = Math.max(0, normalized.sde);
   const adj = riskAdjustment(b);
   const [lo, mid, hi] = shiftMultiple(m.sde, adj);
   return {
@@ -269,8 +317,8 @@ export function methodSDE(b: BusinessInputs): MethodResult {
     inputLabel: "Seller's Discretionary Earnings",
     confidence: confidenceFromAdj(adj, sde > 0),
     notes: "Most common method for owner-operated SMBs. Earnings reflect total benefit to a working owner.",
-    formula: `SDE × Industry Multiple\nSDE = EBITDA + Owner Salary + Add-backs = ${fmtMoney(sde)}\nMultiple range: ${lo.toFixed(2)}× – ${hi.toFixed(2)}× (median ${mid.toFixed(2)}×)`,
-    reasoning: `Industry baseline for ${b.industry ?? "Other"} is ${m.sde[0].toFixed(2)}–${m.sde[2].toFixed(2)}×. Risk adjustment ${adj >= 0 ? "+" : ""}${adj.toFixed(2)} applied based on owner dependence, recurring revenue, customer concentration, documentation, and management depth.`,
+    formula: `${normalized.ebitdaFormula}\n${normalized.sdeFormula}\nSDE × Industry Multiple\nMultiple range: ${lo.toFixed(2)}× – ${hi.toFixed(2)}× (median ${mid.toFixed(2)}×)`,
+    reasoning: `${normalized.plainEnglish} Industry baseline for ${b.industry ?? "Other"} is ${m.sde[0].toFixed(2)}–${m.sde[2].toFixed(2)}×. Risk adjustment ${adj >= 0 ? "+" : ""}${adj.toFixed(2)} applied based on owner dependence, recurring revenue, customer concentration, documentation, and management depth.`,
     available: sde > 0,
   };
 }
@@ -283,7 +331,8 @@ export function methodEBITDA(b: BusinessInputs): MethodResult {
   const latest = latestFinancials(b);
   const m = getIndustryMultiples(b.industry);
   if (!latest) return blankMethod("ebitda", "EBITDA Multiple", "Add financials to compute.");
-  const ebitda = latest.ebitda;
+  const normalized = calculateNormalizedEarnings(latest);
+  const ebitda = normalized.ebitda;
   const adj = riskAdjustment(b);
   const [lo, mid, hi] = shiftMultiple(m.ebitda, adj);
   return {
@@ -297,8 +346,8 @@ export function methodEBITDA(b: BusinessInputs): MethodResult {
     inputLabel: "EBITDA",
     confidence: confidenceFromAdj(adj, ebitda > 0),
     notes: "Standard for businesses with a hired-out owner. Used by most strategic and PE buyers.",
-    formula: `EBITDA × Industry Multiple\nEBITDA = ${fmtMoney(ebitda)}\nMultiple range: ${lo.toFixed(2)}× – ${hi.toFixed(2)}× (median ${mid.toFixed(2)}×)`,
-    reasoning: `Industry baseline for ${b.industry ?? "Other"} is ${m.ebitda[0].toFixed(2)}–${m.ebitda[2].toFixed(2)}×. Risk adjustment ${adj >= 0 ? "+" : ""}${adj.toFixed(2)} reflects operating risk and quality of earnings.`,
+    formula: `${normalized.ebitdaFormula}\nEBITDA × Industry Multiple\nMultiple range: ${lo.toFixed(2)}× – ${hi.toFixed(2)}× (median ${mid.toFixed(2)}×)`,
+    reasoning: `${normalized.plainEnglish} Industry baseline for ${b.industry ?? "Other"} is ${m.ebitda[0].toFixed(2)}–${m.ebitda[2].toFixed(2)}×. Risk adjustment ${adj >= 0 ? "+" : ""}${adj.toFixed(2)} reflects operating risk and quality of earnings.`,
     available: ebitda > 0,
   };
 }
@@ -332,7 +381,8 @@ export function methodDCF(b: BusinessInputs): MethodResult {
   const sorted = [...b.financials].sort((a, c) => a.year - c.year);
   if (!sorted.length) return blankMethod("dcf", "Discounted Cash Flow", "Add financials to compute.");
   const latest = sorted[sorted.length - 1];
-  const baseFCF = Math.max(0, latest.ebitda - latest.debt * 0.05); // rough debt service haircut
+  const normalized = calculateNormalizedEarnings(latest);
+  const baseFCF = Math.max(0, normalized.ebitda - latest.debt * 0.05); // rough debt service haircut
 
   // Growth: trailing CAGR if we have 2+ years, else 5%
   let growth = 0.05;
@@ -434,13 +484,14 @@ export function methodCapRate(b: BusinessInputs): MethodResult {
   const cogs = latest.cogs || 0;
   const grossProfit = latest.gross_profit || revenue - cogs;
   const opex = latest.operating_expenses || 0;
-  const netIncome = latest.net_income || 0;
-  const ebitda = latest.ebitda || 0;
-  const depreciation = latest.depreciation || 0;
-  const amortization = latest.amortization || 0;
-  const interest = latest.interest || 0;
-  const taxes = latest.income_taxes || 0;
-  const addbacks = latest.addbacks || 0; // owner personal + one-time/non-recurring
+  const normalized = calculateNormalizedEarnings(latest);
+  const netIncome = normalized.netIncome;
+  const ebitda = normalized.ebitda;
+  const depreciation = normalized.depreciation;
+  const amortization = normalized.amortization;
+  const interest = normalized.interest;
+  const taxes = normalized.incomeTaxes;
+  const addbacks = normalized.addbacks; // owner personal + one-time/non-recurring
   const mgmtFeePct = b.management_fee_pct ?? 0;
   const reservePct = b.replacement_reserve_pct ?? 0;
   const mgmtFee = revenue * (mgmtFeePct / 100);

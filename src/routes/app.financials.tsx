@@ -379,6 +379,9 @@ function Financials() {
         <p className="mt-3 text-[11px] text-muted-foreground">
           CSV format: header row with <code>year</code> plus any of: {FIELD_KEYS.join(", ")}.
         </p>
+        <p className="mt-2 text-[11px] text-muted-foreground">
+          Normalization: EBITDA is calculated as net income plus interest, income taxes, depreciation, and amortization. SDE uses EBITDA plus one working owner's compensation and one-time add-backs, so owner pay is not double-counted in EBITDA.
+        </p>
       </div>
 
       <div className="rounded-xl border border-border bg-card p-6 overflow-x-auto">

@@ -22,9 +22,12 @@ function Landing() {
             <a href="#features" className="hover:text-foreground transition">
               Features
             </a>
-            <a href="#pricing" className="hover:text-foreground transition">
+            <Link to="/pricing" className="hover:text-foreground transition">
               Pricing
-            </a>
+            </Link>
+            <Link to="/methodology" className="hover:text-foreground transition">
+              Methodology
+            </Link>
             <Link to="/demo" className="hover:text-foreground transition">
               See a sample
             </Link>
@@ -257,9 +260,23 @@ function Landing() {
                 Helping business owners over 60 get the value they've built.
               </p>
             </div>
-            <div className="text-xs text-primary-foreground/60 max-w-md">
+            <div className="space-y-3 text-xs text-primary-foreground/60 max-w-md">
               ValuRight.ai outputs are software-generated planning estimates. They are not certified
               appraisals, tax advice, legal advice, investment advice, or guaranteed sale prices.
+              <div className="flex flex-wrap gap-4">
+                <Link to="/privacy" className="hover:text-primary-foreground">
+                  Privacy
+                </Link>
+                <Link to="/terms" className="hover:text-primary-foreground">
+                  Terms
+                </Link>
+                <Link to="/security" className="hover:text-primary-foreground">
+                  Security
+                </Link>
+                <Link to="/methodology" className="hover:text-primary-foreground">
+                  Methodology
+                </Link>
+              </div>
             </div>
           </div>
           <div className="mt-8 pt-6 border-t border-primary-foreground/10 text-xs text-primary-foreground/60">

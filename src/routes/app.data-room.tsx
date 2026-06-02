@@ -34,15 +34,22 @@ function DataRoom() {
     if (!current) return;
     setUploading(true);
     try {
-      const path = `${current.id}/${Date.now()}-${f.name}`;
+      const safeName = f.name.replace(/[^\w. -]/g, "_");
+      const path = `${current.id}/${Date.now()}-${safeName}`;
       const { error: upErr } = await supabase.storage.from("data-room").upload(path, f);
       if (upErr) throw upErr;
-      await supabase.from("data_room_files").insert({
-        business_id: current.id, filename: f.name, storage_path: path,
+
+      const { error: metaErr } = await supabase.from("data_room_files").insert({
+        business_id: current.id, filename: safeName, storage_path: path,
         category, size_bytes: f.size, mime_type: f.type,
       });
+      if (metaErr) {
+        await supabase.storage.from("data-room").remove([path]);
+        throw metaErr;
+      }
+
       await refresh();
-      toast.success(`Uploaded ${f.name}`);
+      toast.success(`Uploaded ${safeName}`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Upload failed");
     } finally {
