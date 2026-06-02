@@ -19,9 +19,58 @@ export const Route = createFileRoute("/app/settings")({
 });
 
 const US_STATES = [
-  "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD",
-  "MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC",
-  "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY","DC","PR",
+  "AL",
+  "AK",
+  "AZ",
+  "AR",
+  "CA",
+  "CO",
+  "CT",
+  "DE",
+  "FL",
+  "GA",
+  "HI",
+  "ID",
+  "IL",
+  "IN",
+  "IA",
+  "KS",
+  "KY",
+  "LA",
+  "ME",
+  "MD",
+  "MA",
+  "MI",
+  "MN",
+  "MS",
+  "MO",
+  "MT",
+  "NE",
+  "NV",
+  "NH",
+  "NJ",
+  "NM",
+  "NY",
+  "NC",
+  "ND",
+  "OH",
+  "OK",
+  "OR",
+  "PA",
+  "RI",
+  "SC",
+  "SD",
+  "TN",
+  "TX",
+  "UT",
+  "VT",
+  "VA",
+  "WA",
+  "WV",
+  "WI",
+  "WY",
+  "DC",
+  "PR",
 ];
 
 function Settings() {
@@ -57,12 +106,14 @@ function Settings() {
   const [topCustomerPct, setTopCustomerPct] = useState(0);
   const [sopStatus, setSopStatus] = useState("partial");
   const [managerDepth, setManagerDepth] = useState("partial");
-  const [exitTimeline, setExitTimeline] = useState<"lt_1y" | "1_2y" | "2_5y" | "5_plus_y" | "exploring">("2_5y");
+  const [exitTimeline, setExitTimeline] = useState<
+    "lt_1y" | "1_2y" | "2_5y" | "5_plus_y" | "exploring"
+  >("2_5y");
 
   // Hydrate from current business
   useEffect(() => {
     if (!current) return;
-    const c = current as any;
+    const c = current;
     setName(c.name ?? "");
     setAnonymousDescription(c.anonymous_description ?? "");
     setBusinessCategory((c.business_category as BusinessCategory) ?? "standard_operating");
@@ -155,10 +206,12 @@ function Settings() {
   const subtypes = BUSINESS_SUBTYPES[businessCategory] ?? [];
 
   return (
-    <div className="p-6 lg:p-10 space-y-6 max-w-3xl">
+    <div className="space-y-6 p-4 sm:p-6 lg:p-10 max-w-3xl">
       <div>
         <h1 className="font-display text-3xl font-semibold text-primary">Settings</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Manage your account, company basics, and operating profile.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Manage your account, company basics, and operating profile.
+        </p>
       </div>
 
       <div className="rounded-xl border border-border bg-card p-6 space-y-3">
@@ -176,7 +229,8 @@ function Settings() {
             <div>
               <h2 className="font-display font-semibold text-primary">Company Basis</h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Edits update the business profile and feed the valuation engine. Financial history is managed in the Financials tab.
+                Edits update the business profile and feed the valuation engine. Financial history
+                is managed in the Financials tab.
               </p>
             </div>
 
@@ -184,7 +238,9 @@ function Settings() {
 
             <div>
               <label className="block text-sm font-medium">Buyer-safe business description</label>
-              <p className="text-xs text-muted-foreground mt-0.5">Anonymous, NDA-safe — what a buyer sees first.</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Anonymous, NDA-safe — what a buyer sees first.
+              </p>
               <textarea
                 value={anonymousDescription}
                 onChange={(e) => setAnonymousDescription(e.target.value)}
@@ -196,13 +252,17 @@ function Settings() {
             {/* Category */}
             <div className="space-y-2">
               <label className="block text-sm font-medium">Business category</label>
-              <p className="text-xs text-muted-foreground">Determines which valuation methods are most appropriate.</p>
+              <p className="text-xs text-muted-foreground">
+                Determines which valuation methods are most appropriate.
+              </p>
               <div className="grid gap-2">
                 {BUSINESS_CATEGORY_OPTIONS.map((opt) => (
                   <label
                     key={opt.value}
                     className={`flex gap-3 rounded-lg border p-3 cursor-pointer transition ${
-                      businessCategory === opt.value ? "border-accent bg-accent-soft" : "border-border hover:border-accent/40"
+                      businessCategory === opt.value
+                        ? "border-accent bg-accent-soft"
+                        : "border-border hover:border-accent/40"
                     }`}
                   >
                     <input
@@ -230,7 +290,9 @@ function Settings() {
             {/* Subtype */}
             <div>
               <label className="block text-sm font-medium">Business type</label>
-              <p className="text-xs text-muted-foreground mt-0.5">Pick the specific kind of business within this category.</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Pick the specific kind of business within this category.
+              </p>
               <select
                 value={businessSubtype}
                 onChange={(e) => setBusinessSubtype(e.target.value)}
@@ -238,7 +300,9 @@ function Settings() {
               >
                 <option value="">Select…</option>
                 {subtypes.map((s) => (
-                  <option key={s} value={s}>{s}</option>
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
                 ))}
               </select>
             </div>
@@ -251,7 +315,9 @@ function Settings() {
                   onChange={(e) => setIndustry(e.target.value)}
                   className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 >
-                  {INDUSTRY_OPTIONS.map((i) => <option key={i}>{i}</option>)}
+                  {INDUSTRY_OPTIONS.map((i) => (
+                    <option key={i}>{i}</option>
+                  ))}
                 </select>
               </div>
               <Field label="Sub-industry" value={subIndustry} onChange={setSubIndustry} />
@@ -266,7 +332,11 @@ function Settings() {
                   className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 >
                   <option value="">Select…</option>
-                  {US_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
+                  {US_STATES.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="sm:col-span-2">
@@ -275,61 +345,134 @@ function Settings() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <NumField label="Years in business" value={yearsInBusiness} onChange={setYearsInBusiness} />
+              <NumField
+                label="Years in business"
+                value={yearsInBusiness}
+                onChange={setYearsInBusiness}
+              />
               <NumField label="Employees (incl. owner)" value={employees} onChange={setEmployees} />
             </div>
 
             {businessCategory === "real_estate_income" && (
               <div className="rounded-lg border border-border bg-secondary/40 p-4 space-y-3">
                 <div>
-                  <h3 className="font-display font-semibold text-primary text-sm">Cap Rate / Income Approach inputs</h3>
+                  <h3 className="font-display font-semibold text-primary text-sm">
+                    Cap Rate / Income Approach inputs
+                  </h3>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Lower cap rates imply stronger location and lower risk; higher cap rates imply more risk.
-                    {isRvOrCampground(industry, subIndustry) && " RV park / campground default range: 8% – 12%."}
+                    Lower cap rates imply stronger location and lower risk; higher cap rates imply
+                    more risk.
+                    {isRvOrCampground(industry, subIndustry) &&
+                      " RV park / campground default range: 8% – 12%."}
                   </p>
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   <NumField label="Low cap rate (%)" value={capRateLow} onChange={setCapRateLow} />
-                  <NumField label="Selected cap rate (%)" value={capRateSelected} onChange={setCapRateSelected} />
-                  <NumField label="High cap rate (%)" value={capRateHigh} onChange={setCapRateHigh} />
+                  <NumField
+                    label="Selected cap rate (%)"
+                    value={capRateSelected}
+                    onChange={setCapRateSelected}
+                  />
+                  <NumField
+                    label="High cap rate (%)"
+                    value={capRateHigh}
+                    onChange={setCapRateHigh}
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <NumField label="Mgmt fee normalization (% of revenue)" value={mgmtFeePct} onChange={setMgmtFeePct} />
-                  <NumField label="Replacement reserve (% of revenue)" value={reservePct} onChange={setReservePct} />
+                  <NumField
+                    label="Mgmt fee normalization (% of revenue)"
+                    value={mgmtFeePct}
+                    onChange={setMgmtFeePct}
+                  />
+                  <NumField
+                    label="Replacement reserve (% of revenue)"
+                    value={reservePct}
+                    onChange={setReservePct}
+                  />
                 </div>
               </div>
             )}
 
             <div className="pt-2 border-t border-border">
-              <h3 className="font-display text-base font-semibold text-primary">Operations & owner role</h3>
+              <h3 className="font-display text-base font-semibold text-primary">
+                Operations & owner role
+              </h3>
             </div>
 
-            <SliderField label="Owner hours per week" value={ownerHours} min={0} max={80} step={5} onChange={setOwnerHours} suffix=" hrs" />
+            <SliderField
+              label="Owner hours per week"
+              value={ownerHours}
+              min={0}
+              max={80}
+              step={5}
+              onChange={setOwnerHours}
+              suffix=" hrs"
+            />
             <div className="space-y-2">
               <div className="text-sm font-medium">Owner is essential to:</div>
-              <Toggle label="Sales / business development" checked={ownerInSales} onChange={setOwnerInSales} />
+              <Toggle
+                label="Sales / business development"
+                checked={ownerInSales}
+                onChange={setOwnerInSales}
+              />
               <Toggle label="Day-to-day operations" checked={ownerInOps} onChange={setOwnerInOps} />
-              <Toggle label="Top customer relationships" checked={ownerInCustomers} onChange={setOwnerInCustomers} />
+              <Toggle
+                label="Top customer relationships"
+                checked={ownerInCustomers}
+                onChange={setOwnerInCustomers}
+              />
             </div>
-            <SliderField label="Recurring revenue (contracts, subscriptions)" value={recurringPct} min={0} max={100} step={5} onChange={setRecurringPct} suffix="%" />
-            <SliderField label="Top customer % of revenue" value={topCustomerPct} min={0} max={100} step={5} onChange={setTopCustomerPct} suffix="%" />
-            <Choice label="SOP / documentation" value={sopStatus} onChange={setSopStatus} options={[
-              { value: "none", label: "None — it lives in my head" },
-              { value: "partial", label: "Partial — key things written down" },
-              { value: "complete", label: "Complete — documented playbook" },
-            ]} />
-            <Choice label="Management team depth" value={managerDepth} onChange={setManagerDepth} options={[
-              { value: "none", label: "Owner is the manager" },
-              { value: "partial", label: "Some department leads" },
-              { value: "strong", label: "Full management team in place" },
-            ]} />
-            <Choice label="Desired exit timeline" value={exitTimeline} onChange={(v) => setExitTimeline(v as never)} options={[
-              { value: "lt_1y", label: "Now — within 1 year" },
-              { value: "1_2y", label: "Within 1–2 years" },
-              { value: "2_5y", label: "2–5 years" },
-              { value: "5_plus_y", label: "5+ years" },
-              { value: "exploring", label: "Just exploring" },
-            ]} />
+            <SliderField
+              label="Recurring revenue (contracts, subscriptions)"
+              value={recurringPct}
+              min={0}
+              max={100}
+              step={5}
+              onChange={setRecurringPct}
+              suffix="%"
+            />
+            <SliderField
+              label="Top customer % of revenue"
+              value={topCustomerPct}
+              min={0}
+              max={100}
+              step={5}
+              onChange={setTopCustomerPct}
+              suffix="%"
+            />
+            <Choice
+              label="SOP / documentation"
+              value={sopStatus}
+              onChange={setSopStatus}
+              options={[
+                { value: "none", label: "None — it lives in my head" },
+                { value: "partial", label: "Partial — key things written down" },
+                { value: "complete", label: "Complete — documented playbook" },
+              ]}
+            />
+            <Choice
+              label="Management team depth"
+              value={managerDepth}
+              onChange={setManagerDepth}
+              options={[
+                { value: "none", label: "Owner is the manager" },
+                { value: "partial", label: "Some department leads" },
+                { value: "strong", label: "Full management team in place" },
+              ]}
+            />
+            <Choice
+              label="Desired exit timeline"
+              value={exitTimeline}
+              onChange={(v) => setExitTimeline(v as never)}
+              options={[
+                { value: "lt_1y", label: "Now — within 1 year" },
+                { value: "1_2y", label: "Within 1–2 years" },
+                { value: "2_5y", label: "2–5 years" },
+                { value: "5_plus_y", label: "5+ years" },
+                { value: "exploring", label: "Just exploring" },
+              ]}
+            />
 
             <div className="pt-2">
               <button
@@ -344,7 +487,9 @@ function Settings() {
 
           <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 space-y-3">
             <h2 className="font-display font-semibold text-destructive">Danger zone</h2>
-            <p className="text-sm text-muted-foreground">Permanently delete this business and all its data.</p>
+            <p className="text-sm text-muted-foreground">
+              Permanently delete this business and all its data.
+            </p>
             <button
               onClick={deleteBusiness}
               className="inline-flex items-center gap-1.5 rounded-md border border-destructive bg-card px-4 py-2 text-sm font-semibold text-destructive hover:bg-destructive/10"
@@ -358,7 +503,15 @@ function Settings() {
   );
 }
 
-function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+function Field({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
   return (
     <label className="block">
       <span className="text-sm font-medium">{label}</span>
@@ -370,7 +523,15 @@ function Field({ label, value, onChange }: { label: string; value: string; onCha
     </label>
   );
 }
-function NumField({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+function NumField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+}) {
   return (
     <label className="block">
       <span className="text-sm font-medium">{label}</span>
@@ -383,37 +544,91 @@ function NumField({ label, value, onChange }: { label: string; value: number; on
     </label>
   );
 }
-function SliderField({ label, value, min, max, step, onChange, suffix }: { label: string; value: number; min: number; max: number; step: number; onChange: (v: number) => void; suffix?: string }) {
+function SliderField({
+  label,
+  value,
+  min,
+  max,
+  step,
+  onChange,
+  suffix,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (v: number) => void;
+  suffix?: string;
+}) {
   return (
     <div>
       <div className="flex items-center justify-between text-sm">
         <span className="font-medium">{label}</span>
-        <span className="text-muted-foreground tabular-nums">{value}{suffix}</span>
+        <span className="text-muted-foreground tabular-nums">
+          {value}
+          {suffix}
+        </span>
       </div>
       <input
-        type="range" min={min} max={max} step={step} value={value}
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         className="mt-2 w-full accent-[oklch(0.45_0.1_158)]"
       />
     </div>
   );
 }
-function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+function Toggle({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
   return (
     <label className="flex items-center justify-between rounded-md border border-border px-3 py-2 text-sm cursor-pointer hover:bg-secondary/40">
       <span>{label}</span>
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="h-4 w-4 accent-[oklch(0.45_0.1_158)]" />
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="h-4 w-4 accent-[oklch(0.45_0.1_158)]"
+      />
     </label>
   );
 }
-function Choice({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) {
+function Choice({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+}) {
   return (
     <div>
       <div className="text-sm font-medium mb-1.5">{label}</div>
       <div className="space-y-1.5">
         {options.map((o) => (
-          <label key={o.value} className={`flex items-center gap-2 rounded-md border px-3 py-2 text-sm cursor-pointer transition ${value === o.value ? "border-accent bg-accent-soft" : "border-border hover:bg-secondary/40"}`}>
-            <input type="radio" checked={value === o.value} onChange={() => onChange(o.value)} className="accent-[oklch(0.45_0.1_158)]" />
+          <label
+            key={o.value}
+            className={`flex items-center gap-2 rounded-md border px-3 py-2 text-sm cursor-pointer transition ${value === o.value ? "border-accent bg-accent-soft" : "border-border hover:bg-secondary/40"}`}
+          >
+            <input
+              type="radio"
+              checked={value === o.value}
+              onChange={() => onChange(o.value)}
+              className="accent-[oklch(0.45_0.1_158)]"
+            />
             {o.label}
           </label>
         ))}

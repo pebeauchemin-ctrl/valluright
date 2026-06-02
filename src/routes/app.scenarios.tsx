@@ -30,11 +30,11 @@ type ScenarioRow = {
 
 type Knobs = {
   ownerInvolvement: number; // %
-  recurring: number;        // %
-  profitMargin: number;     // %  (uplift in pts vs current)
-  revenueGrowth: number;    // %
-  customerConc: number;     // %
-  sopScore: number;         // 0-100
+  recurring: number; // %
+  profitMargin: number; // %  (uplift in pts vs current)
+  revenueGrowth: number; // %
+  customerConc: number; // %
+  sopScore: number; // 0-100
   managerHired: boolean;
   timelineMonths: number;
 };
@@ -67,7 +67,7 @@ function Scenarios() {
   const [description, setDescription] = useState("");
   const [actionStepsText, setActionStepsText] = useState("");
   const [includeInReport, setIncludeInReport] = useState(false);
-  const [phase, setPhase] = useState<typeof PHASES[number]>("Next 90 Days");
+  const [phase, setPhase] = useState<(typeof PHASES)[number]>("Next 90 Days");
 
   const [k, setK] = useState<Knobs>({
     ownerInvolvement: 70,
@@ -82,9 +82,17 @@ function Scenarios() {
 
   useEffect(() => {
     if (!current) return;
-    supabase.from("financial_years").select("*").eq("business_id", current.id).order("year", { ascending: true })
+    supabase
+      .from("financial_years")
+      .select("*")
+      .eq("business_id", current.id)
+      .order("year", { ascending: true })
       .then(({ data }) => setFinancials(data ?? []));
-    supabase.from("scenarios").select("*").eq("business_id", current.id).order("created_at", { ascending: false })
+    supabase
+      .from("scenarios")
+      .select("*")
+      .eq("business_id", current.id)
+      .order("created_at", { ascending: false })
       .then(({ data }) => setSaved((data ?? []) as ScenarioRow[]));
     setK((prev) => ({
       ...prev,
@@ -101,8 +109,10 @@ function Scenarios() {
     return valueBusiness(toBusinessInputs(current, financials));
   }, [current, financials]);
 
-  const baselineHealth = useMemo(() => current ? computeHealthScore(toBusinessInputs(current, financials)).total : 0,
-    [current, financials]);
+  const baselineHealth = useMemo(
+    () => (current ? computeHealthScore(toBusinessInputs(current, financials)).total : 0),
+    [current, financials],
+  );
 
   const projected = useMemo(() => {
     if (!current) return null;
@@ -135,17 +145,21 @@ function Scenarios() {
     return { v, health: h, inputs };
   }, [current, financials, k]);
 
-  if (!current) return <div className="p-12 text-sm text-muted-foreground">No business selected.</div>;
-  if (!baseline || !projected) return <div className="p-12 text-sm text-muted-foreground">Loading…</div>;
+  if (!current)
+    return <div className="p-12 text-sm text-muted-foreground">No business selected.</div>;
+  if (!baseline || !projected)
+    return <div className="p-12 text-sm text-muted-foreground">Loading…</div>;
 
   // Multiple = enterpriseValue / latest EBITDA (non-RE) or NOI (RE)
   const latest = financials[financials.length - 1];
-  const denomBase = baseline.category === "real_estate_income"
-    ? baseline.methods.find((m) => m.method === "cap_rate")?.noi ?? latest?.ebitda ?? 0
-    : (latest?.ebitda ?? 0);
-  const denomProj = projected.v.category === "real_estate_income"
-    ? projected.v.methods.find((m) => m.method === "cap_rate")?.noi ?? 0
-    : projected.inputs.financials[projected.inputs.financials.length - 1]?.ebitda ?? 0;
+  const denomBase =
+    baseline.category === "real_estate_income"
+      ? (baseline.methods.find((m) => m.method === "cap_rate")?.noi ?? latest?.ebitda ?? 0)
+      : (latest?.ebitda ?? 0);
+  const denomProj =
+    projected.v.category === "real_estate_income"
+      ? (projected.v.methods.find((m) => m.method === "cap_rate")?.noi ?? 0)
+      : (projected.inputs.financials[projected.inputs.financials.length - 1]?.ebitda ?? 0);
 
   const baseMultiple = denomBase > 0 ? baseline.rangeMid / denomBase : 0;
   const projMultiple = denomProj > 0 ? projected.v.rangeMid / denomProj : 0;
@@ -157,13 +171,20 @@ function Scenarios() {
 
   // Paradox warning
   const baseEbitda = latest?.ebitda ?? 0;
-  const projEbitda = projected.inputs.financials[projected.inputs.financials.length - 1]?.ebitda ?? 0;
+  const projEbitda =
+    projected.inputs.financials[projected.inputs.financials.length - 1]?.ebitda ?? 0;
   const paradoxVisible = k.managerHired && projEbitda < baseEbitda && projMultiple > baseMultiple;
 
   async function saveScenario() {
     if (!current) return;
-    if (!name.trim()) { toast.error("Give your scenario a name."); return; }
-    const action_steps = actionStepsText.split("\n").map((s) => s.trim()).filter(Boolean);
+    if (!name.trim()) {
+      toast.error("Give your scenario a name.");
+      return;
+    }
+    const action_steps = actionStepsText
+      .split("\n")
+      .map((s) => s.trim())
+      .filter(Boolean);
     const payload = {
       business_id: current.id,
       name: name.trim(),
@@ -184,22 +205,39 @@ function Scenarios() {
       roadmap_phase: phase,
     };
     const { data, error } = await supabase.from("scenarios").insert(payload).select("*").single();
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     setSaved((prev) => [data as ScenarioRow, ...prev]);
-    setName(""); setDescription(""); setActionStepsText(""); setIncludeInReport(false);
+    setName("");
+    setDescription("");
+    setActionStepsText("");
+    setIncludeInReport(false);
     toast.success("Scenario saved");
   }
 
   async function deleteScenario(id: string) {
     const { error } = await supabase.from("scenarios").delete().eq("id", id);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     setSaved((prev) => prev.filter((s) => s.id !== id));
   }
 
   async function toggleReport(s: ScenarioRow) {
-    const { error } = await supabase.from("scenarios").update({ include_in_report: !s.include_in_report }).eq("id", s.id);
-    if (error) { toast.error(error.message); return; }
-    setSaved((prev) => prev.map((x) => x.id === s.id ? { ...x, include_in_report: !s.include_in_report } : x));
+    const { error } = await supabase
+      .from("scenarios")
+      .update({ include_in_report: !s.include_in_report })
+      .eq("id", s.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setSaved((prev) =>
+      prev.map((x) => (x.id === s.id ? { ...x, include_in_report: !s.include_in_report } : x)),
+    );
   }
 
   function loadScenario(s: ScenarioRow) {
@@ -217,14 +255,16 @@ function Scenarios() {
     setDescription(s.description ?? "");
     setActionStepsText((s.action_steps ?? []).join("\n"));
     setIncludeInReport(s.include_in_report);
-    setPhase((s.roadmap_phase as typeof PHASES[number]) ?? "Next 90 Days");
+    setPhase((s.roadmap_phase as (typeof PHASES)[number]) ?? "Next 90 Days");
   }
 
   return (
-    <div className="p-6 lg:p-10 space-y-6">
+    <div className="space-y-6 p-4 sm:p-6 lg:p-10">
       <div>
         <h1 className="font-display text-3xl font-semibold text-primary">What-if scenarios</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Move the sliders to see how each lever moves your valuation, multiple, health and risk.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Move the sliders to see how each lever moves your valuation, multiple, health and risk.
+        </p>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
@@ -234,54 +274,135 @@ function Scenarios() {
             <Sliders className="h-4 w-4 text-accent" />
             <h2 className="font-display font-semibold text-primary">Adjustments</h2>
           </div>
-          <Slider label="Owner involvement" value={k.ownerInvolvement} min={0} max={100} step={5} suffix="%"
+          <Slider
+            label="Owner involvement"
+            value={k.ownerInvolvement}
+            min={0}
+            max={100}
+            step={5}
+            suffix="%"
             onChange={(v) => setK({ ...k, ownerInvolvement: v })}
-            help={`≈ ${pctToHrs(k.ownerInvolvement)} hrs/week`} />
-          <Slider label="Recurring revenue" value={k.recurring} min={0} max={100} step={5} suffix="%"
-            onChange={(v) => setK({ ...k, recurring: v })} />
-          <Slider label="Profit margin uplift" value={k.profitMargin} min={-10} max={20} step={1} suffix=" pts"
-            onChange={(v) => setK({ ...k, profitMargin: v })} />
-          <Slider label="Revenue growth (next year)" value={k.revenueGrowth} min={-20} max={50} step={1} suffix="%"
-            onChange={(v) => setK({ ...k, revenueGrowth: v })} />
-          <Slider label="Top customer concentration" value={k.customerConc} min={0} max={100} step={5} suffix="%"
-            onChange={(v) => setK({ ...k, customerConc: v })} />
-          <Slider label="SOP / documentation score" value={k.sopScore} min={0} max={100} step={5}
+            help={`≈ ${pctToHrs(k.ownerInvolvement)} hrs/week`}
+          />
+          <Slider
+            label="Recurring revenue"
+            value={k.recurring}
+            min={0}
+            max={100}
+            step={5}
+            suffix="%"
+            onChange={(v) => setK({ ...k, recurring: v })}
+          />
+          <Slider
+            label="Profit margin uplift"
+            value={k.profitMargin}
+            min={-10}
+            max={20}
+            step={1}
+            suffix=" pts"
+            onChange={(v) => setK({ ...k, profitMargin: v })}
+          />
+          <Slider
+            label="Revenue growth (next year)"
+            value={k.revenueGrowth}
+            min={-20}
+            max={50}
+            step={1}
+            suffix="%"
+            onChange={(v) => setK({ ...k, revenueGrowth: v })}
+          />
+          <Slider
+            label="Top customer concentration"
+            value={k.customerConc}
+            min={0}
+            max={100}
+            step={5}
+            suffix="%"
+            onChange={(v) => setK({ ...k, customerConc: v })}
+          />
+          <Slider
+            label="SOP / documentation score"
+            value={k.sopScore}
+            min={0}
+            max={100}
+            step={5}
             onChange={(v) => setK({ ...k, sopScore: v })}
-            help={`Status: ${sopScoreToStatus(k.sopScore)}`} />
-          <label className="flex items-center justify-between rounded-md border border-border px-3 py-2 text-sm cursor-pointer">
-            <div>
+            help={`Status: ${sopScoreToStatus(k.sopScore)}`}
+          />
+          <label className="flex items-start justify-between gap-3 rounded-md border border-border px-3 py-2 text-sm cursor-pointer">
+            <div className="min-w-0">
               <div className="font-medium">Hire a strong general manager</div>
-              <div className="text-xs text-muted-foreground">Reduces earnings (~$95k salary) but lifts the multiple.</div>
+              <div className="text-xs text-muted-foreground">
+                Reduces earnings (~$95k salary) but lifts the multiple.
+              </div>
             </div>
-            <input type="checkbox" checked={k.managerHired} onChange={(e) => setK({ ...k, managerHired: e.target.checked })} className="accent-[oklch(0.45_0.1_158)] h-4 w-4" />
+            <input
+              type="checkbox"
+              checked={k.managerHired}
+              onChange={(e) => setK({ ...k, managerHired: e.target.checked })}
+              className="h-4 w-4 shrink-0 accent-[oklch(0.45_0.1_158)]"
+            />
           </label>
-          <Slider label="Timeline to achieve" value={k.timelineMonths} min={1} max={36} step={1} suffix=" mo"
-            onChange={(v) => setK({ ...k, timelineMonths: v })} />
+          <Slider
+            label="Timeline to achieve"
+            value={k.timelineMonths}
+            min={1}
+            max={36}
+            step={1}
+            suffix=" mo"
+            onChange={(v) => setK({ ...k, timelineMonths: v })}
+          />
         </div>
 
         {/* Result */}
         <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <Stat label="Today's value" value={`${fmtCurrency(baseline.rangeLow, { compact: true })} – ${fmtCurrency(baseline.rangeHigh, { compact: true })}`} />
-            <Stat label="Projected value" value={`${fmtCurrency(projected.v.rangeLow, { compact: true })} – ${fmtCurrency(projected.v.rangeHigh, { compact: true })}`} accent />
-            <Stat label="Multiple (today → projected)" value={`${baseMultiple.toFixed(2)}× → ${projMultiple.toFixed(2)}×`} />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Stat
+              label="Today's value"
+              value={`${fmtCurrency(baseline.rangeLow, { compact: true })} – ${fmtCurrency(baseline.rangeHigh, { compact: true })}`}
+            />
+            <Stat
+              label="Projected value"
+              value={`${fmtCurrency(projected.v.rangeLow, { compact: true })} – ${fmtCurrency(projected.v.rangeHigh, { compact: true })}`}
+              accent
+            />
+            <Stat
+              label="Multiple (today → projected)"
+              value={`${baseMultiple.toFixed(2)}× → ${projMultiple.toFixed(2)}×`}
+            />
             <Stat label="Health score" value={`${baselineHealth} → ${projected.health}`} />
             <Stat label="Risk score" value={`${baseRisk} → ${projRisk}`} />
-            <Stat label="Net value gain / loss"
+            <Stat
+              label="Net value gain / loss"
               value={`${delta >= 0 ? "+" : ""}${fmtCurrency(delta, { compact: true })} (${deltaPct >= 0 ? "+" : ""}${deltaPct.toFixed(1)}%)`}
-              positive={delta >= 0} negative={delta < 0} />
+              positive={delta >= 0}
+              negative={delta < 0}
+            />
           </div>
 
           {paradoxVisible && (
             <div className="rounded-lg border border-accent/40 bg-accent-soft p-4 text-sm">
-              <div className="flex items-center gap-2 font-semibold text-accent"><Lightbulb className="h-4 w-4" /> The manager paradox is in play</div>
-              <div className="mt-1 text-foreground">EBITDA drops from {fmtCurrency(baseEbitda, { compact: true })} to {fmtCurrency(projEbitda, { compact: true })}, but the multiple rises from {baseMultiple.toFixed(2)}× to {projMultiple.toFixed(2)}× because the business is no longer dependent on you. Net effect on value: <strong>{delta >= 0 ? "+" : ""}{fmtCurrency(delta, { compact: true })}</strong>.</div>
+              <div className="flex items-center gap-2 font-semibold text-accent">
+                <Lightbulb className="h-4 w-4" /> The manager paradox is in play
+              </div>
+              <div className="mt-1 text-foreground">
+                EBITDA drops from {fmtCurrency(baseEbitda, { compact: true })} to{" "}
+                {fmtCurrency(projEbitda, { compact: true })}, but the multiple rises from{" "}
+                {baseMultiple.toFixed(2)}× to {projMultiple.toFixed(2)}× because the business is no
+                longer dependent on you. Net effect on value:{" "}
+                <strong>
+                  {delta >= 0 ? "+" : ""}
+                  {fmtCurrency(delta, { compact: true })}
+                </strong>
+                .
+              </div>
             </div>
           )}
 
           {projected.health < baselineHealth - 5 && (
             <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive flex gap-2">
-              <AlertTriangle className="h-4 w-4 shrink-0" /> Some changes weakened the business profile — confirm these are deliberate trade-offs.
+              <AlertTriangle className="h-4 w-4 shrink-0" /> Some changes weakened the business
+              profile — confirm these are deliberate trade-offs.
             </div>
           )}
         </div>
@@ -289,26 +410,64 @@ function Scenarios() {
 
       {/* Save scenario */}
       <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
-        <h2 className="font-display font-semibold text-primary flex items-center gap-2"><Save className="h-4 w-4 text-accent" /> Save this scenario</h2>
+        <h2 className="font-display font-semibold text-primary flex items-center gap-2">
+          <Save className="h-4 w-4 text-accent" /> Save this scenario
+        </h2>
         <div className="grid md:grid-cols-2 gap-3">
-          <Field label="Name"><input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Hire GM + grow recurring" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" /></Field>
+          <Field label="Name">
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Hire GM + grow recurring"
+              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+            />
+          </Field>
           <Field label="Roadmap phase">
-            <select value={phase} onChange={(e) => setPhase(e.target.value as typeof PHASES[number])} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm">
-              {PHASES.map((p) => <option key={p} value={p}>{p}</option>)}
+            <select
+              value={phase}
+              onChange={(e) => setPhase(e.target.value as (typeof PHASES)[number])}
+              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+            >
+              {PHASES.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
             </select>
           </Field>
           <Field label="Description" className="md:col-span-2">
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={2}
+              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+            />
           </Field>
           <Field label="Action steps (one per line)" className="md:col-span-2">
-            <textarea value={actionStepsText} onChange={(e) => setActionStepsText(e.target.value)} rows={3} placeholder="Hire GM by Q2&#10;Document top 5 SOPs&#10;Cross-train sales team" className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm font-mono" />
+            <textarea
+              value={actionStepsText}
+              onChange={(e) => setActionStepsText(e.target.value)}
+              rows={3}
+              placeholder="Hire GM by Q2&#10;Document top 5 SOPs&#10;Cross-train sales team"
+              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm font-mono"
+            />
           </Field>
         </div>
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={includeInReport} onChange={(e) => setIncludeInReport(e.target.checked)} className="accent-[oklch(0.45_0.1_158)] h-4 w-4" />
+          <input
+            type="checkbox"
+            checked={includeInReport}
+            onChange={(e) => setIncludeInReport(e.target.checked)}
+            className="accent-[oklch(0.45_0.1_158)] h-4 w-4"
+          />
           Include in buyer / advisor report
         </label>
-        <button onClick={saveScenario} className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition">Save scenario</button>
+        <button
+          onClick={saveScenario}
+          className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition"
+        >
+          Save scenario
+        </button>
       </div>
 
       {/* Saved scenarios */}
@@ -333,21 +492,47 @@ function Scenarios() {
                 {saved.map((s) => (
                   <tr key={s.id} className="border-b border-border/50 last:border-0">
                     <td className="py-2 pr-3">
-                      <button onClick={() => loadScenario(s)} className="font-medium text-primary hover:underline text-left">{s.name}</button>
-                      {s.description && <div className="text-xs text-muted-foreground">{s.description}</div>}
+                      <button
+                        onClick={() => loadScenario(s)}
+                        className="font-medium text-primary hover:underline text-left"
+                      >
+                        {s.name}
+                      </button>
+                      {s.description && (
+                        <div className="text-xs text-muted-foreground">{s.description}</div>
+                      )}
                     </td>
-                    <td className="text-right py-2 px-3 tabular-nums">{fmtCurrency(Number(s.current_value), { compact: true })}</td>
-                    <td className="text-right py-2 px-3 tabular-nums">{fmtCurrency(Number(s.projected_value), { compact: true })}</td>
-                    <td className={`text-right py-2 px-3 tabular-nums font-semibold ${Number(s.value_delta) >= 0 ? "text-accent" : "text-destructive"}`}>
-                      {Number(s.value_delta) >= 0 ? "+" : ""}{fmtCurrency(Number(s.value_delta), { compact: true })}
+                    <td className="text-right py-2 px-3 tabular-nums">
+                      {fmtCurrency(Number(s.current_value), { compact: true })}
                     </td>
-                    <td className="text-right py-2 px-3 tabular-nums">{s.timeline_months ?? "—"} mo</td>
+                    <td className="text-right py-2 px-3 tabular-nums">
+                      {fmtCurrency(Number(s.projected_value), { compact: true })}
+                    </td>
+                    <td
+                      className={`text-right py-2 px-3 tabular-nums font-semibold ${Number(s.value_delta) >= 0 ? "text-accent" : "text-destructive"}`}
+                    >
+                      {Number(s.value_delta) >= 0 ? "+" : ""}
+                      {fmtCurrency(Number(s.value_delta), { compact: true })}
+                    </td>
+                    <td className="text-right py-2 px-3 tabular-nums">
+                      {s.timeline_months ?? "—"} mo
+                    </td>
                     <td className="py-2 px-3 text-xs">{s.roadmap_phase ?? "—"}</td>
                     <td className="text-center py-2 px-3">
-                      <input type="checkbox" checked={s.include_in_report} onChange={() => toggleReport(s)} className="accent-[oklch(0.45_0.1_158)] h-4 w-4" />
+                      <input
+                        type="checkbox"
+                        checked={s.include_in_report}
+                        onChange={() => toggleReport(s)}
+                        className="accent-[oklch(0.45_0.1_158)] h-4 w-4"
+                      />
                     </td>
                     <td className="py-2 pl-3 text-right">
-                      <button onClick={() => deleteScenario(s.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
+                      <button
+                        onClick={() => deleteScenario(s.id)}
+                        className="text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -360,30 +545,82 @@ function Scenarios() {
   );
 }
 
-function Slider({ label, value, min, max, step, onChange, suffix, help }: { label: string; value: number; min: number; max: number; step: number; onChange: (v: number) => void; suffix?: string; help?: string }) {
+function Slider({
+  label,
+  value,
+  min,
+  max,
+  step,
+  onChange,
+  suffix,
+  help,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (v: number) => void;
+  suffix?: string;
+  help?: string;
+}) {
   return (
     <div>
-      <div className="flex items-center justify-between text-sm">
-        <span className="font-medium">{label}</span>
-        <span className="text-muted-foreground tabular-nums">{value}{suffix}</span>
+      <div className="flex items-center justify-between gap-3 text-sm">
+        <span className="min-w-0 font-medium">{label}</span>
+        <span className="shrink-0 text-muted-foreground tabular-nums">
+          {value}
+          {suffix}
+        </span>
       </div>
-      <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))}
-        className="mt-2 w-full accent-[oklch(0.45_0.1_158)]" />
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="mt-2 w-full accent-[oklch(0.45_0.1_158)]"
+      />
       {help && <div className="mt-1 text-[11px] text-muted-foreground">{help}</div>}
     </div>
   );
 }
 
-function Stat({ label, value, accent, positive, negative }: { label: string; value: string; accent?: boolean; positive?: boolean; negative?: boolean }) {
+function Stat({
+  label,
+  value,
+  accent,
+  positive,
+  negative,
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+  positive?: boolean;
+  negative?: boolean;
+}) {
   return (
-    <div className="rounded-lg border border-border p-3">
+    <div className="min-w-0 rounded-lg border border-border p-3">
       <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div className={`mt-1 font-display text-lg font-semibold ${accent ? "text-primary" : positive ? "text-accent" : negative ? "text-destructive" : "text-foreground"}`}>{value}</div>
+      <div
+        className={`mt-1 break-words font-display text-lg font-semibold ${accent ? "text-primary" : positive ? "text-accent" : negative ? "text-destructive" : "text-foreground"}`}
+      >
+        {value}
+      </div>
     </div>
   );
 }
 
-function Field({ label, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) {
+function Field({
+  label,
+  children,
+  className = "",
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <label className={`block ${className}`}>
       <div className="text-xs font-medium text-muted-foreground mb-1">{label}</div>

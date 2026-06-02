@@ -1,9 +1,21 @@
 import { createFileRoute, Link, Outlet, useNavigate, useLocation } from "@tanstack/react-router";
 import { useEffect } from "react";
 import {
-  LayoutDashboard, FileSpreadsheet, Sparkles, Sliders, Eye,
-  Folder, Users, Settings as SettingsIcon, LogOut, ChevronDown, Plus,
-  Activity, TrendingUp, Map, FileText,
+  LayoutDashboard,
+  FileSpreadsheet,
+  Sparkles,
+  Sliders,
+  Eye,
+  Folder,
+  Users,
+  Settings as SettingsIcon,
+  LogOut,
+  ChevronDown,
+  Plus,
+  Activity,
+  TrendingUp,
+  Map,
+  FileText,
 } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { useAuth } from "@/lib/auth";
@@ -46,26 +58,34 @@ function AppLayout() {
     );
   }
 
-    const navItems: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }> = [
-      { to: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
-      { to: "/app/financials", label: "Financials", icon: FileSpreadsheet },
-      { to: "/app/health-score", label: "Health Score", icon: Activity },
-      { to: "/app/improve-value", label: "Improve Value", icon: TrendingUp },
-      { to: "/app/recommendations", label: "Recommendations", icon: Sparkles },
-      { to: "/app/scenarios", label: "What-if Scenarios", icon: Sliders },
-      { to: "/app/roadmap", label: "Roadmap", icon: Map },
-      { to: "/app/buyer-teaser", label: "Buyer Teaser", icon: Eye },
-      { to: "/app/data-room", label: "Data Room", icon: Folder },
-      { to: "/app/reports", label: "Reports", icon: FileText },
-      { to: "/app/advisors", label: "Advisors", icon: Users },
-      { to: "/app/settings", label: "Settings", icon: SettingsIcon },
-    ];
+  const navItems: ReadonlyArray<{
+    to: string;
+    label: string;
+    icon: typeof LayoutDashboard;
+    exact?: boolean;
+  }> = [
+    { to: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
+    { to: "/app/financials", label: "Financials", icon: FileSpreadsheet },
+    { to: "/app/health-score", label: "Health Score", icon: Activity },
+    { to: "/app/improve-value", label: "Improve Value", icon: TrendingUp },
+    { to: "/app/recommendations", label: "Recommendations", icon: Sparkles },
+    { to: "/app/scenarios", label: "What-if Scenarios", icon: Sliders },
+    { to: "/app/roadmap", label: "Roadmap", icon: Map },
+    { to: "/app/buyer-teaser", label: "Buyer Teaser", icon: Eye },
+    { to: "/app/data-room", label: "Data Room", icon: Folder },
+    { to: "/app/reports", label: "Reports", icon: FileText },
+    { to: "/app/advisors", label: "Advisors", icon: Users },
+    { to: "/app/settings", label: "Settings", icon: SettingsIcon },
+  ];
 
   return (
-    <div className="min-h-screen flex bg-secondary/40">
+    <div className="min-h-screen flex flex-col bg-secondary/40 lg:flex-row">
       {/* Sidebar */}
-      <aside className="w-64 shrink-0 bg-sidebar text-sidebar-foreground flex flex-col">
-        <Link to="/" className="flex items-center px-5 py-5 border-b border-sidebar-border">
+      <aside className="w-full shrink-0 bg-sidebar text-sidebar-foreground flex flex-col lg:w-64">
+        <Link
+          to="/"
+          className="flex items-center px-4 py-4 border-b border-sidebar-border lg:px-5 lg:py-5"
+        >
           <BrandLogo size={32} variant="onDark" />
         </Link>
 
@@ -75,7 +95,9 @@ function AppLayout() {
             <div className="relative group">
               <button className="w-full flex items-center justify-between gap-2 rounded-md bg-sidebar-accent px-3 py-2 text-sm text-left hover:bg-sidebar-accent/80 transition">
                 <div className="min-w-0 flex-1">
-                  <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">Business</div>
+                  <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">
+                    Business
+                  </div>
                   <div className="font-medium truncate">{current.name}</div>
                 </div>
                 <ChevronDown className="h-4 w-4 shrink-0 text-sidebar-foreground/60" />
@@ -107,15 +129,17 @@ function AppLayout() {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-3 space-y-0.5">
+        <nav className="flex gap-1 overflow-x-auto px-3 py-3 lg:flex-1 lg:flex-col lg:space-y-0.5 lg:overflow-visible">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const active = item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to);
+            const active = item.exact
+              ? location.pathname === item.to
+              : location.pathname.startsWith(item.to);
             return (
               <Link
                 key={item.to}
                 to={item.to}
-                className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition ${
+                className={`flex shrink-0 items-center gap-3 rounded-md px-3 py-2 text-sm transition lg:shrink ${
                   active
                     ? "bg-sidebar-accent text-sidebar-foreground font-semibold"
                     : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
@@ -128,10 +152,13 @@ function AppLayout() {
           })}
         </nav>
 
-        <div className="px-3 py-3 border-t border-sidebar-border">
+        <div className="px-3 py-3 border-t border-sidebar-border lg:block">
           <div className="text-xs text-sidebar-foreground/60 px-3 mb-2 truncate">{user.email}</div>
           <button
-            onClick={async () => { await signOut(); navigate({ to: "/" }); }}
+            onClick={async () => {
+              await signOut();
+              navigate({ to: "/" });
+            }}
             className="w-full flex items-center gap-2 rounded-md px-3 py-2 text-sm text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground transition"
           >
             <LogOut className="h-4 w-4" /> Sign out

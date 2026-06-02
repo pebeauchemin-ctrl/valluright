@@ -123,7 +123,7 @@ function Reports() {
     return <div className="p-12 text-sm text-muted-foreground">No business selected.</div>;
 
   return (
-    <div className="p-6 lg:p-10 space-y-6">
+    <div className="space-y-6 p-4 sm:p-6 lg:p-10">
       <div>
         <h1 className="font-display text-3xl font-semibold text-primary">Reports</h1>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -147,7 +147,7 @@ function Reports() {
                 For {r.audience}
               </div>
               <p className="mt-2 text-sm text-muted-foreground flex-1">{r.description}</p>
-              <div className="mt-4 flex gap-2">
+              <div className="mt-4 flex flex-wrap gap-2">
                 <button
                   onClick={() => setOpen(r.key)}
                   className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-md bg-accent px-3 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90"
@@ -195,10 +195,10 @@ function ReportPreview({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-stretch justify-center overflow-y-auto print:bg-white print:static print:overflow-visible">
-      <div className="w-full max-w-4xl bg-white text-neutral-900 my-6 rounded-lg shadow-2xl print:my-0 print:rounded-none print:shadow-none print:max-w-none">
-        <div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-neutral-200 bg-white px-5 py-3 print:hidden">
-          <div className="text-sm font-medium">{r.title} — Preview</div>
-          <div className="flex gap-2">
+      <div className="my-3 w-full max-w-4xl bg-white text-neutral-900 shadow-2xl sm:my-6 sm:rounded-lg print:my-0 print:max-w-none print:rounded-none print:shadow-none">
+        <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-2 border-b border-neutral-200 bg-white px-4 py-3 print:hidden sm:px-5">
+          <div className="min-w-0 text-sm font-medium">{r.title} — Preview</div>
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={() => window.print()}
               className="inline-flex items-center gap-1.5 rounded-md bg-neutral-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-neutral-700"
@@ -214,7 +214,7 @@ function ReportPreview({
           </div>
         </div>
 
-        <div className="p-10 print:p-12 space-y-8 font-sans">
+        <div className="space-y-8 p-4 font-sans sm:p-10 print:p-12">
           <header className="border-b border-neutral-200 pb-6">
             <div className="text-[10px] uppercase tracking-[0.2em] text-neutral-500">{r.title}</div>
             <h1 className="mt-2 font-display text-3xl font-semibold text-neutral-900">
@@ -262,7 +262,7 @@ function ReportPreview({
                     "Established business with strong fundamentals available for acquisition."}
                 </p>
               </Section>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <Tile label="Years in business" value={business.years_in_business ?? "—"} />
                 <Tile label="Region" value={business.region ?? "—"} />
                 <Tile
@@ -308,7 +308,7 @@ function ReportPreview({
           {reportKey === "advisor" && (
             <>
               <Section title="Company summary">
-                <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="grid gap-3 text-sm sm:grid-cols-2">
                   <KV k="Business" v={business.name} />
                   <KV
                     k="Industry"

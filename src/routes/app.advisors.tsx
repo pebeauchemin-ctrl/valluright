@@ -117,7 +117,7 @@ function Advisors() {
     return <div className="p-12 text-sm text-muted-foreground">No business selected.</div>;
 
   return (
-    <div className="p-6 lg:p-10 space-y-6 max-w-3xl">
+    <div className="space-y-6 p-4 sm:p-6 lg:p-10 max-w-3xl">
       <div>
         <h1 className="font-display text-3xl font-semibold text-primary">Advisor Review</h1>
         <p className="mt-1 text-sm text-muted-foreground">
