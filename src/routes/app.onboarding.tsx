@@ -6,9 +6,15 @@ import { useBusiness, toBusinessInputs } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
 import { buildValuationInsert } from "@/lib/valuation-persistence";
 import {
-  INDUSTRY_OPTIONS, valueBusiness, computeHealthScore,
-  SAMPLE_HVAC_BUSINESS, SAMPLE_HVAC_FINANCIALS,
-  BUSINESS_CATEGORY_OPTIONS, inferCategory, isRvOrCampground, type BusinessCategory,
+  INDUSTRY_OPTIONS,
+  valueBusiness,
+  computeHealthScore,
+  SAMPLE_HVAC_BUSINESS,
+  SAMPLE_HVAC_FINANCIALS,
+  BUSINESS_CATEGORY_OPTIONS,
+  inferCategory,
+  isRvOrCampground,
+  type BusinessCategory,
 } from "@/lib/valuation";
 import { fmtCurrency } from "@/lib/format";
 import { toast } from "sonner";
@@ -36,31 +42,164 @@ type Step = 0 | 1 | 2;
 const currentYear = new Date().getFullYear();
 
 const US_STATES = [
-  "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD",
-  "MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC",
-  "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY","DC","PR",
+  "AL",
+  "AK",
+  "AZ",
+  "AR",
+  "CA",
+  "CO",
+  "CT",
+  "DE",
+  "FL",
+  "GA",
+  "HI",
+  "ID",
+  "IL",
+  "IN",
+  "IA",
+  "KS",
+  "KY",
+  "LA",
+  "ME",
+  "MD",
+  "MA",
+  "MI",
+  "MN",
+  "MS",
+  "MO",
+  "MT",
+  "NE",
+  "NV",
+  "NH",
+  "NJ",
+  "NM",
+  "NY",
+  "NC",
+  "ND",
+  "OH",
+  "OK",
+  "OR",
+  "PA",
+  "RI",
+  "SC",
+  "SD",
+  "TN",
+  "TX",
+  "UT",
+  "VT",
+  "VA",
+  "WA",
+  "WV",
+  "WI",
+  "WY",
+  "DC",
+  "PR",
 ];
 
 const SUB_INDUSTRY_SUGGESTIONS: Record<string, string[]> = {
-  "HVAC / Trades": ["HVAC", "Plumbing", "Electrical", "Roofing", "Landscaping", "Pest control", "General contracting"],
-  "Professional Services": ["Accounting / CPA", "Legal", "Marketing agency", "Consulting", "IT services", "Architecture / Engineering"],
-  "Healthcare Practice": ["Dental", "Veterinary", "Medical / Primary care", "Physical therapy", "Optometry", "Mental health"],
-  "Construction": ["Residential", "Commercial", "Specialty trades", "Remodeling", "Site work / excavation"],
-  "Restaurant / Hospitality": ["QSR / Fast casual", "Full service restaurant", "Bar / Pub", "Catering", "Hotel / Lodging", "Food truck"],
-  "Retail": ["Apparel", "Convenience / C-store", "Specialty retail", "Furniture / Home goods", "Liquor store", "Gas station"],
-  "Manufacturing": ["Metal fabrication", "Food & beverage", "Plastics", "Electronics", "Custom / Job shop", "Consumer products"],
-  "E-commerce / Online": ["Amazon / Marketplace seller", "DTC brand", "Subscription box", "Digital products", "Dropshipping"],
-  "Software / SaaS": ["B2B SaaS", "B2C SaaS", "Vertical SaaS", "Mobile app", "Marketplace", "Dev tools"],
-  "Auto Repair / Service": ["General auto repair", "Body shop / Collision", "Tire / Wheel", "Quick lube", "Transmission", "Detailing"],
-  "Logistics / Transport": ["Trucking / Freight", "Last-mile delivery", "Warehousing", "Moving services", "Courier"],
-  "Other": [],
+  "HVAC / Trades": [
+    "HVAC",
+    "Plumbing",
+    "Electrical",
+    "Roofing",
+    "Landscaping",
+    "Pest control",
+    "General contracting",
+  ],
+  "Professional Services": [
+    "Accounting / CPA",
+    "Legal",
+    "Marketing agency",
+    "Consulting",
+    "IT services",
+    "Architecture / Engineering",
+  ],
+  "Healthcare Practice": [
+    "Dental",
+    "Veterinary",
+    "Medical / Primary care",
+    "Physical therapy",
+    "Optometry",
+    "Mental health",
+  ],
+  Construction: [
+    "Residential",
+    "Commercial",
+    "Specialty trades",
+    "Remodeling",
+    "Site work / excavation",
+  ],
+  "Restaurant / Hospitality": [
+    "QSR / Fast casual",
+    "Full service restaurant",
+    "Bar / Pub",
+    "Catering",
+    "Hotel / Lodging",
+    "Food truck",
+  ],
+  Retail: [
+    "Apparel",
+    "Convenience / C-store",
+    "Specialty retail",
+    "Furniture / Home goods",
+    "Liquor store",
+    "Gas station",
+  ],
+  Manufacturing: [
+    "Metal fabrication",
+    "Food & beverage",
+    "Plastics",
+    "Electronics",
+    "Custom / Job shop",
+    "Consumer products",
+  ],
+  "E-commerce / Online": [
+    "Amazon / Marketplace seller",
+    "DTC brand",
+    "Subscription box",
+    "Digital products",
+    "Dropshipping",
+  ],
+  "Software / SaaS": [
+    "B2B SaaS",
+    "B2C SaaS",
+    "Vertical SaaS",
+    "Mobile app",
+    "Marketplace",
+    "Dev tools",
+  ],
+  "Auto Repair / Service": [
+    "General auto repair",
+    "Body shop / Collision",
+    "Tire / Wheel",
+    "Quick lube",
+    "Transmission",
+    "Detailing",
+  ],
+  "Logistics / Transport": [
+    "Trucking / Freight",
+    "Last-mile delivery",
+    "Warehousing",
+    "Moving services",
+    "Courier",
+  ],
+  Other: [],
 };
 
 function emptyYear(year: number) {
   return {
-    year, revenue: 0, cogs: 0, gross_profit: 0, operating_expenses: 0,
-    owner_salary: 0, addbacks: 0, ebitda: 0, net_income: 0,
-    assets: 0, liabilities: 0, debt: 0,
+    year,
+    revenue: 0,
+    cogs: 0,
+    gross_profit: 0,
+    operating_expenses: 0,
+    owner_salary: 0,
+    addbacks: 0,
+    ebitda: 0,
+    net_income: 0,
+    assets: 0,
+    liabilities: 0,
+    debt: 0,
   };
 }
 
@@ -71,15 +210,17 @@ function Onboarding() {
   const search = Route.useSearch();
   const [step, setStep] = useState<Step>(0);
   const [saving, setSaving] = useState(false);
+  const [usingSampleData, setUsingSampleData] = useState(false);
 
   // Xero
   const startXero = useServerFn(startXeroConnect);
   const importXero = useServerFn(importXeroFinancials);
   const fetchConnections = useServerFn(listXeroConnections);
   const [xeroLoading, setXeroLoading] = useState(false);
-  const [xeroTenants, setXeroTenants] = useState<{ tenant_id: string; tenant_name: string | null }[]>([]);
+  const [xeroTenants, setXeroTenants] = useState<
+    { tenant_id: string; tenant_name: string | null }[]
+  >([]);
   const [selectedTenant, setSelectedTenant] = useState<string | null>(null);
-
 
   // Step 0: business basics
   const [name, setName] = useState("");
@@ -122,7 +263,9 @@ function Onboarding() {
   const [topCustomerPct, setTopCustomerPct] = useState(15);
   const [sopStatus, setSopStatus] = useState("partial");
   const [managerDepth, setManagerDepth] = useState("partial");
-  const [exitTimeline, setExitTimeline] = useState<"lt_1y" | "1_2y" | "2_5y" | "5_plus_y" | "exploring">("2_5y");
+  const [exitTimeline, setExitTimeline] = useState<
+    "lt_1y" | "1_2y" | "2_5y" | "5_plus_y" | "exploring"
+  >("2_5y");
 
   // After redirect back from Xero, surface status and load tenants for the user.
   useEffect(() => {
@@ -147,11 +290,15 @@ function Onboarding() {
     fetchConnections()
       .then(({ connections }) => {
         if (connections.length) {
-          setXeroTenants(connections.map((c) => ({ tenant_id: c.tenant_id, tenant_name: c.tenant_name })));
+          setXeroTenants(
+            connections.map((c) => ({ tenant_id: c.tenant_id, tenant_name: c.tenant_name })),
+          );
           setSelectedTenant((prev) => prev ?? connections[0].tenant_id);
         }
       })
-      .catch(() => { /* ignore */ });
+      .catch(() => {
+        /* ignore */
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
@@ -197,7 +344,9 @@ function Onboarding() {
           return match ? { ...row, ...match } : row;
         }),
       );
-      toast.success(`Imported ${imported.length} year(s) of P&L and Balance Sheet from Xero. Review and adjust owner salary and add-backs.`);
+      toast.success(
+        `Imported ${imported.length} year(s) of P&L and Balance Sheet from Xero. Review and adjust owner salary and add-backs.`,
+      );
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Xero import failed");
     } finally {
@@ -206,7 +355,9 @@ function Onboarding() {
   };
 
   const fillSample = () => {
-    setName(SAMPLE_HVAC_BUSINESS.name);
+    setUsingSampleData(true);
+    setName(`Sample - ${SAMPLE_HVAC_BUSINESS.name}`);
+    setAnonymousDescription(`[Sample data] ${SAMPLE_HVAC_BUSINESS.anonymous_description}`);
     setIndustry(SAMPLE_HVAC_BUSINESS.industry);
     setRegion(SAMPLE_HVAC_BUSINESS.region);
     setYearsInBusiness(SAMPLE_HVAC_BUSINESS.years_in_business);
@@ -220,16 +371,18 @@ function Onboarding() {
     setTopCustomerPct(SAMPLE_HVAC_BUSINESS.top_customer_concentration_pct);
     setSopStatus(SAMPLE_HVAC_BUSINESS.sop_status);
     setManagerDepth(SAMPLE_HVAC_BUSINESS.manager_team_depth);
-    toast.success("Filled with sample data — review and continue.");
+    toast.success("Filled with clearly marked sample data.");
   };
 
   const updateYear = (idx: number, patch: Partial<(typeof years)[number]>) => {
-    setYears((prev) => prev.map((y, i) => {
-      if (i !== idx) return y;
-      const next = { ...y, ...patch };
-      next.gross_profit = next.revenue - next.cogs;
-      return next;
-    }));
+    setYears((prev) =>
+      prev.map((y, i) => {
+        if (i !== idx) return y;
+        const next = { ...y, ...patch };
+        next.gross_profit = next.revenue - next.cogs;
+        return next;
+      }),
+    );
   };
 
   // Persisted business id once we've saved at least once during onboarding.
@@ -258,13 +411,17 @@ function Onboarding() {
     cap_rate_high: capRateHigh,
     management_fee_pct: mgmtFeePct,
     replacement_reserve_pct: reservePct,
+    is_sample: usingSampleData,
   });
 
   /** Create the business row (first save) or update it (subsequent saves). */
   const persistBusiness = async (): Promise<string | null> => {
     if (!user) return null;
     if (businessId) {
-      const { error } = await supabase.from("businesses").update(businessPayload()).eq("id", businessId);
+      const { error } = await supabase
+        .from("businesses")
+        .update(businessPayload())
+        .eq("id", businessId);
       if (error) throw error;
       return businessId;
     }
@@ -319,7 +476,10 @@ function Onboarding() {
       await persistFinancials(bizId);
 
       const { data: biz } = await supabase.from("businesses").select("*").eq("id", bizId).single();
-      const { data: yearsRows } = await supabase.from("financial_years").select("*").eq("business_id", bizId);
+      const { data: yearsRows } = await supabase
+        .from("financial_years")
+        .select("*")
+        .eq("business_id", bizId);
 
       // Compute and store first valuation
       const inputs = toBusinessInputs(biz!, (yearsRows ?? []) as never);
@@ -353,7 +513,9 @@ function Onboarding() {
           {[0, 1, 2].map((i) => (
             <div key={i} className="flex-1">
               <div className={`h-1.5 rounded-full ${i <= step ? "bg-accent" : "bg-secondary"}`} />
-              <div className={`mt-2 text-xs font-medium ${i === step ? "text-foreground" : "text-muted-foreground"}`}>
+              <div
+                className={`mt-2 text-xs font-medium ${i === step ? "text-foreground" : "text-muted-foreground"}`}
+              >
                 {["Business profile", "Financials", "Review"][i]}
               </div>
             </div>
@@ -365,17 +527,33 @@ function Onboarding() {
             <div className="space-y-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h1 className="font-display text-2xl font-semibold text-primary">Tell us about your business</h1>
-                  <p className="mt-1 text-sm text-muted-foreground">The basics — you can refine this later.</p>
+                  <h1 className="font-display text-2xl font-semibold text-primary">
+                    Tell us about your business
+                  </h1>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    The basics — you can refine this later.
+                  </p>
                 </div>
-                <button onClick={fillSample} className="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:underline">
+                <button
+                  onClick={fillSample}
+                  className="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:underline"
+                >
                   <Sparkles className="h-3.5 w-3.5" /> Use sample data
                 </button>
               </div>
+              {usingSampleData && (
+                <div className="rounded-lg border border-gold/40 bg-gold/10 p-3 text-xs leading-relaxed text-foreground">
+                  This business is marked as sample data. Rename it and replace the financials
+                  before using it for a real valuation.
+                </div>
+              )}
               <Field label="Business name" value={name} onChange={setName} />
               <div>
                 <label className="block text-sm font-medium">Buyer-safe business description</label>
-                <p className="text-xs text-muted-foreground mt-0.5">Anonymous, NDA-safe — what a buyer sees first. Avoid your business name or location.</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Anonymous, NDA-safe — what a buyer sees first. Avoid your business name or
+                  location.
+                </p>
                 <textarea
                   value={anonymousDescription}
                   onChange={(e) => setAnonymousDescription(e.target.value)}
@@ -387,9 +565,17 @@ function Onboarding() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium">Industry</label>
-                  <select value={industry} onChange={(e) => { setIndustry(e.target.value); setSubIndustry(""); }}
-                    className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
-                    {INDUSTRY_OPTIONS.map((i) => <option key={i}>{i}</option>)}
+                  <select
+                    value={industry}
+                    onChange={(e) => {
+                      setIndustry(e.target.value);
+                      setSubIndustry("");
+                    }}
+                    className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    {INDUSTRY_OPTIONS.map((i) => (
+                      <option key={i}>{i}</option>
+                    ))}
                   </select>
                 </div>
                 <div>
@@ -402,17 +588,26 @@ function Onboarding() {
                     className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                   <datalist id="sub-industry-options">
-                    {(SUB_INDUSTRY_SUGGESTIONS[industry] ?? []).map((s) => <option key={s} value={s} />)}
+                    {(SUB_INDUSTRY_SUGGESTIONS[industry] ?? []).map((s) => (
+                      <option key={s} value={s} />
+                    ))}
                   </datalist>
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium">State</label>
-                  <select value={stateCode} onChange={(e) => setStateCode(e.target.value)}
-                    className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+                  <select
+                    value={stateCode}
+                    onChange={(e) => setStateCode(e.target.value)}
+                    className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
                     <option value="">Select…</option>
-                    {US_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
+                    {US_STATES.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div className="sm:col-span-2">
@@ -420,27 +615,46 @@ function Onboarding() {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <NumField label="Years in business" value={yearsInBusiness} onChange={setYearsInBusiness} />
-                <NumField label="Employees (incl. owner)" value={employees} onChange={setEmployees} />
+                <NumField
+                  label="Years in business"
+                  value={yearsInBusiness}
+                  onChange={setYearsInBusiness}
+                />
+                <NumField
+                  label="Employees (incl. owner)"
+                  value={employees}
+                  onChange={setEmployees}
+                />
               </div>
 
               <div className="space-y-2 pt-2">
                 <label className="block text-sm font-medium">Business category</label>
-                <p className="text-xs text-muted-foreground">Determines which valuation methods are most appropriate. We've inferred a default — adjust if needed.</p>
+                <p className="text-xs text-muted-foreground">
+                  Determines which valuation methods are most appropriate. We've inferred a default
+                  — adjust if needed.
+                </p>
                 <div className="grid gap-2">
                   {BUSINESS_CATEGORY_OPTIONS.map((opt) => (
-                    <label key={opt.value} className={`flex gap-3 rounded-lg border p-3 cursor-pointer transition ${businessCategory === opt.value ? "border-accent bg-accent-soft" : "border-border hover:border-accent/40"}`}>
+                    <label
+                      key={opt.value}
+                      className={`flex gap-3 rounded-lg border p-3 cursor-pointer transition ${businessCategory === opt.value ? "border-accent bg-accent-soft" : "border-border hover:border-accent/40"}`}
+                    >
                       <input
                         type="radio"
                         name="business_category"
                         className="mt-1"
                         checked={businessCategory === opt.value}
-                        onChange={() => { setBusinessCategory(opt.value); setCategoryTouched(true); }}
+                        onChange={() => {
+                          setBusinessCategory(opt.value);
+                          setCategoryTouched(true);
+                        }}
                       />
                       <div className="text-sm">
                         <div className="font-semibold text-foreground">{opt.label}</div>
                         <div className="text-xs text-muted-foreground">{opt.description}</div>
-                        <div className="text-xs text-muted-foreground mt-0.5"><span className="font-medium">Examples:</span> {opt.examples}</div>
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          <span className="font-medium">Examples:</span> {opt.examples}
+                        </div>
                       </div>
                     </label>
                   ))}
@@ -450,79 +664,171 @@ function Onboarding() {
               {businessCategory === "real_estate_income" && (
                 <div className="rounded-lg border border-border bg-secondary/40 p-4 space-y-3">
                   <div>
-                    <h3 className="font-display font-semibold text-primary text-sm">Cap Rate / Income Approach inputs</h3>
+                    <h3 className="font-display font-semibold text-primary text-sm">
+                      Cap Rate / Income Approach inputs
+                    </h3>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Lower cap rates generally imply stronger location, better occupancy, lower risk, and higher value. Higher cap rates imply weaker location, seasonality, operational risk, or deferred maintenance.
-                      {isRvOrCampground(industry, subIndustry) && " RV park / campground default range: 8% – 12%, selected 10%."}
+                      Lower cap rates generally imply stronger location, better occupancy, lower
+                      risk, and higher value. Higher cap rates imply weaker location, seasonality,
+                      operational risk, or deferred maintenance.
+                      {isRvOrCampground(industry, subIndustry) &&
+                        " RV park / campground default range: 8% – 12%, selected 10%."}
                     </p>
                   </div>
                   <div className="grid grid-cols-3 gap-3">
-                    <NumField label="Low cap rate (%)" value={capRateLow} onChange={setCapRateLow} />
-                    <NumField label="Selected cap rate (%)" value={capRateSelected} onChange={setCapRateSelected} />
-                    <NumField label="High cap rate (%)" value={capRateHigh} onChange={setCapRateHigh} />
+                    <NumField
+                      label="Low cap rate (%)"
+                      value={capRateLow}
+                      onChange={setCapRateLow}
+                    />
+                    <NumField
+                      label="Selected cap rate (%)"
+                      value={capRateSelected}
+                      onChange={setCapRateSelected}
+                    />
+                    <NumField
+                      label="High cap rate (%)"
+                      value={capRateHigh}
+                      onChange={setCapRateHigh}
+                    />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <NumField label="Mgmt fee normalization (% of revenue)" value={mgmtFeePct} onChange={setMgmtFeePct} />
-                    <NumField label="Replacement reserve (% of revenue)" value={reservePct} onChange={setReservePct} />
+                    <NumField
+                      label="Mgmt fee normalization (% of revenue)"
+                      value={mgmtFeePct}
+                      onChange={setMgmtFeePct}
+                    />
+                    <NumField
+                      label="Replacement reserve (% of revenue)"
+                      value={reservePct}
+                      onChange={setReservePct}
+                    />
                   </div>
                 </div>
               )}
 
               <div className="pt-2 border-t border-border">
-                <h2 className="font-display text-lg font-semibold text-primary">Operations & owner role</h2>
-                <p className="mt-1 text-xs text-muted-foreground">These shape buyer confidence and the multiple we can apply.</p>
+                <h2 className="font-display text-lg font-semibold text-primary">
+                  Operations & owner role
+                </h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  These shape buyer confidence and the multiple we can apply.
+                </p>
               </div>
 
-              <SliderField label="Owner hours per week" value={ownerHours} min={0} max={80} step={5} onChange={setOwnerHours} suffix=" hrs" />
+              <SliderField
+                label="Owner hours per week"
+                value={ownerHours}
+                min={0}
+                max={80}
+                step={5}
+                onChange={setOwnerHours}
+                suffix=" hrs"
+              />
               <div className="space-y-2">
                 <div className="text-sm font-medium">Owner is essential to:</div>
-                <Toggle label="Sales / business development" checked={ownerInSales} onChange={setOwnerInSales} />
-                <Toggle label="Day-to-day operations" checked={ownerInOps} onChange={setOwnerInOps} />
-                <Toggle label="Top customer relationships" checked={ownerInCustomers} onChange={setOwnerInCustomers} />
+                <Toggle
+                  label="Sales / business development"
+                  checked={ownerInSales}
+                  onChange={setOwnerInSales}
+                />
+                <Toggle
+                  label="Day-to-day operations"
+                  checked={ownerInOps}
+                  onChange={setOwnerInOps}
+                />
+                <Toggle
+                  label="Top customer relationships"
+                  checked={ownerInCustomers}
+                  onChange={setOwnerInCustomers}
+                />
               </div>
-              <SliderField label="Recurring revenue (contracts, subscriptions)" value={recurringPct} min={0} max={100} step={5} onChange={setRecurringPct} suffix="%" />
-              <SliderField label="Top customer % of revenue" value={topCustomerPct} min={0} max={100} step={5} onChange={setTopCustomerPct} suffix="%" />
-              <Choice label="SOP / documentation" value={sopStatus} onChange={setSopStatus} options={[
-                { value: "none", label: "None — it lives in my head" },
-                { value: "partial", label: "Partial — key things written down" },
-                { value: "complete", label: "Complete — documented playbook" },
-              ]} />
-              <Choice label="Management team depth" value={managerDepth} onChange={setManagerDepth} options={[
-                { value: "none", label: "Owner is the manager" },
-                { value: "partial", label: "Some department leads" },
-                { value: "strong", label: "Full management team in place" },
-              ]} />
-              <Choice label="Desired exit timeline" value={exitTimeline} onChange={(v) => setExitTimeline(v as never)} options={[
-                { value: "lt_1y", label: "Now — within 1 year" },
-                { value: "1_2y", label: "Within 1–2 years" },
-                { value: "2_5y", label: "2–5 years" },
-                { value: "5_plus_y", label: "5+ years" },
-                { value: "exploring", label: "Just exploring" },
-              ]} />
+              <SliderField
+                label="Recurring revenue (contracts, subscriptions)"
+                value={recurringPct}
+                min={0}
+                max={100}
+                step={5}
+                onChange={setRecurringPct}
+                suffix="%"
+              />
+              <SliderField
+                label="Top customer % of revenue"
+                value={topCustomerPct}
+                min={0}
+                max={100}
+                step={5}
+                onChange={setTopCustomerPct}
+                suffix="%"
+              />
+              <Choice
+                label="SOP / documentation"
+                value={sopStatus}
+                onChange={setSopStatus}
+                options={[
+                  { value: "none", label: "None — it lives in my head" },
+                  { value: "partial", label: "Partial — key things written down" },
+                  { value: "complete", label: "Complete — documented playbook" },
+                ]}
+              />
+              <Choice
+                label="Management team depth"
+                value={managerDepth}
+                onChange={setManagerDepth}
+                options={[
+                  { value: "none", label: "Owner is the manager" },
+                  { value: "partial", label: "Some department leads" },
+                  { value: "strong", label: "Full management team in place" },
+                ]}
+              />
+              <Choice
+                label="Desired exit timeline"
+                value={exitTimeline}
+                onChange={(v) => setExitTimeline(v as never)}
+                options={[
+                  { value: "lt_1y", label: "Now — within 1 year" },
+                  { value: "1_2y", label: "Within 1–2 years" },
+                  { value: "2_5y", label: "2–5 years" },
+                  { value: "5_plus_y", label: "5+ years" },
+                  { value: "exploring", label: "Just exploring" },
+                ]}
+              />
             </div>
           )}
 
           {step === 1 && (
             <div className="space-y-5">
               <div>
-                <h1 className="font-display text-2xl font-semibold text-primary">Three years of financials</h1>
+                <h1 className="font-display text-2xl font-semibold text-primary">
+                  Three years of financials
+                </h1>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Most recent year is required and must end no later than {currentYear - 1}. Two prior years strengthen the estimate.
+                  Most recent year is required and must end no later than {currentYear - 1}. Two
+                  prior years strengthen the estimate.
                 </p>
               </div>
               <div className="rounded-xl border border-dashed border-border bg-secondary/30 p-4">
                 <div className="flex items-center justify-between gap-4 flex-wrap">
                   <div>
-                    <div className="text-sm font-semibold text-foreground">Import from your accounting software</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">Pull P&amp;L and balance sheet data automatically.</div>
+                    <div className="text-sm font-semibold text-foreground">
+                      Import from your accounting software
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      Xero can pull reports automatically. QuickBooks direct import is planned; use
+                      manual entry for now.
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => toast.info("QuickBooks import is coming soon. Enter your numbers manually for now.")}
+                      onClick={() =>
+                        toast.info(
+                          "Direct QuickBooks import is planned. Enter your numbers manually for now.",
+                        )
+                      }
                       className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-2 text-xs font-semibold hover:bg-secondary transition"
                     >
-                      <Upload className="h-3.5 w-3.5" /> QuickBooks
+                      <Upload className="h-3.5 w-3.5" /> QuickBooks planned
                     </button>
                     {xeroTenants.length === 0 ? (
                       <button
@@ -531,7 +837,11 @@ function Onboarding() {
                         disabled={xeroLoading}
                         className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-2 text-xs font-semibold hover:bg-secondary transition disabled:opacity-50"
                       >
-                        {xeroLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5" />}
+                        {xeroLoading ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Link2 className="h-3.5 w-3.5" />
+                        )}
                         Connect Xero
                       </button>
                     ) : (
@@ -542,7 +852,9 @@ function Onboarding() {
                           className="rounded-md border border-input bg-background px-2 py-2 text-xs"
                         >
                           {xeroTenants.map((t) => (
-                            <option key={t.tenant_id} value={t.tenant_id}>{t.tenant_name ?? t.tenant_id}</option>
+                            <option key={t.tenant_id} value={t.tenant_id}>
+                              {t.tenant_name ?? t.tenant_id}
+                            </option>
                           ))}
                         </select>
                         <button
@@ -551,7 +863,11 @@ function Onboarding() {
                           disabled={xeroLoading || !selectedTenant}
                           className="inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-2 text-xs font-semibold text-accent-foreground hover:bg-accent/90 transition disabled:opacity-50"
                         >
-                          {xeroLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                          {xeroLoading ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Upload className="h-3.5 w-3.5" />
+                          )}
                           Import from Xero
                         </button>
                         <button
@@ -572,7 +888,11 @@ function Onboarding() {
                   <thead>
                     <tr className="text-left text-xs text-muted-foreground">
                       <th className="font-medium pb-1"></th>
-                      {years.map((y) => <th key={y.year} className="font-medium pb-1 text-center">{y.year}</th>)}
+                      {years.map((y) => (
+                        <th key={y.year} className="font-medium pb-1 text-center">
+                          {y.year}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
@@ -589,13 +909,17 @@ function Onboarding() {
                       { key: "debt", label: "Debt" },
                     ].map(({ key, label }) => (
                       <tr key={key}>
-                        <td className="py-1 pr-2 text-muted-foreground whitespace-nowrap">{label}</td>
+                        <td className="py-1 pr-2 text-muted-foreground whitespace-nowrap">
+                          {label}
+                        </td>
                         {years.map((y, i) => (
                           <td key={y.year} className="py-1">
                             <input
                               type="number"
                               value={(y as Record<string, number>)[key] || ""}
-                              onChange={(e) => updateYear(i, { [key]: Number(e.target.value) || 0 } as never)}
+                              onChange={(e) =>
+                                updateYear(i, { [key]: Number(e.target.value) || 0 } as never)
+                              }
                               className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-2 focus:ring-ring"
                             />
                           </td>
@@ -611,13 +935,27 @@ function Onboarding() {
             </div>
           )}
 
-          {step === 2 && <ReviewStep
-            data={{
-              name, industry, region, yearsInBusiness, employees, years,
-              ownerHours, ownerInSales, ownerInOps, ownerInCustomers,
-              recurringPct, topCustomerPct, sopStatus, managerDepth, exitTimeline,
-            }}
-          />}
+          {step === 2 && (
+            <ReviewStep
+              data={{
+                name,
+                industry,
+                region,
+                yearsInBusiness,
+                employees,
+                years,
+                ownerHours,
+                ownerInSales,
+                ownerInOps,
+                ownerInCustomers,
+                recurringPct,
+                topCustomerPct,
+                sopStatus,
+                managerDepth,
+                exitTimeline,
+              }}
+            />
+          )}
 
           {/* Nav */}
           <div className="mt-8 flex items-center justify-between">
@@ -634,7 +972,15 @@ function Onboarding() {
                 disabled={saving || (step === 0 && !canNext0) || (step === 1 && !canNext1)}
                 className="inline-flex items-center gap-1.5 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition disabled:opacity-50"
               >
-                {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving…</> : <>Continue <ArrowRight className="h-4 w-4" /></>}
+                {saving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" /> Saving…
+                  </>
+                ) : (
+                  <>
+                    Continue <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
               </button>
             ) : (
               <button
@@ -642,7 +988,15 @@ function Onboarding() {
                 disabled={!canSave || saving}
                 className="inline-flex items-center gap-1.5 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition disabled:opacity-50"
               >
-                {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving…</> : <><Check className="h-4 w-4" /> Save & see my valuation</>}
+                {saving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" /> Saving…
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4" /> Save & see my valuation
+                  </>
+                )}
               </button>
             )}
           </div>
@@ -673,66 +1027,153 @@ function ReviewStep({ data }: { data: Record<string, unknown> }) {
     <div className="space-y-5">
       <div>
         <h1 className="font-display text-2xl font-semibold text-primary">Quick preview</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Save to lock in your valuation and unlock recommendations.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Save to lock in your valuation and unlock recommendations.
+        </p>
       </div>
       <div className="rounded-xl border border-border bg-secondary/40 p-6">
-        <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Estimated value range</div>
-        <div className="mt-2 font-display text-4xl font-semibold text-primary">
-          {fmtCurrency(v.rangeLow, { compact: true })} <span className="text-muted-foreground font-normal">–</span> {fmtCurrency(v.rangeHigh, { compact: true })}
+        <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Estimated value range
         </div>
-        <div className="mt-1 text-sm text-muted-foreground">Health Score: <span className="font-semibold text-foreground">{h.total}/100</span></div>
+        <div className="mt-2 font-display text-4xl font-semibold text-primary">
+          {fmtCurrency(v.rangeLow, { compact: true })}{" "}
+          <span className="text-muted-foreground font-normal">–</span>{" "}
+          {fmtCurrency(v.rangeHigh, { compact: true })}
+        </div>
+        <div className="mt-1 text-sm text-muted-foreground">
+          Health Score: <span className="font-semibold text-foreground">{h.total}/100</span>
+        </div>
       </div>
     </div>
   );
 }
 
-function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+function Field({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
   return (
     <label className="block">
       <span className="text-sm font-medium">{label}</span>
-      <input value={value} onChange={(e) => onChange(e.target.value)}
-        className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+      />
     </label>
   );
 }
-function NumField({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+function NumField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+}) {
   return (
     <label className="block">
       <span className="text-sm font-medium">{label}</span>
-      <input type="number" value={value} onChange={(e) => onChange(Number(e.target.value) || 0)}
-        className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+      <input
+        type="number"
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value) || 0)}
+        className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+      />
     </label>
   );
 }
-function SliderField({ label, value, min, max, step, onChange, suffix }: { label: string; value: number; min: number; max: number; step: number; onChange: (v: number) => void; suffix?: string }) {
+function SliderField({
+  label,
+  value,
+  min,
+  max,
+  step,
+  onChange,
+  suffix,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (v: number) => void;
+  suffix?: string;
+}) {
   return (
     <div>
       <div className="flex items-center justify-between text-sm">
         <span className="font-medium">{label}</span>
-        <span className="text-muted-foreground tabular-nums">{value}{suffix}</span>
+        <span className="text-muted-foreground tabular-nums">
+          {value}
+          {suffix}
+        </span>
       </div>
-      <input type="range" min={min} max={max} step={step} value={value}
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="mt-2 w-full accent-[oklch(0.45_0.1_158)]" />
+        className="mt-2 w-full accent-[oklch(0.45_0.1_158)]"
+      />
     </div>
   );
 }
-function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+function Toggle({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
   return (
     <label className="flex items-center justify-between rounded-md border border-border px-3 py-2 text-sm cursor-pointer hover:bg-secondary/40">
       <span>{label}</span>
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="h-4 w-4 accent-[oklch(0.45_0.1_158)]" />
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="h-4 w-4 accent-[oklch(0.45_0.1_158)]"
+      />
     </label>
   );
 }
-function Choice({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) {
+function Choice({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+}) {
   return (
     <div>
       <div className="text-sm font-medium mb-1.5">{label}</div>
       <div className="space-y-1.5">
         {options.map((o) => (
-          <label key={o.value} className={`flex items-center gap-2 rounded-md border px-3 py-2 text-sm cursor-pointer transition ${value === o.value ? "border-accent bg-accent-soft" : "border-border hover:bg-secondary/40"}`}>
-            <input type="radio" checked={value === o.value} onChange={() => onChange(o.value)} className="accent-[oklch(0.45_0.1_158)]" />
+          <label
+            key={o.value}
+            className={`flex items-center gap-2 rounded-md border px-3 py-2 text-sm cursor-pointer transition ${value === o.value ? "border-accent bg-accent-soft" : "border-border hover:bg-secondary/40"}`}
+          >
+            <input
+              type="radio"
+              checked={value === o.value}
+              onChange={() => onChange(o.value)}
+              className="accent-[oklch(0.45_0.1_158)]"
+            />
             {o.label}
           </label>
         ))}

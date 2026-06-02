@@ -171,8 +171,8 @@ function Landing() {
             />
             <Feature
               icon={<Users />}
-              title="Advisor handshake"
-              desc="Invite your CPA or broker to review assumptions, comment, and approve the report."
+              title="Advisor review workspace"
+              desc="Create advisor access records, permissions, comments, and approval status. Email delivery is manual today."
             />
             <Feature
               icon={<FileCheck />}
@@ -217,7 +217,7 @@ function Landing() {
                 "Everything in Essentials",
                 "Buyer-safe teaser page",
                 "Data room (5 GB)",
-                "PDF report exports",
+                "Printable report previews",
               ]}
               highlighted
             />
@@ -227,10 +227,10 @@ function Landing() {
               sub="/seat / month"
               who="CPAs & brokers"
               features={[
-                "Portfolio dashboard",
-                "White-label reports",
-                "Review & Approve workflow",
-                "Multiple client businesses",
+                "Portfolio dashboard planned",
+                "White-label reports planned",
+                "Review & approve workflow",
+                "Multiple client businesses planned",
               ]}
             />
             <Plan
@@ -241,7 +241,7 @@ function Landing() {
               features={[
                 "Single valuation report",
                 "Recommendations included",
-                "PDF export",
+                "Printable report preview",
                 "No subscription",
               ]}
             />
