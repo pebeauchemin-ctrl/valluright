@@ -8,6 +8,7 @@ import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
 type PublicBusiness = {
+  id: string;
   public_id: string;
   industry: string | null;
   region: string | null;

@@ -265,7 +265,7 @@ function Dashboard() {
   }
 
   return (
-    <div className="p-6 lg:p-10 space-y-8">
+    <div className="space-y-8 p-4 sm:p-6 lg:p-10">
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
@@ -275,16 +275,16 @@ function Dashboard() {
             · {current.employees ?? "?"} employees
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex w-full flex-wrap gap-2 sm:w-auto">
           <Link
             to="/app/scenarios"
-            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium hover:bg-secondary transition"
+            className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium transition hover:bg-secondary sm:flex-none"
           >
             <Sliders className="h-4 w-4" /> What-if
           </Link>
           <Link
             to="/app/buyer-teaser"
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition"
+            className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 sm:flex-none"
           >
             <Eye className="h-4 w-4" /> Buyer view
           </Link>
@@ -318,8 +318,8 @@ function Dashboard() {
 
       {/* Range hero */}
       <section className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-8 shadow-sm">
-          <div className="flex items-center justify-between mb-1">
+        <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-8">
+          <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Estimated value range
             </span>
@@ -327,7 +327,7 @@ function Dashboard() {
               <TrendingUp className="h-3 w-3" /> Software estimate
             </span>
           </div>
-          <div className="mt-2 font-display text-5xl font-semibold text-primary leading-tight">
+          <div className="mt-2 font-display text-4xl font-semibold leading-tight text-primary sm:text-5xl">
             {fmtCurrency(valuation.rangeLow, { compact: true })}{" "}
             <span className="text-muted-foreground font-normal">–</span>{" "}
             {fmtCurrency(valuation.rangeHigh, { compact: true })}
@@ -343,7 +343,7 @@ function Dashboard() {
               high={valuation.rangeHigh}
             />
           </div>
-          <div className="mt-6 grid grid-cols-3 gap-4">
+          <div className="mt-6 grid gap-3 sm:grid-cols-3 sm:gap-4">
             <KPI
               label="Revenue (latest)"
               value={fmtCurrency(Number(latest?.revenue ?? 0), { compact: true })}
@@ -392,7 +392,7 @@ function Dashboard() {
 
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)]">
         <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h2 className="font-display text-xl font-semibold text-primary">Why this range?</h2>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
@@ -688,7 +688,7 @@ function Dashboard() {
 
       {/* Top concerns */}
       <section>
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-display text-xl font-semibold text-primary">
             What's suppressing value
           </h2>

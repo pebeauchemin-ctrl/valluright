@@ -507,14 +507,14 @@ function Onboarding() {
 
   return (
     <div className="min-h-screen">
-      <div className="mx-auto max-w-3xl px-6 py-10">
+      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-10">
         {/* Stepper */}
-        <div className="mb-8 flex items-center gap-2">
+        <div className="mb-8 flex items-start gap-2">
           {[0, 1, 2].map((i) => (
             <div key={i} className="flex-1">
               <div className={`h-1.5 rounded-full ${i <= step ? "bg-accent" : "bg-secondary"}`} />
               <div
-                className={`mt-2 text-xs font-medium ${i === step ? "text-foreground" : "text-muted-foreground"}`}
+                className={`mt-2 text-xs font-medium leading-tight ${i === step ? "text-foreground" : "text-muted-foreground"}`}
               >
                 {["Business profile", "Financials", "Review"][i]}
               </div>
@@ -522,10 +522,10 @@ function Onboarding() {
           ))}
         </div>
 
-        <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-8">
           {step === 0 && (
             <div className="space-y-5">
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <h1 className="font-display text-2xl font-semibold text-primary">
                     Tell us about your business
@@ -614,7 +614,7 @@ function Onboarding() {
                   <Field label="Region (optional)" value={region} onChange={setRegion} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <NumField
                   label="Years in business"
                   value={yearsInBusiness}
@@ -675,7 +675,7 @@ function Onboarding() {
                         " RV park / campground default range: 8% – 12%, selected 10%."}
                     </p>
                   </div>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     <NumField
                       label="Low cap rate (%)"
                       value={capRateLow}
@@ -692,7 +692,7 @@ function Onboarding() {
                       onChange={setCapRateHigh}
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <NumField
                       label="Mgmt fee normalization (% of revenue)"
                       value={mgmtFeePct}
@@ -808,7 +808,7 @@ function Onboarding() {
                 </p>
               </div>
               <div className="rounded-xl border border-dashed border-border bg-secondary/30 p-4">
-                <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
                     <div className="text-sm font-semibold text-foreground">
                       Import from your accounting software
@@ -818,7 +818,7 @@ function Onboarding() {
                       manual entry for now.
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
                     <button
                       type="button"
                       onClick={() =>
@@ -883,8 +883,8 @@ function Onboarding() {
                   </div>
                 </div>
               </div>
-              <div className="overflow-x-auto -mx-2">
-                <table className="w-full border-separate border-spacing-x-2 border-spacing-y-1 text-sm">
+              <div className="-mx-2 overflow-x-auto px-2">
+                <table className="w-full min-w-[560px] border-separate border-spacing-x-2 border-spacing-y-1 text-sm">
                   <thead>
                     <tr className="text-left text-xs text-muted-foreground">
                       <th className="font-medium pb-1"></th>
@@ -930,7 +930,9 @@ function Onboarding() {
                 </table>
               </div>
               <p className="text-xs text-muted-foreground">
-                All values in USD. EBITDA should exclude interest, taxes, depreciation, and amortization. SDE adds one working owner's compensation and buyer-acceptable one-time add-backs to EBITDA, so do not include owner salary again inside add-backs.
+                All values in USD. EBITDA should exclude interest, taxes, depreciation, and
+                amortization. SDE adds one working owner's compensation and buyer-acceptable
+                one-time add-backs to EBITDA, so do not include owner salary again inside add-backs.
               </p>
             </div>
           )}
@@ -958,7 +960,7 @@ function Onboarding() {
           )}
 
           {/* Nav */}
-          <div className="mt-8 flex items-center justify-between">
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
             <button
               onClick={() => setStep((s) => Math.max(0, s - 1) as Step)}
               disabled={step === 0}
