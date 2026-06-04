@@ -6,6 +6,10 @@ const migration = readFileSync(
   "supabase/migrations/20260531021500_harden_role_access_and_public_teasers.sql",
   "utf8",
 );
+const buyerPiiMigration = readFileSync(
+  "supabase/migrations/20260604005200_lock_down_buyer_access_request_pii_reads.sql",
+  "utf8",
+);
 const teaserRoute = readFileSync("src/routes/teaser.$publicId.tsx", "utf8");
 
 test("public teaser does not expose internal business ids", () => {
@@ -23,6 +27,25 @@ test("buyer leads must go through the published-teaser RPC", () => {
   assert.match(migration, /create or replace function public\.submit_buyer_access_request/);
   assert.match(migration, /s\.is_published = true/);
   assert.match(teaserRoute, /rpc\("submit_buyer_access_request"/);
+});
+
+test("buyer lead PII table reads are owner scoped", () => {
+  assert.match(buyerPiiMigration, /revoke all on table public\.buyer_access_requests from anon/);
+  assert.match(
+    buyerPiiMigration,
+    /revoke all on table public\.buyer_access_requests from authenticated/,
+  );
+  assert.match(
+    buyerPiiMigration,
+    /grant select, update on table public\.buyer_access_requests to authenticated/,
+  );
+  assert.match(buyerPiiMigration, /owners can read own buyer access requests/);
+  assert.match(buyerPiiMigration, /owners can update own buyer access requests/);
+  assert.match(buyerPiiMigration, /b\.owner_id = auth\.uid\(\)/);
+  assert.doesNotMatch(
+    buyerPiiMigration,
+    /grant select on table public\.buyer_access_requests to anon/,
+  );
 });
 
 test("advisor permissions are explicit and enforced before comments", () => {
