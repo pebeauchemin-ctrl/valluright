@@ -14,6 +14,10 @@ const dataRoomOverwriteMigration = readFileSync(
   "supabase/migrations/20260605013500_prevent_data_room_storage_overwrites.sql",
   "utf8",
 );
+const publicSecurityDefinerMigration = readFileSync(
+  "supabase/migrations/20260605014500_review_public_security_definer_grants.sql",
+  "utf8",
+);
 const teaserRoute = readFileSync("src/routes/teaser.$publicId.tsx", "utf8");
 const dataRoomRoute = readFileSync("src/routes/app.data-room.tsx", "utf8");
 
@@ -67,6 +71,43 @@ test("data room overwrites require ownership of the existing and resulting path"
   assert.doesNotMatch(dataRoomOverwriteMigration, /to anon/);
   assert.doesNotMatch(dataRoomOverwriteMigration, /with check \(\s*bucket_id = 'data-room'\s*\)/);
   assert.match(dataRoomRoute, /\.upload\(path, f, \{ upsert: false \}\)/);
+});
+
+test("public security definer grants are limited to documented teaser RPCs", () => {
+  assert.match(
+    publicSecurityDefinerMigration,
+    /grant execute on function public\.get_public_teaser\(text\) to anon, authenticated/,
+  );
+  assert.match(
+    publicSecurityDefinerMigration,
+    /Intentional public SECURITY DEFINER RPC\. Returns only buyer-safe fields/,
+  );
+  assert.match(
+    publicSecurityDefinerMigration,
+    /grant execute on function public\.submit_buyer_access_request\(/,
+  );
+  assert.match(
+    publicSecurityDefinerMigration,
+    /Intentional public SECURITY DEFINER RPC\. Inserts buyer access requests only for published teasers/,
+  );
+
+  for (const signature of [
+    "public.handle_new_user()",
+    "public.has_role(uuid, public.app_role)",
+    "public.is_advisor_of(uuid, uuid)",
+    "public.advisor_permission_rank(text)",
+    "public.can_advisor_access(uuid, uuid, text)",
+    "public.user_owns_business_path(text)",
+  ]) {
+    assert.match(
+      publicSecurityDefinerMigration,
+      new RegExp(`revoke all on function ${signature.replace(/[().]/g, "\\$&")} from public`),
+    );
+    assert.match(
+      publicSecurityDefinerMigration,
+      new RegExp(`revoke all on function ${signature.replace(/[().]/g, "\\$&")} from anon`),
+    );
+  }
 });
 
 test("advisor permissions are explicit and enforced before comments", () => {
