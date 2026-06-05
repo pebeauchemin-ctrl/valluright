@@ -10,7 +10,12 @@ const buyerPiiMigration = readFileSync(
   "supabase/migrations/20260604005200_lock_down_buyer_access_request_pii_reads.sql",
   "utf8",
 );
+const dataRoomOverwriteMigration = readFileSync(
+  "supabase/migrations/20260605013500_prevent_data_room_storage_overwrites.sql",
+  "utf8",
+);
 const teaserRoute = readFileSync("src/routes/teaser.$publicId.tsx", "utf8");
+const dataRoomRoute = readFileSync("src/routes/app.data-room.tsx", "utf8");
 
 test("public teaser does not expose internal business ids", () => {
   assert.match(migration, /create or replace function public\.get_public_teaser/);
@@ -46,6 +51,22 @@ test("buyer lead PII table reads are owner scoped", () => {
     buyerPiiMigration,
     /grant select on table public\.buyer_access_requests to anon/,
   );
+});
+
+test("data room overwrites require ownership of the existing and resulting path", () => {
+  assert.match(dataRoomOverwriteMigration, /owners update own data room/);
+  assert.match(dataRoomOverwriteMigration, /for update\s+to authenticated/);
+  assert.match(
+    dataRoomOverwriteMigration,
+    /using \(\s*bucket_id = 'data-room'\s+and public\.user_owns_business_path\(name\)\s*\)/,
+  );
+  assert.match(
+    dataRoomOverwriteMigration,
+    /with check \(\s*bucket_id = 'data-room'\s+and public\.user_owns_business_path\(name\)\s*\)/,
+  );
+  assert.doesNotMatch(dataRoomOverwriteMigration, /to anon/);
+  assert.doesNotMatch(dataRoomOverwriteMigration, /with check \(\s*bucket_id = 'data-room'\s*\)/);
+  assert.match(dataRoomRoute, /\.upload\(path, f, \{ upsert: false \}\)/);
 });
 
 test("advisor permissions are explicit and enforced before comments", () => {

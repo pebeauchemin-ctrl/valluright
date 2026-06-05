@@ -62,7 +62,9 @@ function DataRoom() {
     try {
       const safeName = f.name.replace(/[^\w. -]/g, "_");
       const path = `${current.id}/${Date.now()}-${safeName}`;
-      const { error: upErr } = await supabase.storage.from("data-room").upload(path, f);
+      const { error: upErr } = await supabase.storage
+        .from("data-room")
+        .upload(path, f, { upsert: false });
       if (upErr) throw upErr;
 
       const { error: metaErr } = await supabase.from("data_room_files").insert({
