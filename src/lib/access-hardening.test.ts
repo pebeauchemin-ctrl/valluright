@@ -26,6 +26,10 @@ const fixedSearchPathMigration = readFileSync(
   "supabase/migrations/20260606005500_set_fixed_function_search_paths.sql",
   "utf8",
 );
+const advisorInviteVisibilityMigration = readFileSync(
+  "supabase/migrations/20260606011000_restrict_advisor_invite_email_visibility.sql",
+  "utf8",
+);
 const teaserRoute = readFileSync("src/routes/teaser.$publicId.tsx", "utf8");
 const dataRoomRoute = readFileSync("src/routes/app.data-room.tsx", "utf8");
 
@@ -165,6 +169,34 @@ test("database helper functions use fixed search paths", () => {
     /create or replace function public\.advisor_permission_rank\(_permission_level text\)[\s\S]*?set search_path = public/,
   );
   assert.match(fixedSearchPathMigration, /Fixed search_path prevents mutable-path linter warnings/);
+});
+
+test("advisor invite emails are not readable by email-match policy", () => {
+  assert.match(
+    advisorInviteVisibilityMigration,
+    /revoke all on table public\.advisor_invites from anon/,
+  );
+  assert.match(
+    advisorInviteVisibilityMigration,
+    /grant select, insert, update, delete on table public\.advisor_invites to authenticated/,
+  );
+  assert.match(
+    advisorInviteVisibilityMigration,
+    /owners manage advisor invites for own businesses/,
+  );
+  assert.match(
+    advisorInviteVisibilityMigration,
+    /linked advisors can read their invites/,
+  );
+  assert.match(advisorInviteVisibilityMigration, /advisor_id = auth\.uid\(\)/);
+  assert.doesNotMatch(
+    advisorInviteVisibilityMigration,
+    /lower\(advisor_email\)|auth\.jwt\(\)\s*->>\s*'email'|select email from auth\.users/,
+  );
+  assert.match(
+    advisorInviteVisibilityMigration,
+    /cannot read invite rows by matching advisor_email/,
+  );
 });
 
 test("advisor permissions are explicit and enforced before comments", () => {
