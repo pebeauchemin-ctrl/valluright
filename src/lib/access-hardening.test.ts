@@ -22,6 +22,10 @@ const authenticatedSecurityDefinerMigration = readFileSync(
   "supabase/migrations/20260606004500_review_authenticated_security_definer_grants.sql",
   "utf8",
 );
+const fixedSearchPathMigration = readFileSync(
+  "supabase/migrations/20260606005500_set_fixed_function_search_paths.sql",
+  "utf8",
+);
 const teaserRoute = readFileSync("src/routes/teaser.$publicId.tsx", "utf8");
 const dataRoomRoute = readFileSync("src/routes/app.data-room.tsx", "utf8");
 
@@ -141,6 +145,26 @@ test("authenticated security definer grants validate caller scope", () => {
     authenticatedSecurityDefinerMigration,
     /user_owns_business_path\(text\) is\s+'Intentional authenticated SECURITY DEFINER helper for private data-room storage policies/,
   );
+});
+
+test("database helper functions use fixed search paths", () => {
+  assert.match(
+    fixedSearchPathMigration,
+    /create or replace function public\.revenue_band\(_revenue numeric\)/,
+  );
+  assert.match(
+    fixedSearchPathMigration,
+    /create or replace function public\.advisor_permission_rank\(_permission_level text\)/,
+  );
+  assert.match(
+    fixedSearchPathMigration,
+    /create or replace function public\.revenue_band\(_revenue numeric\)[\s\S]*?set search_path = public/,
+  );
+  assert.match(
+    fixedSearchPathMigration,
+    /create or replace function public\.advisor_permission_rank\(_permission_level text\)[\s\S]*?set search_path = public/,
+  );
+  assert.match(fixedSearchPathMigration, /Fixed search_path prevents mutable-path linter warnings/);
 });
 
 test("advisor permissions are explicit and enforced before comments", () => {
