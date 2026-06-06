@@ -18,6 +18,10 @@ const publicSecurityDefinerMigration = readFileSync(
   "supabase/migrations/20260605014500_review_public_security_definer_grants.sql",
   "utf8",
 );
+const authenticatedSecurityDefinerMigration = readFileSync(
+  "supabase/migrations/20260606004500_review_authenticated_security_definer_grants.sql",
+  "utf8",
+);
 const teaserRoute = readFileSync("src/routes/teaser.$publicId.tsx", "utf8");
 const dataRoomRoute = readFileSync("src/routes/app.data-room.tsx", "utf8");
 
@@ -108,6 +112,35 @@ test("public security definer grants are limited to documented teaser RPCs", () 
       new RegExp(`revoke all on function ${signature.replace(/[().]/g, "\\$&")} from anon`),
     );
   }
+});
+
+test("authenticated security definer grants validate caller scope", () => {
+  assert.match(
+    authenticatedSecurityDefinerMigration,
+    /create or replace function public\.can_advisor_access/,
+  );
+  assert.match(authenticatedSecurityDefinerMigration, /_user_id = auth\.uid\(\)/);
+  assert.match(authenticatedSecurityDefinerMigration, /auth\.role\(\) = 'service_role'/);
+  assert.match(
+    authenticatedSecurityDefinerMigration,
+    /revoke all on function public\.has_role\(uuid, public\.app_role\) from authenticated/,
+  );
+  assert.match(
+    authenticatedSecurityDefinerMigration,
+    /Authenticated users must not call this SECURITY DEFINER function directly for arbitrary user ids/,
+  );
+  assert.match(
+    authenticatedSecurityDefinerMigration,
+    /grant execute on function public\.can_advisor_access\(uuid, uuid, text\) to authenticated/,
+  );
+  assert.match(
+    authenticatedSecurityDefinerMigration,
+    /Direct calls only return true for the caller''s own user id unless executed by service_role/,
+  );
+  assert.match(
+    authenticatedSecurityDefinerMigration,
+    /user_owns_business_path\(text\) is\s+'Intentional authenticated SECURITY DEFINER helper for private data-room storage policies/,
+  );
 });
 
 test("advisor permissions are explicit and enforced before comments", () => {
