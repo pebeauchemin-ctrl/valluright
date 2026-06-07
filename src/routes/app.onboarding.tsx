@@ -20,10 +20,16 @@ import { fmtCurrency } from "@/lib/format";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { startXeroConnect, importXeroFinancials, listXeroConnections } from "@/lib/xero.functions";
+import {
+  listQuickBooksConnections,
+  startQuickBooksConnect,
+} from "@/lib/quickbooks.functions";
 
 type OnboardingSearch = {
   xero?: "connected" | "error";
+  quickbooks?: "connected" | "error";
   tenant?: string;
+  realm?: string;
   message?: string;
 };
 
@@ -31,7 +37,12 @@ export const Route = createFileRoute("/app/onboarding")({
   head: () => ({ meta: [{ title: "Onboarding — ValuRight.ai" }] }),
   validateSearch: (search: Record<string, unknown>): OnboardingSearch => ({
     xero: search.xero === "connected" || search.xero === "error" ? search.xero : undefined,
+    quickbooks:
+      search.quickbooks === "connected" || search.quickbooks === "error"
+        ? search.quickbooks
+        : undefined,
     tenant: typeof search.tenant === "string" ? search.tenant : undefined,
+    realm: typeof search.realm === "string" ? search.realm : undefined,
     message: typeof search.message === "string" ? search.message : undefined,
   }),
   component: Onboarding,
@@ -216,9 +227,15 @@ function Onboarding() {
   const startXero = useServerFn(startXeroConnect);
   const importXero = useServerFn(importXeroFinancials);
   const fetchConnections = useServerFn(listXeroConnections);
+  const startQuickBooks = useServerFn(startQuickBooksConnect);
+  const fetchQuickBooksConnections = useServerFn(listQuickBooksConnections);
   const [xeroLoading, setXeroLoading] = useState(false);
+  const [quickBooksLoading, setQuickBooksLoading] = useState(false);
   const [xeroTenants, setXeroTenants] = useState<
     { tenant_id: string; tenant_name: string | null }[]
+  >([]);
+  const [quickBooksConnections, setQuickBooksConnections] = useState<
+    { id: string; realm_id: string; company_name: string | null; last_synced_at: string | null }[]
   >([]);
   const [selectedTenant, setSelectedTenant] = useState<string | null>(null);
 
@@ -281,8 +298,19 @@ function Onboarding() {
       void loadTenantsAndImport(search.tenant ?? null);
       navigate({ to: "/app/onboarding", search: {} as never, replace: true });
     }
+    if (search.quickbooks === "error") {
+      toast.error(`QuickBooks connection failed: ${search.message ?? "unknown error"}`);
+      navigate({ to: "/app/onboarding", search: {} as never, replace: true });
+      return;
+    }
+    if (search.quickbooks === "connected") {
+      setStep(1);
+      toast.success("Connected to QuickBooks Online.");
+      void loadQuickBooksConnections();
+      navigate({ to: "/app/onboarding", search: {} as never, replace: true });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search.xero]);
+  }, [search.xero, search.quickbooks]);
 
   // Load any pre-existing Xero tenants for this user on mount.
   useEffect(() => {
@@ -296,6 +324,11 @@ function Onboarding() {
           setSelectedTenant((prev) => prev ?? connections[0].tenant_id);
         }
       })
+      .catch(() => {
+        /* ignore */
+      });
+    fetchQuickBooksConnections({})
+      .then(({ connections }) => setQuickBooksConnections(connections))
       .catch(() => {
         /* ignore */
       });
@@ -328,6 +361,22 @@ function Onboarding() {
     } catch (e) {
       setXeroLoading(false);
       toast.error(e instanceof Error ? e.message : "Failed to start Xero connect");
+    }
+  };
+
+  const loadQuickBooksConnections = async () => {
+    const { connections } = await fetchQuickBooksConnections({});
+    setQuickBooksConnections(connections);
+  };
+
+  const handleConnectQuickBooks = async () => {
+    try {
+      setQuickBooksLoading(true);
+      const { url } = await startQuickBooks({ data: { businessId: null } });
+      window.location.href = url;
+    } catch (e) {
+      setQuickBooksLoading(false);
+      toast.error(e instanceof Error ? e.message : "Failed to start QuickBooks connect");
     }
   };
 
@@ -814,22 +863,31 @@ function Onboarding() {
                       Import from your accounting software
                     </div>
                     <div className="text-xs text-muted-foreground mt-0.5">
-                      Xero can pull reports automatically. QuickBooks direct import is planned; use
-                      manual entry for now.
+                      Xero can pull reports automatically. QuickBooks can connect securely now;
+                      account-level import follows the mapping workflow.
                     </div>
                   </div>
                   <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
                     <button
                       type="button"
-                      onClick={() =>
-                        toast.info(
-                          "Direct QuickBooks import is planned. Enter your numbers manually for now.",
-                        )
-                      }
+                      onClick={handleConnectQuickBooks}
+                      disabled={quickBooksLoading}
                       className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-2 text-xs font-semibold hover:bg-secondary transition"
                     >
-                      <Upload className="h-3.5 w-3.5" /> QuickBooks planned
+                      {quickBooksLoading ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Link2 className="h-3.5 w-3.5" />
+                      )}
+                      {quickBooksConnections.length ? "Reconnect QuickBooks" : "Connect QuickBooks"}
                     </button>
+                    {quickBooksConnections.length > 0 && (
+                      <span className="text-xs text-muted-foreground">
+                        Connected:{" "}
+                        {quickBooksConnections[0].company_name ??
+                          quickBooksConnections[0].realm_id}
+                      </span>
+                    )}
                     {xeroTenants.length === 0 ? (
                       <button
                         type="button"

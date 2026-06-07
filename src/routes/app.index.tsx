@@ -52,6 +52,7 @@ function Dashboard() {
   const [savingValuation, setSavingValuation] = useState(false);
   const [lastValuationAt, setLastValuationAt] = useState<string | null>(null);
   const [hasXeroConnection, setHasXeroConnection] = useState(false);
+  const [hasQuickBooksConnection, setHasQuickBooksConnection] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
 
   useEffect(() => {
@@ -61,6 +62,7 @@ function Dashboard() {
       setHasSavedValuation(null);
       setLastValuationAt(null);
       setHasXeroConnection(false);
+      setHasQuickBooksConnection(false);
       setReviewOpen(false);
       setLoading(false);
       return;
@@ -79,12 +81,18 @@ function Dashboard() {
         .order("computed_at", { ascending: false })
         .limit(1),
       supabase.from("xero_connections").select("id").eq("business_id", current.id).limit(1),
-    ]).then(([financialsResult, valuationsResult, xeroResult]) => {
+      supabase
+        .from("quickbooks_connections")
+        .select("id")
+        .eq("business_id", current.id)
+        .limit(1),
+    ]).then(([financialsResult, valuationsResult, xeroResult, quickBooksResult]) => {
       if (cancelled) return;
       setFinancials(financialsResult.data ?? []);
       setHasSavedValuation(Boolean(valuationsResult.data?.length));
       setLastValuationAt(valuationsResult.data?.[0]?.computed_at ?? null);
       setHasXeroConnection(Boolean(xeroResult.data?.length));
+      setHasQuickBooksConnection(Boolean(quickBooksResult.data?.length));
       setReviewOpen(false);
       setLoading(false);
     });
@@ -192,7 +200,11 @@ function Dashboard() {
   const latest = financials[financials.length - 1];
   const margin =
     latest && latest.revenue ? (Number(latest.ebitda) / Number(latest.revenue)) * 100 : 0;
-  const inputSource = getInputSourceLabel(Boolean(current.is_sample), hasXeroConnection);
+  const inputSource = getInputSourceLabel(
+    Boolean(current.is_sample),
+    hasXeroConnection,
+    hasQuickBooksConnection,
+  );
   const inputLastUpdatedAt = getLatestTimestamp([
     current.updated_at,
     ...financials.map((f) => f.created_at),
@@ -500,9 +512,8 @@ function Dashboard() {
                 <KPI label="Contributing methods" value={String(weightedMethods.length)} />
               </div>
               <div className="mt-4 text-xs leading-relaxed text-muted-foreground">
-                Manual and CSV entries currently share the same stored financial fields; Xero is
-                shown when a Xero connection is attached to this business. QuickBooks import is not
-                active yet.
+                Manual, CSV, Xero, and QuickBooks connections share the same stored financial
+                fields. Review normalized inputs before saving each valuation snapshot.
               </div>
             </div>
             <button
@@ -776,9 +787,15 @@ function getCategoryLabel(category: Valuation["category"]) {
   return "Standard operating business";
 }
 
-function getInputSourceLabel(isSample: boolean, hasXeroConnection: boolean) {
+function getInputSourceLabel(
+  isSample: boolean,
+  hasXeroConnection: boolean,
+  hasQuickBooksConnection: boolean,
+) {
   if (isSample) return "Sample data";
+  if (hasXeroConnection && hasQuickBooksConnection) return "Xero, QuickBooks, or manual edits";
   if (hasXeroConnection) return "Xero or manual edits";
+  if (hasQuickBooksConnection) return "QuickBooks or manual edits";
   return "Manual or CSV entry";
 }
 
