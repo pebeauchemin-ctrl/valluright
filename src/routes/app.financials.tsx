@@ -18,6 +18,12 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { startXeroConnect, importXeroFinancials, listXeroConnections } from "@/lib/xero.functions";
 import {
+  disconnectQuickBooksConnection,
+  listQuickBooksConnections,
+  refreshQuickBooksConnection,
+  startQuickBooksConnect,
+} from "@/lib/quickbooks.functions";
+import {
   NORMALIZED_ACCOUNT_FIELDS,
   accountMappingKey,
   applySavedMappings,
@@ -32,6 +38,13 @@ import {
 
 export const Route = createFileRoute("/app/financials")({
   head: () => ({ meta: [{ title: "Financials — ValuRight.ai" }] }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    quickbooks:
+      search.quickbooks === "connected" || search.quickbooks === "error"
+        ? search.quickbooks
+        : undefined,
+    message: typeof search.message === "string" ? search.message : undefined,
+  }),
   component: Financials,
 });
 
@@ -58,6 +71,7 @@ const ACCOUNT_ROLLUP_KEYS: FinancialFieldKey[] = [...FIELD_KEYS];
 
 function Financials() {
   const { current } = useBusiness();
+  const search = Route.useSearch();
   const [years, setYears] = useState<FinancialYearRow[]>([]);
   const [saving, setSaving] = useState(false);
   const [accountMappings, setAccountMappings] = useState<SavedAccountMapping[]>([]);
@@ -68,9 +82,23 @@ function Financials() {
   const startXero = useServerFn(startXeroConnect);
   const importXero = useServerFn(importXeroFinancials);
   const fetchConnections = useServerFn(listXeroConnections);
+  const startQuickBooks = useServerFn(startQuickBooksConnect);
+  const fetchQuickBooksConnections = useServerFn(listQuickBooksConnections);
+  const refreshQuickBooks = useServerFn(refreshQuickBooksConnection);
+  const disconnectQuickBooks = useServerFn(disconnectQuickBooksConnection);
   const [xeroLoading, setXeroLoading] = useState(false);
+  const [quickBooksLoading, setQuickBooksLoading] = useState(false);
   const [xeroTenants, setXeroTenants] = useState<
     { tenant_id: string; tenant_name: string | null }[]
+  >([]);
+  const [quickBooksConnections, setQuickBooksConnections] = useState<
+    {
+      id: string;
+      realm_id: string;
+      company_name: string | null;
+      last_synced_at: string | null;
+      created_at: string;
+    }[]
   >([]);
   const [selectedTenant, setSelectedTenant] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -108,6 +136,30 @@ function Financials() {
       })
       .catch(() => {});
   }, [fetchConnections]);
+
+  useEffect(() => {
+    fetchQuickBooksConnections({})
+      .then(({ connections }) => {
+        setQuickBooksConnections(connections);
+      })
+      .catch(() => {});
+  }, [fetchQuickBooksConnections]);
+
+  useEffect(() => {
+    if (search.quickbooks === "connected") {
+      toast.success("Connected to QuickBooks Online.");
+      void loadQuickBooksConnections();
+    }
+    if (search.quickbooks === "error") {
+      toast.error(`QuickBooks connection failed: ${search.message ?? "unknown error"}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search.quickbooks, search.message]);
+
+  const loadQuickBooksConnections = async () => {
+    const { connections } = await fetchQuickBooksConnections({});
+    setQuickBooksConnections(connections);
+  };
 
   const update = (i: number, key: string, val: number) => {
     setYears((prev) => prev.map((y, idx) => (idx === i ? { ...y, [key]: val } : y)));
@@ -320,10 +372,42 @@ function Financials() {
     }
   };
 
-  const handleQuickBooks = () => {
-    toast.info(
-      "Export a QuickBooks CSV with year, account, and amount columns, then use Upload CSV to map the accounts.",
-    );
+  const handleConnectQuickBooks = async () => {
+    if (!current) return;
+    try {
+      setQuickBooksLoading(true);
+      const { url } = await startQuickBooks({ data: { businessId: current.id } });
+      window.location.href = url;
+    } catch (e) {
+      setQuickBooksLoading(false);
+      toast.error(e instanceof Error ? e.message : "Failed to start QuickBooks connect");
+    }
+  };
+
+  const handleRefreshQuickBooks = async (connectionId: string) => {
+    try {
+      setQuickBooksLoading(true);
+      await refreshQuickBooks({ data: { connectionId } });
+      await loadQuickBooksConnections();
+      toast.success("QuickBooks connection refreshed");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not refresh QuickBooks connection");
+    } finally {
+      setQuickBooksLoading(false);
+    }
+  };
+
+  const handleDisconnectQuickBooks = async (connectionId: string) => {
+    try {
+      setQuickBooksLoading(true);
+      await disconnectQuickBooks({ data: { connectionId } });
+      await loadQuickBooksConnections();
+      toast.success("QuickBooks disconnected");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not disconnect QuickBooks");
+    } finally {
+      setQuickBooksLoading(false);
+    }
   };
 
   const save = async () => {
@@ -436,8 +520,8 @@ function Financials() {
           <div>
             <h2 className="text-sm font-semibold text-foreground">Import financials</h2>
             <p className="mt-1 text-xs text-muted-foreground">
-              Connect Xero or upload a CSV. Direct QuickBooks import is planned; use a QuickBooks
-              CSV export for now. Imports merge into existing years; click Save to persist.
+              Connect Xero, connect QuickBooks, or upload a CSV. Imports merge into existing years;
+              click Save to persist.
             </p>
           </div>
           <div className="flex w-full flex-wrap gap-2 sm:w-auto">
@@ -497,10 +581,16 @@ function Financials() {
             )}
 
             <button
-              onClick={handleQuickBooks}
+              onClick={handleConnectQuickBooks}
+              disabled={quickBooksLoading}
               className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-2 text-xs font-medium hover:bg-secondary"
             >
-              <Link2 className="h-3.5 w-3.5" /> QuickBooks CSV fallback
+              {quickBooksLoading ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Link2 className="h-3.5 w-3.5" />
+              )}
+              {quickBooksConnections.length ? "Reconnect QuickBooks" : "Connect QuickBooks"}
             </button>
           </div>
         </div>
@@ -513,6 +603,40 @@ function Financials() {
           depreciation, and amortization. SDE uses EBITDA plus one working owner's compensation and
           one-time add-backs, so owner pay is not double-counted in EBITDA.
         </p>
+        {quickBooksConnections.length > 0 && (
+          <div className="mt-4 rounded-lg border border-border bg-secondary/30 p-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold text-foreground">
+                  QuickBooks connected:{" "}
+                  {quickBooksConnections[0].company_name ?? quickBooksConnections[0].realm_id}
+                </p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  Last sync:{" "}
+                  {quickBooksConnections[0].last_synced_at
+                    ? new Date(quickBooksConnections[0].last_synced_at).toLocaleString()
+                    : "Not synced yet"}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => handleRefreshQuickBooks(quickBooksConnections[0].id)}
+                  disabled={quickBooksLoading}
+                  className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium hover:bg-secondary disabled:opacity-60"
+                >
+                  Refresh status
+                </button>
+                <button
+                  onClick={() => handleDisconnectQuickBooks(quickBooksConnections[0].id)}
+                  disabled={quickBooksLoading}
+                  className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-destructive hover:bg-secondary disabled:opacity-60"
+                >
+                  Disconnect
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {importWarnings.length > 0 && (
