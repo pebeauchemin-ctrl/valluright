@@ -8,8 +8,9 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
-    "test": "npm run test:valuation",
+    "test": "npm run test:valuation && npm run test:account-mapping",
     "test:valuation": "rm -rf .tmp-tests && mkdir -p .tmp-tests && esbuild src/lib/valuation.test.ts --bundle --platform=node --format=esm --outfile=.tmp-tests/valuation.test.mjs --log-level=warning && node .tmp-tests/valuation.test.mjs",
+    "test:account-mapping": "rm -rf .tmp-tests && mkdir -p .tmp-tests && esbuild src/lib/account-mapping.test.ts --bundle --platform=node --format=esm --outfile=.tmp-tests/account-mapping.test.mjs --log-level=warning && node .tmp-tests/account-mapping.test.mjs",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
