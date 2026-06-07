@@ -354,6 +354,50 @@ export type Database = {
           },
         ]
       }
+      account_mappings: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          normalized_field: string
+          source_account_id: string | null
+          source_account_name: string
+          source_account_type: string | null
+          source_system: string
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          normalized_field: string
+          source_account_id?: string | null
+          source_account_name: string
+          source_account_type?: string | null
+          source_system: string
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          normalized_field?: string
+          source_account_id?: string | null
+          source_account_name?: string
+          source_account_type?: string | null
+          source_system?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_mappings_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       financial_years: {
         Row: {
           addbacks: number | null
