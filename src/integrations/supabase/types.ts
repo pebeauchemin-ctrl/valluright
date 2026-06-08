@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_mappings: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          normalized_field: string
+          source_account_id: string | null
+          source_account_name: string
+          source_account_type: string | null
+          source_system: string
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          normalized_field: string
+          source_account_id?: string | null
+          source_account_name: string
+          source_account_type?: string | null
+          source_system: string
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          normalized_field?: string
+          source_account_id?: string | null
+          source_account_name?: string
+          source_account_type?: string | null
+          source_system?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_mappings_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       advisor_comments: {
         Row: {
           author_id: string
@@ -452,6 +496,75 @@ export type Database = {
           full_name?: string | null
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      quickbooks_connections: {
+        Row: {
+          access_token: string
+          business_id: string | null
+          company_name: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          last_synced_at: string | null
+          realm_id: string
+          refresh_token: string
+          scope: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          business_id?: string | null
+          company_name?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          last_synced_at?: string | null
+          realm_id: string
+          refresh_token: string
+          scope?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          business_id?: string | null
+          company_name?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          last_synced_at?: string | null
+          realm_id?: string
+          refresh_token?: string
+          scope?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      quickbooks_oauth_states: {
+        Row: {
+          business_id: string | null
+          created_at: string
+          redirect_uri: string
+          state: string
+          user_id: string
+        }
+        Insert: {
+          business_id?: string | null
+          created_at?: string
+          redirect_uri: string
+          state: string
+          user_id: string
+        }
+        Update: {
+          business_id?: string | null
+          created_at?: string
+          redirect_uri?: string
+          state?: string
+          user_id?: string
         }
         Relationships: []
       }
