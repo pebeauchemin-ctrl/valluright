@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Save, Trash2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
@@ -219,6 +219,25 @@ function Settings() {
         <div className="text-sm">
           <span className="text-muted-foreground">Email:</span>{" "}
           <span className="font-medium">{user.email}</span>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-6">
+        <h2 className="font-display font-semibold text-primary">Legal and trust</h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Review how ValuRight.ai handles financial data, accounting connections, and
+          software-generated valuation outputs.
+        </p>
+        <div className="mt-4 flex flex-wrap gap-3 text-sm">
+          <Link to="/privacy" className="font-semibold text-accent hover:underline">
+            Privacy policy
+          </Link>
+          <Link to="/terms" className="font-semibold text-accent hover:underline">
+            Terms
+          </Link>
+          <Link to="/security" className="font-semibold text-accent hover:underline">
+            Security posture
+          </Link>
         </div>
       </div>
 
