@@ -12,6 +12,7 @@ import {
   listTenants,
   refreshAccessToken,
   type ParsedYear,
+  type XeroMappedAccount,
 } from "./xero.server";
 import { decryptToken, encryptToken, isEncryptedToken } from "./token-crypto.server";
 import { recordSecurityAuditEvent } from "./security-audit.server";
@@ -54,7 +55,7 @@ export const listXeroConnections = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await supabaseAdmin
       .from("xero_connections")
-      .select("id, tenant_id, tenant_name, business_id, expires_at, created_at")
+      .select("id, tenant_id, tenant_name, business_id, expires_at, last_synced_at, created_at")
       .eq("user_id", context.userId)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
@@ -107,7 +108,19 @@ export const importXeroFinancials = createServerFn({ method: "POST" })
     }),
   )
   .handler(
-    async ({ data, context }): Promise<{ years: ParsedYear[]; tenantName: string | null }> => {
+    async ({
+      data,
+      context,
+    }): Promise<{
+      years: ParsedYear[];
+      tenantName: string | null;
+      summary: {
+        importedAccounts: number;
+        unmappedAccounts: string[];
+        warnings: string[];
+        lastSyncedAt: string;
+      };
+    }> => {
       const { data: conn, error } = await supabaseAdmin
         .from("xero_connections")
         .select("id, business_id, access_token, refresh_token, expires_at, tenant_name")
@@ -127,15 +140,43 @@ export const importXeroFinancials = createServerFn({ method: "POST" })
       for (const y of data.years) {
         out.push(await fetchYearSummary({ accessToken, tenantId: data.tenantId, year: y }));
       }
+      const lastSyncedAt = new Date().toISOString();
+      await supabaseAdmin
+        .from("xero_connections")
+        .update({ last_synced_at: lastSyncedAt })
+        .eq("id", conn.id);
+      const accounts = out.flatMap((year) => year.accounts ?? []) as XeroMappedAccount[];
+      const unmappedAccounts = Array.from(
+        new Set(
+          accounts
+            .filter((account) => account.normalizedField === "unmapped")
+            .map((account) => account.sourceAccountName),
+        ),
+      ).sort((a, b) => a.localeCompare(b));
+      const warnings = Array.from(new Set(out.flatMap((year) => year.warnings ?? [])));
       await recordSecurityAuditEvent({
         actorUserId: context.userId,
         businessId: conn.business_id,
         action: "xero_financials_imported",
         targetType: "xero_connection",
         targetId: conn.id,
-        metadata: { tenant_id: data.tenantId, years: data.years },
+        metadata: {
+          tenant_id: data.tenantId,
+          years: data.years,
+          imported_accounts: accounts.length,
+          unmapped_accounts: unmappedAccounts,
+        },
       });
-      return { years: out, tenantName: conn.tenant_name ?? null };
+      return {
+        years: out,
+        tenantName: conn.tenant_name ?? null,
+        summary: {
+          importedAccounts: accounts.length,
+          unmappedAccounts,
+          warnings,
+          lastSyncedAt,
+        },
+      };
     },
   );
 

@@ -1,5 +1,6 @@
 // Server-only Xero OAuth + reporting helpers.
 // Do NOT import from client code — this file uses process.env secrets.
+import { autoMapAccount, type NormalizedAccountField } from "@/lib/account-mapping";
 
 const XERO_AUTH_URL = "https://login.xero.com/identity/connect/authorize";
 const XERO_TOKEN_URL = "https://identity.xero.com/connect/token";
@@ -149,6 +150,17 @@ export type ParsedYear = {
   assets: number;
   liabilities: number;
   debt: number;
+  accounts?: XeroMappedAccount[];
+  warnings?: string[];
+};
+
+export type XeroMappedAccount = {
+  year: number;
+  statement: "profit_and_loss" | "balance_sheet";
+  sourceAccountName: string;
+  sourceAccountType: string | null;
+  amount: number;
+  normalizedField: NormalizedAccountField;
 };
 
 // Xero report row shape
@@ -171,13 +183,22 @@ function num(s: unknown): number {
   return isNeg ? -n : n;
 }
 
+function hasNumericValue(s: unknown): boolean {
+  if (s == null) return false;
+  const str = s.toString().trim();
+  if (!str) return false;
+  const cleaned = str.replace(/[(),$\s]/g, "").replace(/[)]/g, "");
+  return cleaned !== "" && Number.isFinite(Number.parseFloat(cleaned));
+}
+
 // Get the numeric value column for a single-period report row. Xero returns
 // [labelCell, valueCell] for a single period, or [labelCell, ...periodCells] for multi-period.
 // We always take the FIRST numeric value (the most recent / requested period).
 function rowValue(row: XRow): number {
   const cells = row.Cells ?? [];
   if (cells.length < 2) return 0;
-  return num(cells[1]?.Value);
+  const valueCell = cells.slice(1).find((cell) => hasNumericValue(cell?.Value));
+  return num(valueCell?.Value);
 }
 
 function rowLabel(row: XRow): string {
@@ -189,6 +210,18 @@ function* walkRows(rows: XRow[]): Generator<XRow> {
   for (const r of rows) {
     yield r;
     if (r.Rows && r.Rows.length) yield* walkRows(r.Rows);
+  }
+}
+
+function* walkRowsWithSection(
+  rows: XRow[],
+  sectionTitle: string | null = null,
+): Generator<{ row: XRow; sectionTitle: string | null }> {
+  for (const row of rows) {
+    const nextSection =
+      row.RowType === "Section" && row.Title ? row.Title.trim() : sectionTitle;
+    yield { row, sectionTitle: nextSection };
+    if (row.Rows && row.Rows.length) yield* walkRowsWithSection(row.Rows, nextSection);
   }
 }
 
@@ -271,7 +304,7 @@ function rowByLabel(rows: XRow[], labelRe: RegExp): number | null {
   return null;
 }
 
-function parsePnl(report: unknown): {
+export function parsePnl(report: unknown): {
   revenue: number;
   cogs: number;
   gross_profit: number;
@@ -359,7 +392,7 @@ function parsePnl(report: unknown): {
   };
 }
 
-function parseBalanceSheet(report: unknown): {
+export function parseBalanceSheet(report: unknown): {
   assets: number;
   liabilities: number;
   debt: number;
@@ -405,6 +438,57 @@ function parseBalanceSheet(report: unknown): {
   return { assets: Math.abs(assets), liabilities: Math.abs(liabilities), debt };
 }
 
+export function extractXeroMappedAccounts(opts: {
+  report: unknown;
+  year: number;
+  statement: "profit_and_loss" | "balance_sheet";
+}): XeroMappedAccount[] {
+  const reports = (opts.report as { Reports?: Array<{ Rows?: XRow[] }> }).Reports;
+  const rows = reports?.[0]?.Rows ?? [];
+  const accounts: XeroMappedAccount[] = [];
+
+  for (const { row, sectionTitle } of walkRowsWithSection(rows)) {
+    if (row.RowType !== "Row") continue;
+    const sourceAccountName = rowLabel(row);
+    if (!sourceAccountName || /^total\b/i.test(sourceAccountName)) continue;
+    const amount = rowValue(row);
+    if (!amount) continue;
+    const normalizedField = autoMapAccount({
+      sourceAccountName,
+      sourceAccountType: sectionTitle,
+    });
+    accounts.push({
+      year: opts.year,
+      statement: opts.statement,
+      sourceAccountName,
+      sourceAccountType: sectionTitle,
+      amount: round(amount),
+      normalizedField,
+    });
+  }
+
+  return accounts;
+}
+
+function buildXeroWarnings(year: number, parsed: ParsedYear, accounts: XeroMappedAccount[]) {
+  const warnings: string[] = [];
+  if (parsed.revenue === 0) {
+    warnings.push(`${year}: no revenue was found in the Xero Profit and Loss report.`);
+  }
+  if (parsed.assets === 0 && parsed.liabilities === 0) {
+    warnings.push(`${year}: no Balance Sheet totals were found.`);
+  }
+  const unmapped = new Set(
+    accounts
+      .filter((account) => account.normalizedField === "unmapped")
+      .map((account) => account.sourceAccountName),
+  );
+  if (unmapped.size > 0) {
+    warnings.push(`${year}: ${unmapped.size} account(s) need mapping review.`);
+  }
+  return warnings;
+}
+
 export async function fetchYearSummary(opts: {
   accessToken: string;
   tenantId: string;
@@ -433,7 +517,7 @@ export async function fetchYearSummary(opts: {
   const ebitda =
     pnl.net_income + pnl.interest + pnl.depreciation + pnl.amortization + pnl.income_taxes;
 
-  return {
+  const parsed: ParsedYear = {
     year: opts.year,
     revenue: round(pnl.revenue),
     cogs: round(pnl.cogs),
@@ -450,6 +534,24 @@ export async function fetchYearSummary(opts: {
     assets: round(bs.assets),
     liabilities: round(bs.liabilities),
     debt: round(bs.debt),
+  };
+  const accounts = [
+    ...extractXeroMappedAccounts({
+      report: pnlReport,
+      year: opts.year,
+      statement: "profit_and_loss",
+    }),
+    ...extractXeroMappedAccounts({
+      report: bsReport,
+      year: opts.year,
+      statement: "balance_sheet",
+    }),
+  ];
+
+  return {
+    ...parsed,
+    accounts,
+    warnings: buildXeroWarnings(opts.year, parsed, accounts),
   };
 }
 
