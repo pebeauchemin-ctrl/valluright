@@ -982,7 +982,6 @@ export type Database = {
           created_at: string
           expires_at: string
           id: string
-          last_synced_at: string | null
           refresh_token: string
           scope: string | null
           tenant_id: string
@@ -996,7 +995,6 @@ export type Database = {
           created_at?: string
           expires_at: string
           id?: string
-          last_synced_at?: string | null
           refresh_token: string
           scope?: string | null
           tenant_id: string
@@ -1010,7 +1008,6 @@ export type Database = {
           created_at?: string
           expires_at?: string
           id?: string
-          last_synced_at?: string | null
           refresh_token?: string
           scope?: string | null
           tenant_id?: string
