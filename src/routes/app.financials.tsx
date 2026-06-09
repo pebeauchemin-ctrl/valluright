@@ -66,6 +66,12 @@ const FIELD_KEYS = [
 
 type AccountMappingRow = Database["public"]["Tables"]["account_mappings"]["Row"];
 type FinancialFieldKey = (typeof FIELD_KEYS)[number];
+type XeroImportSummary = {
+  importedAccounts: number;
+  unmappedAccounts: string[];
+  warnings: string[];
+  lastSyncedAt: string;
+};
 
 const ACCOUNT_ROLLUP_KEYS: FinancialFieldKey[] = [...FIELD_KEYS];
 
@@ -78,6 +84,7 @@ function Financials() {
   const [mappingReview, setMappingReview] = useState<MappedAccount[]>([]);
   const [savingMappings, setSavingMappings] = useState(false);
   const [importWarnings, setImportWarnings] = useState<string[]>([]);
+  const [xeroImportSummary, setXeroImportSummary] = useState<XeroImportSummary | null>(null);
 
   const startXero = useServerFn(startXeroConnect);
   const importXero = useServerFn(importXeroFinancials);
@@ -89,7 +96,7 @@ function Financials() {
   const [xeroLoading, setXeroLoading] = useState(false);
   const [quickBooksLoading, setQuickBooksLoading] = useState(false);
   const [xeroTenants, setXeroTenants] = useState<
-    { tenant_id: string; tenant_name: string | null }[]
+    { tenant_id: string; tenant_name: string | null; last_synced_at?: string | null }[]
   >([]);
   const [quickBooksConnections, setQuickBooksConnections] = useState<
     {
@@ -129,7 +136,11 @@ function Financials() {
       .then(({ connections }) => {
         if (connections?.length) {
           setXeroTenants(
-            connections.map((c) => ({ tenant_id: c.tenant_id, tenant_name: c.tenant_name })),
+            connections.map((c) => ({
+              tenant_id: c.tenant_id,
+              tenant_name: c.tenant_name,
+              last_synced_at: c.last_synced_at,
+            })),
           );
           setSelectedTenant((prev) => prev ?? connections[0].tenant_id);
         }
@@ -306,14 +317,31 @@ function Financials() {
       setXeroLoading(true);
       const cy = new Date().getFullYear();
       const requestedYears = [cy - 3, cy - 2, cy - 1];
-      const { years: imported } = await importXero({
+      const result = await importXero({
         data: { tenantId: selectedTenant, years: requestedYears },
       });
+      const imported = result.years;
       mergeImported(imported);
       setMappingReview([]);
-      setImportWarnings([
-        "Xero report totals were imported automatically. Review owner salary, add-backs, and any unusual accounts before saving the valuation.",
-      ]);
+      setXeroImportSummary(result.summary);
+      setImportWarnings(
+        result.summary.warnings.length
+          ? result.summary.warnings
+          : [
+              "Xero report totals were imported automatically. Review owner salary, add-backs, and any unusual accounts before saving the valuation.",
+            ],
+      );
+      await fetchConnections({})
+        .then(({ connections }) =>
+          setXeroTenants(
+            connections.map((c) => ({
+              tenant_id: c.tenant_id,
+              tenant_name: c.tenant_name,
+              last_synced_at: c.last_synced_at,
+            })),
+          ),
+        )
+        .catch(() => {});
       toast.success(`Imported ${imported.length} year(s) from Xero. Review and click Save.`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Xero import failed");
@@ -481,6 +509,8 @@ function Financials() {
   ] as const;
   const unmappedCount = countUnmappedAccounts(mappingReview);
   const mappingRows = uniqueMappedAccounts(mappingReview);
+  const selectedXeroTenant = xeroTenants.find((tenant) => tenant.tenant_id === selectedTenant);
+  const xeroLastSyncedAt = xeroImportSummary?.lastSyncedAt ?? selectedXeroTenant?.last_synced_at;
 
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-10">
@@ -603,6 +633,34 @@ function Financials() {
           depreciation, and amortization. SDE uses EBITDA plus one working owner's compensation and
           one-time add-backs, so owner pay is not double-counted in EBITDA.
         </p>
+        {xeroTenants.length > 0 && (
+          <div className="mt-4 rounded-lg border border-border bg-secondary/30 p-3">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold text-foreground">
+                  Xero connected:{" "}
+                  {selectedXeroTenant?.tenant_name ?? selectedTenant ?? "Connected organisation"}
+                </p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  Last sync:{" "}
+                  {xeroLastSyncedAt ? new Date(xeroLastSyncedAt).toLocaleString() : "Not synced yet"}
+                </p>
+              </div>
+              {xeroImportSummary && (
+                <div className="text-right text-[11px] text-muted-foreground">
+                  <p>{xeroImportSummary.importedAccounts} account line(s) imported</p>
+                  <p>{xeroImportSummary.unmappedAccounts.length} unmapped account(s)</p>
+                </div>
+              )}
+            </div>
+            {xeroImportSummary?.unmappedAccounts.length ? (
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                Unmapped: {xeroImportSummary.unmappedAccounts.slice(0, 6).join(", ")}
+                {xeroImportSummary.unmappedAccounts.length > 6 ? "..." : ""}
+              </p>
+            ) : null}
+          </div>
+        )}
         {quickBooksConnections.length > 0 && (
           <div className="mt-4 rounded-lg border border-border bg-secondary/30 p-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
