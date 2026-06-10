@@ -80,6 +80,7 @@ function Reports() {
   const { current } = useBusiness();
   const [bundle, setBundle] = useState<Bundle | null>(null);
   const [open, setOpen] = useState<ReportKey | null>(null);
+  const [printOnOpen, setPrintOnOpen] = useState(false);
 
   useEffect(() => {
     if (!current) return;
@@ -119,6 +120,15 @@ function Reports() {
     });
   }, [current]);
 
+  useEffect(() => {
+    if (!open || !bundle || !printOnOpen) return;
+    const timeout = window.setTimeout(() => {
+      window.print();
+      setPrintOnOpen(false);
+    }, 350);
+    return () => window.clearTimeout(timeout);
+  }, [bundle, open, printOnOpen]);
+
   if (!current)
     return <div className="p-12 text-sm text-muted-foreground">No business selected.</div>;
 
@@ -155,7 +165,11 @@ function Reports() {
                   <Eye className="h-4 w-4" /> Preview
                 </button>
                 <button
-                  onClick={() => exportReport(r.key, r.title)}
+                  onClick={() => {
+                    setOpen(r.key);
+                    setPrintOnOpen(true);
+                    toast.info(`Opening print dialog for ${r.title}. Choose "Save as PDF".`);
+                  }}
                   className="inline-flex items-center justify-center gap-1.5 rounded-md border border-border px-3 py-2 text-sm font-semibold hover:bg-secondary"
                 >
                   <Download className="h-4 w-4" /> Print / PDF
@@ -173,13 +187,6 @@ function Reports() {
   );
 }
 
-function exportReport(_key: ReportKey, title: string) {
-  toast.info(`Opening print dialog for ${title}. Choose "Save as PDF" to export.`);
-  setTimeout(() => {
-    window.print();
-  }, 250);
-}
-
 function ReportPreview({
   reportKey,
   bundle,
@@ -192,6 +199,9 @@ function ReportPreview({
   const r = REPORTS.find((x) => x.key === reportKey)!;
   const { business, financials, valuation, scenarios, recommendations, buyerSettings } = bundle;
   const latest = financials[0];
+  const risks = buildKeyRisks(business, financials);
+  const dataNotes = buildDataQualityNotes(financials, valuation);
+  const confidence = confidenceLabel(financials, valuation);
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-stretch justify-center overflow-y-auto print:bg-white print:static print:overflow-visible">
@@ -231,24 +241,74 @@ function ReportPreview({
           {/* OWNER */}
           {reportKey === "owner" && (
             <>
-              <Section title="Estimated value range">
-                <BigRange
-                  low={valuation?.range_low}
-                  mid={valuation?.range_mid}
-                  high={valuation?.range_high}
-                />
+              <Section title="Business summary">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Tile label="Business" value={business.name} />
+                  <Tile
+                    label="Industry"
+                    value={`${business.industry ?? "—"} / ${business.sub_industry ?? "—"}`}
+                  />
+                  <Tile label="Region" value={business.region ?? "—"} />
+                  <Tile label="Years operating" value={business.years_in_business ?? "—"} />
+                  <Tile label="Employees" value={business.employees ?? "—"} />
+                  <Tile label="Exit timeline" value={formatExitTimeline(business.exit_timeline)} />
+                </div>
               </Section>
-              <Section title="Valuation methods">
-                <Methods v={valuation} />
+              <Section title="Estimated value range">
+                <div className="grid gap-4 sm:grid-cols-[1.4fr_0.8fr]">
+                  <BigRange
+                    low={valuation?.range_low}
+                    mid={valuation?.range_mid}
+                    high={valuation?.range_high}
+                  />
+                  <div className="rounded-xl border border-neutral-200 p-5">
+                    <div className="text-[10px] uppercase tracking-wider text-neutral-500">
+                      Report confidence
+                    </div>
+                    <div className="mt-1 font-display text-2xl font-semibold">{confidence}</div>
+                    <p className="mt-2 text-xs leading-relaxed text-neutral-600">
+                      Based on saved financial history, balance-sheet detail, and the latest saved
+                      valuation snapshot.
+                    </p>
+                    <p className="mt-3 text-[11px] text-neutral-500">
+                      Saved valuation:{" "}
+                      {valuation?.computed_at
+                        ? new Date(valuation.computed_at).toLocaleString()
+                        : "Not saved yet"}
+                    </p>
+                  </div>
+                </div>
+              </Section>
+              <Section title="Health score">
+                <HealthScore valuation={valuation} />
               </Section>
               <Section title="Financial summary">
                 <FinancialsTable rows={financials} />
               </Section>
+              <Section title="Valuation method breakdown">
+                <Methods v={valuation} financials={financials} />
+              </Section>
               <Section title="Key assumptions">
                 <Assumptions b={business} />
               </Section>
-              <Section title="Improvement areas">
+              <Section title="Key risks">
+                <RiskList risks={risks} />
+              </Section>
+              <Section title="Recommendations">
                 <RecsList recs={recommendations} />
+              </Section>
+              <Section title="Saved scenarios">
+                <ScenarioList scenarios={scenarios} />
+              </Section>
+              <Section title="Data quality notes">
+                <ul className="space-y-1.5 text-sm leading-relaxed text-neutral-700">
+                  {dataNotes.map((note) => (
+                    <li key={note} className="flex gap-2">
+                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-neutral-400" />
+                      {note}
+                    </li>
+                  ))}
+                </ul>
               </Section>
             </>
           )}
@@ -325,7 +385,7 @@ function ReportPreview({
                 <Assumptions b={business} />
               </Section>
               <Section title="Valuation methods">
-                <Methods v={valuation} />
+                <Methods v={valuation} financials={financials} />
                 <BigRange
                   low={valuation?.range_low}
                   mid={valuation?.range_mid}
@@ -446,24 +506,36 @@ function BigRange({
     </div>
   );
 }
-function Methods({ v }: { v: ValuationRow | null }) {
+function Methods({ v, financials }: { v: ValuationRow | null; financials: FinancialYearRow[] }) {
   if (!v) return <div className="text-sm text-neutral-500">No valuation computed yet.</div>;
   const rows = [
-    ["SDE multiple", v.sde_low, v.sde_high],
-    ["EBITDA multiple", v.ebitda_low, v.ebitda_high],
-    ["Revenue multiple", v.revenue_low, v.revenue_high],
-    ["Discounted cash flow", v.dcf_low, v.dcf_high],
-    ["Asset-based", v.asset_low, v.asset_high],
-  ].filter(([, lo, hi]) => Number(lo) > 0 || Number(hi) > 0);
+    methodRow("SDE multiple", v.sde_value, v.sde_low, v.sde_high, financials),
+    methodRow("EBITDA multiple", v.ebitda_value, v.ebitda_low, v.ebitda_high, financials),
+    methodRow("Revenue multiple", v.revenue_value, v.revenue_low, v.revenue_high, financials),
+    methodRow("Discounted cash flow", v.dcf_value, v.dcf_low, v.dcf_high, financials),
+    methodRow("Asset-based", v.asset_value, v.asset_low, v.asset_high, financials),
+  ].filter((row) => Number(row.low) > 0 || Number(row.high) > 0);
   return (
     <table className="w-full text-sm">
+      <thead>
+        <tr className="border-b border-neutral-200 text-left text-[10px] uppercase tracking-wider text-neutral-500">
+          <th className="py-2">Method</th>
+          <th className="py-2 text-right">Range</th>
+          <th className="py-2 text-right">Confidence</th>
+        </tr>
+      </thead>
       <tbody>
-        {rows.map(([name, lo, hi]) => (
-          <tr key={name as string} className="border-b border-neutral-100">
-            <td className="py-2 text-neutral-600">{name}</td>
+        {rows.map((row) => (
+          <tr key={row.name} className="border-b border-neutral-100">
+            <td className="py-2 text-neutral-600">{row.name}</td>
             <td className="py-2 text-right tabular-nums">
-              {fmtCurrency(Number(lo), { compact: true })} –{" "}
-              {fmtCurrency(Number(hi), { compact: true })}
+              {fmtCurrency(Number(row.low), { compact: true })} –{" "}
+              {fmtCurrency(Number(row.high), { compact: true })}
+            </td>
+            <td className="py-2 text-right">
+              <span className="rounded-full bg-neutral-100 px-2 py-1 text-[11px] font-medium text-neutral-700">
+                {row.confidence}
+              </span>
             </td>
           </tr>
         ))}
@@ -480,8 +552,11 @@ function FinancialsTable({ rows }: { rows: FinancialYearRow[] }) {
         <tr className="text-left text-[10px] uppercase tracking-wider text-neutral-500">
           <th className="py-2">Year</th>
           <th className="py-2 text-right">Revenue</th>
+          <th className="py-2 text-right">SDE</th>
           <th className="py-2 text-right">EBITDA</th>
           <th className="py-2 text-right">Net income</th>
+          <th className="hidden py-2 text-right sm:table-cell">Assets</th>
+          <th className="hidden py-2 text-right sm:table-cell">Debt</th>
         </tr>
       </thead>
       <tbody>
@@ -489,8 +564,19 @@ function FinancialsTable({ rows }: { rows: FinancialYearRow[] }) {
           <tr key={f.year} className="border-b border-neutral-100">
             <td className="py-2">{f.year}</td>
             <td className="py-2 text-right tabular-nums">{fmtCurrency(Number(f.revenue))}</td>
+            <td className="py-2 text-right tabular-nums">
+              {fmtCurrency(
+                Number(f.ebitda ?? 0) + Number(f.owner_salary ?? 0) + Number(f.addbacks ?? 0),
+              )}
+            </td>
             <td className="py-2 text-right tabular-nums">{fmtCurrency(Number(f.ebitda))}</td>
             <td className="py-2 text-right tabular-nums">{fmtCurrency(Number(f.net_income))}</td>
+            <td className="hidden py-2 text-right tabular-nums sm:table-cell">
+              {fmtCurrency(Number(f.assets))}
+            </td>
+            <td className="hidden py-2 text-right tabular-nums sm:table-cell">
+              {fmtCurrency(Number(f.debt))}
+            </td>
           </tr>
         ))}
       </tbody>
@@ -526,6 +612,103 @@ function Assumptions({ b }: { b: BusinessRow }) {
     </div>
   );
 }
+
+function HealthScore({ valuation }: { valuation: ValuationRow | null }) {
+  const score = Number(valuation?.health_score ?? 0);
+  const breakdown = valuation?.health_breakdown as
+    | Record<string, { score?: number; max?: number }>
+    | null
+    | undefined;
+
+  return (
+    <div className="rounded-xl border border-neutral-200 p-5">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <div className="text-[10px] uppercase tracking-wider text-neutral-500">
+            Exit readiness
+          </div>
+          <div className="mt-1 font-display text-3xl font-semibold">{score || "—"}/100</div>
+        </div>
+        <div className="text-xs text-neutral-600">
+          {score >= 80
+            ? "Strong readiness"
+            : score >= 60
+              ? "Moderate readiness"
+              : score > 0
+                ? "Needs preparation"
+                : "No saved health score"}
+        </div>
+      </div>
+      {breakdown && (
+        <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          {Object.entries(breakdown).map(([key, item]) => (
+            <div key={key} className="rounded-lg bg-neutral-50 px-3 py-2">
+              <div className="flex justify-between gap-2 text-xs">
+                <span className="capitalize text-neutral-600">{key.replaceAll("_", " ")}</span>
+                <span className="font-medium tabular-nums">
+                  {Number(item.score ?? 0)}/{Number(item.max ?? 0)}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RiskList({ risks }: { risks: string[] }) {
+  if (!risks.length) {
+    return <div className="text-sm text-neutral-500">No major risk flags in the saved inputs.</div>;
+  }
+  return (
+    <ul className="space-y-2">
+      {risks.map((risk) => (
+        <li
+          key={risk}
+          className="rounded-md border border-neutral-200 p-3 text-sm text-neutral-700"
+        >
+          {risk}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function ScenarioList({ scenarios }: { scenarios: ScenarioRow[] }) {
+  if (!scenarios.length) {
+    return <div className="text-sm text-neutral-500">No saved scenarios included in report.</div>;
+  }
+  return (
+    <div className="space-y-3">
+      {scenarios.map((scenario) => (
+        <div key={scenario.id} className="rounded-lg border border-neutral-200 p-3">
+          <div className="flex justify-between gap-3">
+            <div className="font-medium text-sm">{scenario.name}</div>
+            <div className="text-sm font-semibold tabular-nums text-emerald-700">
+              {Number(scenario.value_delta ?? 0) >= 0 ? "+" : ""}
+              {fmtCurrency(Number(scenario.value_delta ?? 0), { compact: true })}
+            </div>
+          </div>
+          {scenario.description && (
+            <p className="mt-1 text-xs text-neutral-600">{scenario.description}</p>
+          )}
+          <div className="mt-2 grid gap-2 text-[11px] text-neutral-500 sm:grid-cols-3">
+            <span>Timeline: {scenario.timeline_months ?? "—"} mo</span>
+            <span>Phase: {scenario.roadmap_phase ?? "Unassigned"}</span>
+            <span>
+              Projected:{" "}
+              {scenario.projected_value != null
+                ? fmtCurrency(Number(scenario.projected_value), { compact: true })
+                : "—"}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function RecsList({ recs }: { recs: RecommendationRow[] }) {
   if (!recs.length)
     return <div className="text-sm text-neutral-500">No improvement recommendations yet.</div>;
@@ -542,4 +725,103 @@ function RecsList({ recs }: { recs: RecommendationRow[] }) {
       ))}
     </ul>
   );
+}
+
+function methodRow(
+  name: string,
+  value: number | null | undefined,
+  low: number | null | undefined,
+  high: number | null | undefined,
+  financials: FinancialYearRow[],
+) {
+  const hasValue = Number(value ?? 0) > 0 || Number(low ?? 0) > 0 || Number(high ?? 0) > 0;
+  const hasThreeYears = financials.length >= 3;
+  let confidence = "Low";
+  if (hasValue && hasThreeYears && /SDE|EBITDA|Asset/.test(name)) confidence = "High";
+  else if (hasValue && (hasThreeYears || /Discounted|Asset/.test(name))) confidence = "Medium";
+  return { name, value, low, high, confidence };
+}
+
+function confidenceLabel(financials: FinancialYearRow[], valuation: ValuationRow | null) {
+  if (!valuation) return "No saved valuation";
+  const latest = financials[0];
+  const hasBalanceSheet = Number(latest?.assets ?? 0) > 0 || Number(latest?.liabilities ?? 0) > 0;
+  if (financials.length >= 3 && hasBalanceSheet && Number(valuation.health_score ?? 0) >= 70) {
+    return "High";
+  }
+  if (financials.length >= 2 && Number(valuation.range_mid ?? 0) > 0) return "Medium";
+  return "Low";
+}
+
+function buildKeyRisks(business: BusinessRow, financials: FinancialYearRow[]) {
+  const latest = financials[0];
+  const risks: string[] = [];
+  if ((business.owner_hours_per_week ?? 0) >= 45) {
+    risks.push("Owner dependence: current owner hours may make transition harder for a buyer.");
+  }
+  if (
+    [
+      business.owner_in_sales,
+      business.owner_in_operations,
+      business.owner_in_customer_relationships,
+    ].filter(Boolean).length >= 2
+  ) {
+    risks.push(
+      "Owner concentration: owner remains involved in multiple customer-facing or operating roles.",
+    );
+  }
+  if ((business.top_customer_concentration_pct ?? 0) >= 20) {
+    risks.push("Customer concentration: top customer concentration may reduce buyer confidence.");
+  }
+  if (business.sop_status !== "complete") {
+    risks.push("Documentation: incomplete SOPs can increase buyer diligence and transition risk.");
+  }
+  if (business.manager_team_depth !== "strong") {
+    risks.push(
+      "Management depth: limited bench strength may reduce the transferable value of the business.",
+    );
+  }
+  if (latest && Number(latest.debt ?? 0) > Number(latest.ebitda ?? 0) * 3) {
+    risks.push("Leverage: debt is high relative to current EBITDA and may affect equity value.");
+  }
+  return risks;
+}
+
+function buildDataQualityNotes(financials: FinancialYearRow[], valuation: ValuationRow | null) {
+  const latest = financials[0];
+  const notes: string[] = [];
+  if (valuation?.computed_at) {
+    notes.push(
+      `Report uses the saved valuation snapshot from ${new Date(valuation.computed_at).toLocaleString()}.`,
+    );
+  } else {
+    notes.push(
+      "No saved valuation snapshot is available; generate and save a valuation before relying on this report.",
+    );
+  }
+  notes.push(
+    financials.length >= 3
+      ? "Three years of financial history are included."
+      : `${financials.length} year(s) of financial history are included; add three years for stronger confidence.`,
+  );
+  if (latest && (Number(latest.assets ?? 0) > 0 || Number(latest.liabilities ?? 0) > 0)) {
+    notes.push("Balance-sheet data is present for the latest year.");
+  } else {
+    notes.push(
+      "Balance-sheet data is missing or incomplete; asset and debt views may be less reliable.",
+    );
+  }
+  notes.push("Owner salary and add-backs should be reviewed for buyer-acceptable normalization.");
+  return notes;
+}
+
+function formatExitTimeline(value: BusinessRow["exit_timeline"]) {
+  const labels: Record<string, string> = {
+    lt_1y: "Less than 1 year",
+    "1_2y": "1-2 years",
+    "2_5y": "2-5 years",
+    "5_plus_y": "5+ years",
+    exploring: "Exploring",
+  };
+  return value ? (labels[value] ?? value) : "—";
 }
