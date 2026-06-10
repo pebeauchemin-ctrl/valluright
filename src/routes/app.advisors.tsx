@@ -1,9 +1,21 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { UserPlus, Mail, MessageSquare, Shield } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  FileSpreadsheet,
+  FileText,
+  Mail,
+  MessageSquare,
+  Shield,
+  UserPlus,
+} from "lucide-react";
 import { useBusiness } from "@/lib/business";
+import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { fmtCurrency } from "@/lib/format";
 import type { Database } from "@/integrations/supabase/types";
 
 export const Route = createFileRoute("/app/advisors")({
@@ -50,34 +62,67 @@ type Comment = {
   created_at: string;
   author_id: string;
 };
+type FinancialYearRow = Database["public"]["Tables"]["financial_years"]["Row"];
+type ValuationRow = Database["public"]["Tables"]["valuations"]["Row"];
+type ReportRow = Database["public"]["Tables"]["reports"]["Row"];
 type AdvisorInviteInsert = Database["public"]["Tables"]["advisor_invites"]["Insert"];
 type AdvisorInviteUpdate = Database["public"]["Tables"]["advisor_invites"]["Update"];
+type AdvisorCommentInsert = Database["public"]["Tables"]["advisor_comments"]["Insert"];
 
 function Advisors() {
+  const { user } = useAuth();
   const { current } = useBusiness();
   const [invites, setInvites] = useState<Invite[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [financials, setFinancials] = useState<FinancialYearRow[]>([]);
+  const [valuation, setValuation] = useState<ValuationRow | null>(null);
+  const [reports, setReports] = useState<ReportRow[]>([]);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<string>("cpa");
   const [perm, setPerm] = useState<string>("comment");
+  const [reviewStatus, setReviewStatus] = useState<"reviewing" | "approved" | "changes_requested">(
+    "reviewing",
+  );
+  const [feedback, setFeedback] = useState("");
   const [busy, setBusy] = useState(false);
 
   const refresh = async () => {
     if (!current) return;
-    const [{ data: inv }, { data: cm }] = await Promise.all([
-      supabase
-        .from("advisor_invites")
-        .select("*")
-        .eq("business_id", current.id)
-        .order("invited_at", { ascending: false }),
-      supabase
-        .from("advisor_comments")
-        .select("*")
-        .eq("business_id", current.id)
-        .order("created_at", { ascending: false }),
-    ]);
+    const [{ data: inv }, { data: cm }, { data: fy }, { data: val }, { data: rp }] =
+      await Promise.all([
+        supabase
+          .from("advisor_invites")
+          .select("*")
+          .eq("business_id", current.id)
+          .order("invited_at", { ascending: false }),
+        supabase
+          .from("advisor_comments")
+          .select("*")
+          .eq("business_id", current.id)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("financial_years")
+          .select("*")
+          .eq("business_id", current.id)
+          .order("year", { ascending: false }),
+        supabase
+          .from("valuations")
+          .select("*")
+          .eq("business_id", current.id)
+          .order("computed_at", { ascending: false })
+          .limit(1),
+        supabase
+          .from("reports")
+          .select("*")
+          .eq("business_id", current.id)
+          .order("generated_at", { ascending: false })
+          .limit(5),
+      ]);
     setInvites((inv ?? []) as Invite[]);
     setComments((cm ?? []) as Comment[]);
+    setFinancials((fy ?? []) as FinancialYearRow[]);
+    setValuation((val?.[0] ?? null) as ValuationRow | null);
+    setReports((rp ?? []) as ReportRow[]);
   };
 
   useEffect(() => {
@@ -113,18 +158,78 @@ function Advisors() {
     refresh();
   };
 
+  const updateInviteStatus = async (id: string, status: string) => {
+    const payload: AdvisorInviteUpdate = { status: status as AdvisorInviteUpdate["status"] };
+    const { error } = await supabase.from("advisor_invites").update(payload).eq("id", id);
+    if (error) toast.error(error.message);
+    refresh();
+  };
+
+  const addFeedback = async () => {
+    if (!current || !user || !feedback.trim()) return;
+    setBusy(true);
+    try {
+      const label =
+        reviewStatus === "approved"
+          ? "Approved"
+          : reviewStatus === "changes_requested"
+            ? "Changes requested"
+            : "Reviewing";
+      const payload: AdvisorCommentInsert = {
+        business_id: current.id,
+        author_id: user.id,
+        body: `${label}: ${feedback.trim()}`,
+        is_approval: reviewStatus === "approved",
+      };
+      const { error } = await supabase.from("advisor_comments").insert(payload);
+      if (error) throw error;
+      setFeedback("");
+      setReviewStatus("reviewing");
+      await refresh();
+      toast.success("Advisor feedback recorded.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to record feedback");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   if (!current)
     return <div className="p-12 text-sm text-muted-foreground">No business selected.</div>;
 
+  const latest = financials[0];
+  const approvalState = getApprovalState(comments);
+
   return (
-    <div className="space-y-6 p-4 sm:p-6 lg:p-10 max-w-3xl">
+    <div className="space-y-6 p-4 sm:p-6 lg:p-10 max-w-5xl">
       <div>
         <h1 className="font-display text-3xl font-semibold text-primary">Advisor Review</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Create advisor access records for your CPA, bookkeeper, broker, financial advisor,
-          attorney, or consultant. Email delivery is not automated yet; share access details
+          Invite your CPA, broker, attorney, consultant, or financial advisor to review assumptions,
+          reports, and valuation outputs. Email delivery is not automated yet; share access details
           manually for now.
         </p>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <StatusTile
+          icon={Mail}
+          label="Invited advisors"
+          value={String(invites.length)}
+          detail={`${invites.filter((i) => i.status === "accepted").length} accepted`}
+        />
+        <StatusTile
+          icon={MessageSquare}
+          label="Feedback items"
+          value={String(comments.length)}
+          detail={`${comments.filter((c) => c.is_approval).length} approval record(s)`}
+        />
+        <StatusTile
+          icon={approvalState.icon}
+          label="Approval state"
+          value={approvalState.label}
+          detail={approvalState.detail}
+        />
       </div>
 
       <div className="rounded-xl border border-border bg-card p-6 space-y-4">
@@ -218,6 +323,16 @@ function Advisors() {
                       </option>
                     ))}
                   </select>
+                  <select
+                    value={i.status}
+                    onChange={(e) => updateInviteStatus(i.id, e.target.value)}
+                    className="text-xs rounded-md border border-border bg-background px-2 py-1"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="accepted">Accepted</option>
+                    <option value="declined">Declined</option>
+                    <option value="revoked">Revoked</option>
+                  </select>
                   <span
                     className={`text-xs font-semibold uppercase tracking-wider rounded-full px-2 py-0.5 ${
                       i.status === "accepted"
@@ -234,6 +349,111 @@ function Advisors() {
             ))}
           </div>
         )}
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-6">
+        <h2 className="font-display font-semibold text-primary mb-3">Advisor review package</h2>
+        <p className="mb-4 text-sm text-muted-foreground">
+          These are the core items an advisor should review before approving the report or
+          requesting changes.
+        </p>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <ReviewCard title="Company summary" icon={Shield}>
+            <KV label="Business" value={current.name} />
+            <KV
+              label="Industry"
+              value={`${current.industry ?? "—"} / ${current.sub_industry ?? "—"}`}
+            />
+            <KV label="Region" value={current.region ?? "—"} />
+            <KV label="Employees" value={current.employees ?? "—"} />
+            <KV label="Owner hours/week" value={current.owner_hours_per_week ?? "—"} />
+          </ReviewCard>
+          <ReviewCard title="Financial inputs and add-backs" icon={FileSpreadsheet}>
+            <KV label="Latest year" value={latest?.year ?? "—"} />
+            <KV label="Revenue" value={fmtCurrency(Number(latest?.revenue ?? 0))} />
+            <KV label="EBITDA" value={fmtCurrency(Number(latest?.ebitda ?? 0))} />
+            <KV
+              label="Owner comp + add-backs"
+              value={fmtCurrency(Number(latest?.owner_salary ?? 0) + Number(latest?.addbacks ?? 0))}
+            />
+            <KV label="Debt" value={fmtCurrency(Number(latest?.debt ?? 0))} />
+          </ReviewCard>
+          <ReviewCard title="Valuation method results" icon={Shield}>
+            <KV
+              label="Value range"
+              value={`${fmtCurrency(Number(valuation?.range_low ?? 0), { compact: true })} – ${fmtCurrency(Number(valuation?.range_high ?? 0), { compact: true })}`}
+            />
+            <KV label="Midpoint" value={fmtCurrency(Number(valuation?.range_mid ?? 0))} />
+            <KV
+              label="Health score"
+              value={valuation?.health_score != null ? `${valuation.health_score}/100` : "—"}
+            />
+            <KV
+              label="Saved"
+              value={
+                valuation?.computed_at
+                  ? new Date(valuation.computed_at).toLocaleString()
+                  : "No saved valuation"
+              }
+            />
+          </ReviewCard>
+          <ReviewCard title="Report draft" icon={FileText}>
+            <KV label="Recent report snapshots" value={reports.length} />
+            <KV
+              label="Latest report"
+              value={
+                reports[0]?.generated_at
+                  ? new Date(reports[0].generated_at).toLocaleString()
+                  : "Preview available"
+              }
+            />
+            <Link
+              to="/app/reports"
+              className="mt-3 inline-flex text-sm font-semibold text-accent hover:underline"
+            >
+              Open report preview
+            </Link>
+          </ReviewCard>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-6">
+        <h2 className="font-display font-semibold text-primary mb-3">Record advisor feedback</h2>
+        <div className="grid gap-3 md:grid-cols-[220px_1fr]">
+          <div>
+            <label className="text-xs uppercase tracking-wider text-muted-foreground">
+              Review status
+            </label>
+            <select
+              value={reviewStatus}
+              onChange={(e) => setReviewStatus(e.target.value as typeof reviewStatus)}
+              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            >
+              <option value="reviewing">Reviewing</option>
+              <option value="changes_requested">Changes requested</option>
+              <option value="approved">Approved</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs uppercase tracking-wider text-muted-foreground">
+              Comment
+            </label>
+            <textarea
+              value={feedback}
+              onChange={(e) => setFeedback(e.target.value)}
+              rows={3}
+              placeholder="Add advisor notes, approval language, or requested changes..."
+              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+        </div>
+        <button
+          onClick={addFeedback}
+          disabled={busy || !feedback.trim()}
+          className="mt-3 inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90 disabled:opacity-60"
+        >
+          <MessageSquare className="h-4 w-4" /> Save feedback
+        </button>
       </div>
 
       <div className="rounded-xl border border-border bg-card p-6">
@@ -269,4 +489,83 @@ function Advisors() {
       </div>
     </div>
   );
+}
+
+function StatusTile({
+  icon: Icon,
+  label,
+  value,
+  detail,
+}: {
+  icon: typeof Shield;
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-4">
+      <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <Icon className="h-4 w-4" /> {label}
+      </div>
+      <div className="mt-2 font-display text-2xl font-semibold text-primary">{value}</div>
+      <div className="mt-1 text-xs text-muted-foreground">{detail}</div>
+    </div>
+  );
+}
+
+function ReviewCard({
+  title,
+  icon: Icon,
+  children,
+}: {
+  title: string;
+  icon: typeof Shield;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-lg border border-border bg-secondary/30 p-4">
+      <h3 className="flex items-center gap-2 text-sm font-semibold text-primary">
+        <Icon className="h-4 w-4" /> {title}
+      </h3>
+      <div className="mt-3 space-y-1.5">{children}</div>
+    </section>
+  );
+}
+
+function KV({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex justify-between gap-3 text-sm">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="text-right font-medium text-foreground">{value ?? "—"}</span>
+    </div>
+  );
+}
+
+function getApprovalState(comments: Comment[]) {
+  if (comments.some((comment) => comment.is_approval)) {
+    return {
+      icon: CheckCircle2,
+      label: "Approved",
+      detail: "Advisor approval has been recorded.",
+    };
+  }
+  if (comments.some((comment) => /^changes requested:/i.test(comment.body))) {
+    return {
+      icon: AlertTriangle,
+      label: "Changes requested",
+      detail: "Advisor requested updates before approval.",
+    };
+  }
+  if (comments.length > 0) {
+    return {
+      icon: Clock,
+      label: "Reviewing",
+      detail: "Advisor feedback is in progress.",
+    };
+  }
+  return {
+    icon: Clock,
+    label: "Not started",
+    detail: "No advisor feedback recorded yet.",
+  };
 }
