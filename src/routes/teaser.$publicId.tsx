@@ -27,6 +27,9 @@ type PublicTeaserSettings = {
   show_sde: boolean;
   show_employee_count: boolean;
   show_customer_concentration?: boolean;
+  show_valuation_breakdown?: boolean;
+  show_scenarios?: boolean;
+  show_photos?: boolean;
   business_highlights: string[] | null;
   growth_opportunities: string[] | null;
   transition_support: string | null;
@@ -252,6 +255,30 @@ function Teaser() {
               </p>
             </div>
           )}
+          {(settings.show_valuation_breakdown ||
+            settings.show_scenarios ||
+            settings.show_photos) && (
+            <div className="mt-8 grid gap-3 sm:grid-cols-3">
+              {settings.show_valuation_breakdown && (
+                <BuyerSafeNote
+                  title="Valuation context"
+                  body="Assumptions and method detail can be discussed with qualified buyers during diligence."
+                />
+              )}
+              {settings.show_scenarios && (
+                <BuyerSafeNote
+                  title="Improvement scenarios"
+                  body="Upside scenarios are available for qualified buyers after owner review."
+                />
+              )}
+              {settings.show_photos && (
+                <BuyerSafeNote
+                  title="Photos and assets"
+                  body="Photos or asset materials may be shared after owner approval."
+                />
+              )}
+            </div>
+          )}
         </div>
 
         {/* Request access */}
@@ -375,6 +402,15 @@ function KPI({ label, value }: { label: string; value: string }) {
         {label}
       </div>
       <div className="mt-1 font-semibold text-foreground">{value}</div>
+    </div>
+  );
+}
+
+function BuyerSafeNote({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="rounded-lg border border-border bg-secondary/40 p-3">
+      <div className="text-xs font-semibold text-primary">{title}</div>
+      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{body}</p>
     </div>
   );
 }
