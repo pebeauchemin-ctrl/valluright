@@ -81,11 +81,7 @@ function Dashboard() {
         .order("computed_at", { ascending: false })
         .limit(1),
       supabase.from("xero_connections").select("id").eq("business_id", current.id).limit(1),
-      supabase
-        .from("quickbooks_connections")
-        .select("id")
-        .eq("business_id", current.id)
-        .limit(1),
+      supabase.from("quickbooks_connections").select("id").eq("business_id", current.id).limit(1),
     ]).then(([financialsResult, valuationsResult, xeroResult, quickBooksResult]) => {
       if (cancelled) return;
       setFinancials(financialsResult.data ?? []);
@@ -138,11 +134,12 @@ function Dashboard() {
       <div className="p-12">
         <div className="rounded-2xl border border-border bg-card p-10 text-center max-w-lg mx-auto">
           <h1 className="font-display text-2xl font-semibold text-primary">
-            Add your first business
+            Add your first business baseline
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            It takes about 15 minutes to enter the basics, three years of financials, and your
-            operations details.
+            In about 15 minutes, enter the profile, financial history, and owner-risk details buyers
+            will ask about first. You can also use sample data to see the workflow before adding a
+            real company.
           </p>
           <Link
             to="/app/onboarding"
@@ -159,11 +156,12 @@ function Dashboard() {
       <div className="p-12">
         <div className="rounded-2xl border border-border bg-card p-10 text-center max-w-lg mx-auto">
           <h1 className="font-display text-2xl font-semibold text-primary">
-            Resume financial setup
+            Add financials to unlock the valuation
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Your business profile is saved, but the dashboard needs at least one year of financials
-            before it can generate a valuation.
+            Your business profile is saved. Add at least the most recent completed year of revenue,
+            profit, owner compensation, add-backs, assets, liabilities, and debt so ValuRight can
+            estimate value and flag buyer risk.
           </p>
           <Link
             to="/app/onboarding"
@@ -180,11 +178,11 @@ function Dashboard() {
       <div className="p-12">
         <div className="rounded-2xl border border-border bg-card p-10 text-center max-w-lg mx-auto">
           <h1 className="font-display text-2xl font-semibold text-primary">
-            Fix missing valuation
+            Review setup before using the dashboard
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Your business and financials are saved, but the valuation could not be generated. Review
-            your setup and try again.
+            Your business and financials are saved, but the estimate could not be generated. Review
+            required fields and unusual values before relying on recommendations or reports.
           </p>
           <Link
             to="/app/onboarding"
@@ -281,7 +279,14 @@ function Dashboard() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="font-display text-3xl font-semibold text-primary">{current.name}</h1>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="font-display text-3xl font-semibold text-primary">{current.name}</h1>
+            {current.is_sample && (
+              <span className="rounded-full border border-gold/40 bg-gold/10 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-foreground">
+                Sample data
+              </span>
+            )}
+          </div>
           <p className="mt-1 text-sm text-muted-foreground">
             {current.industry} · {current.region || "—"} · {current.years_in_business ?? "?"} years
             · {current.employees ?? "?"} employees
@@ -302,6 +307,27 @@ function Dashboard() {
           </Link>
         </div>
       </div>
+
+      {current.is_sample && (
+        <div className="rounded-xl border border-gold/40 bg-gold/10 p-4 text-sm leading-relaxed text-foreground shadow-sm">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="font-semibold">You are viewing demo data</div>
+              <p className="mt-1 text-muted-foreground">
+                This dashboard is useful for learning the workflow, but it should not be shared with
+                advisors, buyers, or lenders. Replace the sample profile and financials before using
+                reports or buyer teaser pages.
+              </p>
+            </div>
+            <Link
+              to="/app/onboarding"
+              className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-md border border-border bg-background px-4 py-2 text-sm font-semibold hover:bg-secondary"
+            >
+              Replace sample data <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      )}
 
       {hasSavedValuation === false && (
         <div className="rounded-xl border border-accent/40 bg-accent-soft p-4 shadow-sm">
