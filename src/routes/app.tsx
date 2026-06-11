@@ -98,7 +98,14 @@ function AppLayout() {
                   <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">
                     Business
                   </div>
-                  <div className="font-medium truncate">{current.name}</div>
+                  <div className="flex items-center gap-2">
+                    <div className="font-medium truncate">{current.name}</div>
+                    {current.is_sample && (
+                      <span className="shrink-0 rounded-full bg-gold/20 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-sidebar-foreground">
+                        Sample
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <ChevronDown className="h-4 w-4 shrink-0 text-sidebar-foreground/60" />
               </button>

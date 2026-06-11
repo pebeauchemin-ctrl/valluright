@@ -1,6 +1,17 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Sparkles, Loader2, Upload, Link2 } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  FileText,
+  Link2,
+  Loader2,
+  ShieldCheck,
+  Sparkles,
+  TrendingUp,
+  Upload,
+} from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useBusiness, toBusinessInputs } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,10 +31,7 @@ import { fmtCurrency } from "@/lib/format";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { startXeroConnect, importXeroFinancials, listXeroConnections } from "@/lib/xero.functions";
-import {
-  listQuickBooksConnections,
-  startQuickBooksConnect,
-} from "@/lib/quickbooks.functions";
+import { listQuickBooksConnections, startQuickBooksConnect } from "@/lib/quickbooks.functions";
 
 type OnboardingSearch = {
   xero?: "connected" | "error";
@@ -557,6 +565,36 @@ function Onboarding() {
   return (
     <div className="min-h-screen">
       <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-10">
+        <div className="mb-6 rounded-2xl border border-border bg-card p-5 shadow-sm">
+          <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            First run setup
+          </div>
+          <h1 className="mt-2 font-display text-2xl font-semibold text-primary">
+            Build an exit-readiness baseline buyers can trust
+          </h1>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            ValuRight needs a business profile, three years of financial history, and a few owner
+            involvement details. The goal is not just a valuation number. It is to show the risks a
+            buyer, lender, or advisor will question first.
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <SetupGuideItem
+              icon={FileText}
+              title="Profile"
+              desc="Industry, location, team, owner role, and buyer-safe description."
+            />
+            <SetupGuideItem
+              icon={TrendingUp}
+              title="Financials"
+              desc="Revenue, profit, owner compensation, add-backs, assets, liabilities, and debt."
+            />
+            <SetupGuideItem
+              icon={ShieldCheck}
+              title="Review"
+              desc="Confirm assumptions before saving the first estimate and recommendations."
+            />
+          </div>
+        </div>
         {/* Stepper */}
         <div className="mb-8 flex items-start gap-2">
           {[0, 1, 2].map((i) => (
@@ -565,7 +603,7 @@ function Onboarding() {
               <div
                 className={`mt-2 text-xs font-medium leading-tight ${i === step ? "text-foreground" : "text-muted-foreground"}`}
               >
-                {["Business profile", "Financials", "Review"][i]}
+                {["Profile and buyer risks", "Financial history", "Review and save"][i]}
               </div>
             </div>
           ))}
@@ -580,7 +618,8 @@ function Onboarding() {
                     Tell us about your business
                   </h1>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    The basics — you can refine this later.
+                    Start with the facts buyers use to judge transferability: what the business
+                    does, where it operates, how dependent it is on you, and what risks need work.
                   </p>
                 </div>
                 <button
@@ -592,16 +631,18 @@ function Onboarding() {
               </div>
               {usingSampleData && (
                 <div className="rounded-lg border border-gold/40 bg-gold/10 p-3 text-xs leading-relaxed text-foreground">
-                  This business is marked as sample data. Rename it and replace the financials
-                  before using it for a real valuation.
+                  Sample mode is on. This data is for learning the app only. Rename the business,
+                  replace the financials, and save again before using the output with advisors,
+                  buyers, or lenders.
                 </div>
               )}
               <Field label="Business name" value={name} onChange={setName} />
               <div>
                 <label className="block text-sm font-medium">Buyer-safe business description</label>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Anonymous, NDA-safe — what a buyer sees first. Avoid your business name or
-                  location.
+                  Anonymous and NDA-safe. This is the first thing a buyer sees, so describe the
+                  business clearly without revealing the legal name, street address, or customer
+                  identities.
                 </p>
                 <textarea
                   value={anonymousDescription}
@@ -679,8 +720,8 @@ function Onboarding() {
               <div className="space-y-2 pt-2">
                 <label className="block text-sm font-medium">Business category</label>
                 <p className="text-xs text-muted-foreground">
-                  Determines which valuation methods are most appropriate. We've inferred a default
-                  — adjust if needed.
+                  Determines which valuation methods are most appropriate. We infer a default, but
+                  you should adjust it if buyers would view the business differently.
                 </p>
                 <div className="grid gap-2">
                   {BUSINESS_CATEGORY_OPTIONS.map((opt) => (
@@ -761,7 +802,8 @@ function Onboarding() {
                   Operations & owner role
                 </h2>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  These shape buyer confidence and the multiple we can apply.
+                  Buyers discount businesses that depend heavily on one owner, one customer, or
+                  undocumented know-how. These answers drive the Health Score and risk notes.
                 </p>
               </div>
 
@@ -852,8 +894,17 @@ function Onboarding() {
                   Three years of financials
                 </h1>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Most recent year is required and must end no later than {currentYear - 1}. Two
-                  prior years strengthen the estimate.
+                  The most recent completed year is required and must end no later than{" "}
+                  {currentYear - 1}. Two prior years make the trend, risk, and buyer confidence
+                  assessment stronger.
+                </p>
+              </div>
+              <div className="rounded-lg border border-border bg-secondary/30 p-4 text-sm leading-relaxed text-muted-foreground">
+                <div className="font-semibold text-foreground">What to have ready</div>
+                <p className="mt-1">
+                  Use your P&amp;L and balance sheet for each year. Revenue and profit support the
+                  estimate; owner salary and add-backs normalize cash flow; assets, liabilities, and
+                  debt help separate enterprise value from what a seller may keep after payoff.
                 </p>
               </div>
               <div className="rounded-xl border border-dashed border-border bg-secondary/30 p-4">
@@ -863,8 +914,9 @@ function Onboarding() {
                       Import from your accounting software
                     </div>
                     <div className="text-xs text-muted-foreground mt-0.5">
-                      Xero can pull reports automatically. QuickBooks can connect securely now;
-                      account-level import follows the mapping workflow.
+                      Xero can pull reports automatically. QuickBooks can connect securely now.
+                      Review imported numbers before relying on them for valuation or buyer
+                      discussions.
                     </div>
                   </div>
                   <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
@@ -884,8 +936,7 @@ function Onboarding() {
                     {quickBooksConnections.length > 0 && (
                       <span className="text-xs text-muted-foreground">
                         Connected:{" "}
-                        {quickBooksConnections[0].company_name ??
-                          quickBooksConnections[0].realm_id}
+                        {quickBooksConnections[0].company_name ?? quickBooksConnections[0].realm_id}
                       </span>
                     )}
                     {xeroTenants.length === 0 ? (
@@ -991,6 +1042,8 @@ function Onboarding() {
                 All values in USD. EBITDA should exclude interest, taxes, depreciation, and
                 amortization. SDE adds one working owner's compensation and buyer-acceptable
                 one-time add-backs to EBITDA, so do not include owner salary again inside add-backs.
+                If a number is unknown, enter your best current estimate and revisit it before
+                sharing reports.
               </p>
             </div>
           )}
@@ -1086,10 +1139,25 @@ function ReviewStep({ data }: { data: Record<string, unknown> }) {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="font-display text-2xl font-semibold text-primary">Quick preview</h1>
+        <h1 className="font-display text-2xl font-semibold text-primary">Review before saving</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Save to lock in your valuation and unlock recommendations.
+          This first estimate becomes the baseline for recommendations, scenarios, reports, advisor
+          review, and buyer-safe teaser settings.
         </p>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <ReviewCue
+          title="Financial confidence"
+          desc="Three clean years and reviewed add-backs make the estimate more credible."
+        />
+        <ReviewCue
+          title="Buyer risk"
+          desc="Owner dependence, concentration, and weak documentation can reduce buyer interest."
+        />
+        <ReviewCue
+          title="Next actions"
+          desc="After saving, use recommendations and scenarios to improve exit readiness."
+        />
       </div>
       <div className="rounded-xl border border-border bg-secondary/40 p-6">
         <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -1104,6 +1172,34 @@ function ReviewStep({ data }: { data: Record<string, unknown> }) {
           Health Score: <span className="font-semibold text-foreground">{h.total}/100</span>
         </div>
       </div>
+    </div>
+  );
+}
+
+function SetupGuideItem({
+  icon: Icon,
+  title,
+  desc,
+}: {
+  icon: typeof Sparkles;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <div className="rounded-lg border border-border bg-secondary/30 p-3">
+      <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+        <Icon className="h-4 w-4" /> {title}
+      </div>
+      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{desc}</p>
+    </div>
+  );
+}
+
+function ReviewCue({ title, desc }: { title: string; desc: string }) {
+  return (
+    <div className="rounded-lg border border-border bg-background p-3">
+      <div className="text-sm font-semibold text-foreground">{title}</div>
+      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{desc}</p>
     </div>
   );
 }
