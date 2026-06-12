@@ -32,6 +32,7 @@ import { Route as AppHealthScoreRouteImport } from './routes/app.health-score'
 import { Route as AppFinancialsRouteImport } from './routes/app.financials'
 import { Route as AppDataRoomRouteImport } from './routes/app.data-room'
 import { Route as AppBuyerTeaserRouteImport } from './routes/app.buyer-teaser'
+import { Route as AppBuyerRequestsRouteImport } from './routes/app.buyer-requests'
 import { Route as AppAdvisorsRouteImport } from './routes/app.advisors'
 import { Route as ApiPublicXeroCallbackRouteImport } from './routes/api.public.xero.callback'
 import { Route as ApiPublicQuickbooksCallbackRouteImport } from './routes/api.public.quickbooks.callback'
@@ -151,6 +152,11 @@ const AppBuyerTeaserRoute = AppBuyerTeaserRouteImport.update({
   path: '/buyer-teaser',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBuyerRequestsRoute = AppBuyerRequestsRouteImport.update({
+  id: '/buyer-requests',
+  path: '/buyer-requests',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAdvisorsRoute = AppAdvisorsRouteImport.update({
   id: '/advisors',
   path: '/advisors',
@@ -180,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
   '/app/advisors': typeof AppAdvisorsRoute
+  '/app/buyer-requests': typeof AppBuyerRequestsRoute
   '/app/buyer-teaser': typeof AppBuyerTeaserRoute
   '/app/data-room': typeof AppDataRoomRoute
   '/app/financials': typeof AppFinancialsRoute
@@ -207,6 +214,7 @@ export interface FileRoutesByTo {
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
   '/app/advisors': typeof AppAdvisorsRoute
+  '/app/buyer-requests': typeof AppBuyerRequestsRoute
   '/app/buyer-teaser': typeof AppBuyerTeaserRoute
   '/app/data-room': typeof AppDataRoomRoute
   '/app/financials': typeof AppFinancialsRoute
@@ -236,6 +244,7 @@ export interface FileRoutesById {
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
   '/app/advisors': typeof AppAdvisorsRoute
+  '/app/buyer-requests': typeof AppBuyerRequestsRoute
   '/app/buyer-teaser': typeof AppBuyerTeaserRoute
   '/app/data-room': typeof AppDataRoomRoute
   '/app/financials': typeof AppFinancialsRoute
@@ -266,6 +275,7 @@ export interface FileRouteTypes {
     | '/security'
     | '/terms'
     | '/app/advisors'
+    | '/app/buyer-requests'
     | '/app/buyer-teaser'
     | '/app/data-room'
     | '/app/financials'
@@ -293,6 +303,7 @@ export interface FileRouteTypes {
     | '/security'
     | '/terms'
     | '/app/advisors'
+    | '/app/buyer-requests'
     | '/app/buyer-teaser'
     | '/app/data-room'
     | '/app/financials'
@@ -321,6 +332,7 @@ export interface FileRouteTypes {
     | '/security'
     | '/terms'
     | '/app/advisors'
+    | '/app/buyer-requests'
     | '/app/buyer-teaser'
     | '/app/data-room'
     | '/app/financials'
@@ -517,6 +529,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBuyerTeaserRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/buyer-requests': {
+      id: '/app/buyer-requests'
+      path: '/buyer-requests'
+      fullPath: '/app/buyer-requests'
+      preLoaderRoute: typeof AppBuyerRequestsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/advisors': {
       id: '/app/advisors'
       path: '/advisors'
@@ -543,6 +562,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppAdvisorsRoute: typeof AppAdvisorsRoute
+  AppBuyerRequestsRoute: typeof AppBuyerRequestsRoute
   AppBuyerTeaserRoute: typeof AppBuyerTeaserRoute
   AppDataRoomRoute: typeof AppDataRoomRoute
   AppFinancialsRoute: typeof AppFinancialsRoute
@@ -559,6 +579,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAdvisorsRoute: AppAdvisorsRoute,
+  AppBuyerRequestsRoute: AppBuyerRequestsRoute,
   AppBuyerTeaserRoute: AppBuyerTeaserRoute,
   AppDataRoomRoute: AppDataRoomRoute,
   AppFinancialsRoute: AppFinancialsRoute,
