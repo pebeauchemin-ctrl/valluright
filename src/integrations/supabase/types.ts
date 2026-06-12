@@ -242,6 +242,60 @@ export type Database = {
         }
         Relationships: []
       }
+      buyer_access_request_events: {
+        Row: {
+          actor_id: string | null
+          business_id: string
+          created_at: string
+          from_status:
+            | Database["public"]["Enums"]["access_request_status"]
+            | null
+          id: string
+          note: string | null
+          request_id: string
+          to_status: Database["public"]["Enums"]["access_request_status"]
+        }
+        Insert: {
+          actor_id?: string | null
+          business_id: string
+          created_at?: string
+          from_status?:
+            | Database["public"]["Enums"]["access_request_status"]
+            | null
+          id?: string
+          note?: string | null
+          request_id: string
+          to_status: Database["public"]["Enums"]["access_request_status"]
+        }
+        Update: {
+          actor_id?: string | null
+          business_id?: string
+          created_at?: string
+          from_status?:
+            | Database["public"]["Enums"]["access_request_status"]
+            | null
+          id?: string
+          note?: string | null
+          request_id?: string
+          to_status?: Database["public"]["Enums"]["access_request_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buyer_access_request_events_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buyer_access_request_events_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "buyer_access_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       buyer_access_requests: {
         Row: {
           business_id: string
@@ -1062,13 +1116,57 @@ export type Database = {
         Returns: boolean
       }
       revenue_band: { Args: { _revenue: number }; Returns: string }
+      submit_buyer_access_request: {
+        Args: {
+          _buyer_type?: Database["public"]["Enums"]["buyer_type"]
+          _email: string
+          _financing_status?: Database["public"]["Enums"]["financing_status"]
+          _message?: string
+          _name: string
+          _phone?: string
+          _public_id: string
+        }
+        Returns: string
+      }
+      update_buyer_access_request_status: {
+        Args: {
+          _note?: string
+          _request_id: string
+          _status: Database["public"]["Enums"]["access_request_status"]
+        }
+        Returns: {
+          business_id: string
+          buyer_type: Database["public"]["Enums"]["buyer_type"] | null
+          created_at: string
+          email: string
+          financing_status:
+            | Database["public"]["Enums"]["financing_status"]
+            | null
+          id: string
+          message: string | null
+          name: string
+          phone: string | null
+          status: Database["public"]["Enums"]["access_request_status"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "buyer_access_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       user_owns_business_path: {
         Args: { _object_name: string }
         Returns: boolean
       }
     }
     Enums: {
-      access_request_status: "pending" | "approved" | "denied"
+      access_request_status:
+        | "pending"
+        | "approved"
+        | "denied"
+        | "more_info_requested"
+        | "nda_sent"
       advisor_invite_status: "pending" | "accepted" | "declined" | "revoked"
       app_role: "owner" | "advisor" | "buyer" | "admin"
       buyer_type:
@@ -1223,7 +1321,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      access_request_status: ["pending", "approved", "denied"],
+      access_request_status: [
+        "pending",
+        "approved",
+        "denied",
+        "more_info_requested",
+        "nda_sent",
+      ],
       advisor_invite_status: ["pending", "accepted", "declined", "revoked"],
       app_role: ["owner", "advisor", "buyer", "admin"],
       buyer_type: [
