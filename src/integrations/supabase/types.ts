@@ -295,60 +295,6 @@ export type Database = {
           },
         ]
       }
-      buyer_access_request_events: {
-        Row: {
-          actor_id: string | null
-          business_id: string
-          created_at: string
-          from_status:
-            | Database["public"]["Enums"]["access_request_status"]
-            | null
-          id: string
-          note: string | null
-          request_id: string
-          to_status: Database["public"]["Enums"]["access_request_status"]
-        }
-        Insert: {
-          actor_id?: string | null
-          business_id: string
-          created_at?: string
-          from_status?:
-            | Database["public"]["Enums"]["access_request_status"]
-            | null
-          id?: string
-          note?: string | null
-          request_id: string
-          to_status: Database["public"]["Enums"]["access_request_status"]
-        }
-        Update: {
-          actor_id?: string | null
-          business_id?: string
-          created_at?: string
-          from_status?:
-            | Database["public"]["Enums"]["access_request_status"]
-            | null
-          id?: string
-          note?: string | null
-          request_id?: string
-          to_status?: Database["public"]["Enums"]["access_request_status"]
-        }
-        Relationships: [
-          {
-            foreignKeyName: "buyer_access_request_events_business_id_fkey"
-            columns: ["business_id"]
-            isOneToOne: false
-            referencedRelation: "businesses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "buyer_access_request_events_request_id_fkey"
-            columns: ["request_id"]
-            isOneToOne: false
-            referencedRelation: "buyer_access_requests"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       buyer_view_settings: {
         Row: {
           business_highlights: Json | null
@@ -1122,12 +1068,7 @@ export type Database = {
       }
     }
     Enums: {
-      access_request_status:
-        | "pending"
-        | "approved"
-        | "denied"
-        | "more_info_requested"
-        | "nda_sent"
+      access_request_status: "pending" | "approved" | "denied"
       advisor_invite_status: "pending" | "accepted" | "declined" | "revoked"
       app_role: "owner" | "advisor" | "buyer" | "admin"
       buyer_type:
@@ -1282,13 +1223,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      access_request_status: [
-        "pending",
-        "approved",
-        "denied",
-        "more_info_requested",
-        "nda_sent",
-      ],
+      access_request_status: ["pending", "approved", "denied"],
       advisor_invite_status: ["pending", "accepted", "declined", "revoked"],
       app_role: ["owner", "advisor", "buyer", "admin"],
       buyer_type: [
