@@ -1,15 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import {
-  CheckCircle2,
-  Copy,
-  ExternalLink,
-  Eye,
-  EyeOff,
-  LockKeyhole,
-  Save,
-  Shield,
-} from "lucide-react";
+import { CheckCircle2, Copy, ExternalLink, EyeOff, LockKeyhole, Save, Shield } from "lucide-react";
 import { useBusiness, type FinancialYearRow } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -61,6 +52,7 @@ function BuyerTeaser() {
   const [askLow, setAskLow] = useState<number | null>(null);
   const [askHigh, setAskHigh] = useState<number | null>(null);
   const [financials, setFinancials] = useState<FinancialYearRow[]>([]);
+  const [savedPublished, setSavedPublished] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -82,6 +74,7 @@ function BuyerTeaser() {
       .maybeSingle()
       .then(({ data }) => {
         if (data) {
+          setSavedPublished(data.is_published);
           setSettings({
             is_published: data.is_published,
             show_revenue_chart: data.show_revenue_chart,
@@ -129,6 +122,7 @@ function BuyerTeaser() {
         .from("buyer_view_settings")
         .upsert(payload, { onConflict: "business_id" });
       if (error) throw error;
+      setSavedPublished(settings.is_published);
       toast.success(settings.is_published ? "Published — share your link." : "Saved as draft.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to save");
@@ -280,7 +274,13 @@ function BuyerTeaser() {
                 className="accent-[oklch(0.45_0.1_158)]"
               />
             </label>
-            {settings.is_published && (
+            {settings.is_published !== savedPublished && (
+              <p className="rounded-md border border-border bg-secondary/40 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+                Save changes to {settings.is_published ? "activate" : "remove"} the public teaser
+                link. The buyer preview on this page updates immediately.
+              </p>
+            )}
+            {savedPublished && (
               <div className="flex flex-col gap-3 rounded-md border border-border bg-secondary/40 px-3 py-2.5 text-sm sm:flex-row sm:items-center sm:justify-between">
                 <code className="min-w-0 break-all text-xs text-foreground sm:truncate">
                   {teaserUrl}
@@ -309,14 +309,16 @@ function BuyerTeaser() {
           </Section>
 
           <div className="flex flex-wrap justify-end gap-2 pt-2">
-            <Link
-              to="/teaser/$publicId"
-              params={{ publicId: current.public_id }}
-              target="_blank"
-              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium hover:bg-secondary"
-            >
-              <Eye className="h-4 w-4" /> Preview
-            </Link>
+            {savedPublished && (
+              <Link
+                to="/teaser/$publicId"
+                params={{ publicId: current.public_id }}
+                target="_blank"
+                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium hover:bg-secondary"
+              >
+                <ExternalLink className="h-4 w-4" /> Open public link
+              </Link>
+            )}
             <button
               onClick={save}
               disabled={saving}
