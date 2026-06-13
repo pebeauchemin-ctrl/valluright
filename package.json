@@ -8,12 +8,16 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
-    "test": "npm run test:valuation && npm run test:account-mapping && npm run test:quickbooks-oauth && npm run test:xero-import",
+    "typecheck": "tsc --noEmit --pretty false",
+    "ci": "npm run typecheck && npm run lint:ci && npm test && npm run build",
+    "test": "npm run test:valuation && npm run test:access-hardening && npm run test:account-mapping && npm run test:quickbooks-oauth && npm run test:xero-import",
     "test:valuation": "rm -rf .tmp-tests && mkdir -p .tmp-tests && esbuild src/lib/valuation.test.ts --bundle --platform=node --format=esm --outfile=.tmp-tests/valuation.test.mjs --log-level=warning && node .tmp-tests/valuation.test.mjs",
+    "test:access-hardening": "rm -rf .tmp-tests && mkdir -p .tmp-tests && esbuild src/lib/access-hardening.test.ts --bundle --platform=node --format=esm --outfile=.tmp-tests/access-hardening.test.mjs --log-level=warning && node .tmp-tests/access-hardening.test.mjs",
     "test:account-mapping": "rm -rf .tmp-tests && mkdir -p .tmp-tests && esbuild src/lib/account-mapping.test.ts --bundle --platform=node --format=esm --outfile=.tmp-tests/account-mapping.test.mjs --log-level=warning && node .tmp-tests/account-mapping.test.mjs",
     "test:quickbooks-oauth": "rm -rf .tmp-tests && mkdir -p .tmp-tests && esbuild src/lib/quickbooks-oauth.test.ts --bundle --platform=node --format=esm --outfile=.tmp-tests/quickbooks-oauth.test.mjs --log-level=warning && node .tmp-tests/quickbooks-oauth.test.mjs",
     "test:xero-import": "rm -rf .tmp-tests && mkdir -p .tmp-tests && esbuild src/lib/xero-import.test.ts --bundle --platform=node --format=esm --alias:@=./src --outfile=.tmp-tests/xero-import.test.mjs --log-level=warning && node .tmp-tests/xero-import.test.mjs",
     "lint": "eslint .",
+    "lint:ci": "eslint . --rule 'prettier/prettier: off' --max-warnings=20",
     "format": "prettier --write ."
   },
   "dependencies": {
