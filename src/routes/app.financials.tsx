@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Plus,
   Trash2,
@@ -35,6 +35,7 @@ import {
   type SavedAccountMapping,
   type SourceSystem,
 } from "@/lib/account-mapping";
+import { reviewFinancialData, type DataQualityReview } from "@/lib/data-quality";
 
 export const Route = createFileRoute("/app/financials")({
   head: () => ({ meta: [{ title: "Financials — ValuRight.ai" }] }),
@@ -234,7 +235,9 @@ function Financials() {
 
   const applyMappedImport = (accounts: MappedAccount[]) => {
     const rollups = rollupMappedAccounts(accounts);
-    const importYears = new Set(accounts.map((account) => account.year).filter(Boolean) as number[]);
+    const importYears = new Set(
+      accounts.map((account) => account.year).filter(Boolean) as number[],
+    );
     setYears((prev) => {
       const map = new Map(prev.map((y) => [y.year, y]));
       for (const year of importYears) {
@@ -489,6 +492,12 @@ function Financials() {
     setYears((prev) => prev.filter((_, idx) => idx !== i));
   };
 
+  const unmappedCount = countUnmappedAccounts(mappingReview);
+  const dataQuality = useMemo(
+    () => reviewFinancialData(years, { unmappedAccountCount: unmappedCount }),
+    [years, unmappedCount],
+  );
+
   if (!current)
     return <div className="p-12 text-sm text-muted-foreground">No business selected.</div>;
 
@@ -507,7 +516,6 @@ function Financials() {
     ["liabilities", "Total liabilities"],
     ["debt", "Debt"],
   ] as const;
-  const unmappedCount = countUnmappedAccounts(mappingReview);
   const mappingRows = uniqueMappedAccounts(mappingReview);
   const selectedXeroTenant = xeroTenants.find((tenant) => tenant.tenant_id === selectedTenant);
   const xeroLastSyncedAt = xeroImportSummary?.lastSyncedAt ?? selectedXeroTenant?.last_synced_at;
@@ -643,7 +651,9 @@ function Financials() {
                 </p>
                 <p className="mt-0.5 text-[11px] text-muted-foreground">
                   Last sync:{" "}
-                  {xeroLastSyncedAt ? new Date(xeroLastSyncedAt).toLocaleString() : "Not synced yet"}
+                  {xeroLastSyncedAt
+                    ? new Date(xeroLastSyncedAt).toLocaleString()
+                    : "Not synced yet"}
                 </p>
               </div>
               {xeroImportSummary && (
@@ -712,6 +722,8 @@ function Financials() {
           </div>
         </div>
       )}
+
+      <FinancialDataQualityPanel review={dataQuality} />
 
       {mappingRows.length > 0 && (
         <div className="rounded-xl border border-border bg-card p-5">
@@ -883,6 +895,54 @@ function Financials() {
             </tbody>
           </table>
         )}
+      </div>
+    </div>
+  );
+}
+
+function FinancialDataQualityPanel({ review }: { review: DataQualityReview }) {
+  const isReady = review.status === "ready";
+  const visibleIssues = review.issues.slice(0, 5);
+  return (
+    <div
+      className={`rounded-xl border p-4 text-sm ${
+        isReady
+          ? "border-accent/30 bg-accent-soft"
+          : review.status === "weak"
+            ? "border-destructive/40 bg-destructive/10"
+            : "border-amber-300 bg-amber-50"
+      }`}
+    >
+      <div className="flex gap-2">
+        {isReady ? (
+          <SaveIcon className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+        ) : (
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+        )}
+        <div>
+          <p className="font-semibold text-foreground">Data quality: {review.label}</p>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+            {review.yearCount} year{review.yearCount === 1 ? "" : "s"} reviewed
+            {review.latestYear ? ` through ${review.latestYear}` : ""}. {review.summary}
+          </p>
+          {visibleIssues.length > 0 && (
+            <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+              {visibleIssues.map((issue, index) => (
+                <li key={`${issue.title}-${index}`}>
+                  <span className="font-semibold text-foreground">{issue.title}:</span>{" "}
+                  {issue.detail}
+                  {issue.years?.length ? ` Years: ${issue.years.join(", ")}.` : ""}
+                </li>
+              ))}
+            </ul>
+          )}
+          {review.requiredAcknowledgement && (
+            <p className="mt-2 text-xs font-medium text-foreground">
+              You can still save financial edits here, but the dashboard will require an explicit
+              acknowledgement before saving a valuation snapshot.
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
