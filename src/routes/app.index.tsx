@@ -24,6 +24,7 @@ import { buildValuationInsert } from "@/lib/valuation-persistence";
 import { fmtCurrency, fmtPct } from "@/lib/format";
 import { MethodDetailDialog, MethodRangeBar } from "@/components/MethodDetailDialog";
 import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
+import { reviewFinancialData, type DataQualityReview } from "@/lib/data-quality";
 import { toast } from "sonner";
 import {
   ResponsiveContainer,
@@ -54,6 +55,7 @@ function Dashboard() {
   const [hasXeroConnection, setHasXeroConnection] = useState(false);
   const [hasQuickBooksConnection, setHasQuickBooksConnection] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [dataQualityAcknowledged, setDataQualityAcknowledged] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -64,6 +66,7 @@ function Dashboard() {
       setHasXeroConnection(false);
       setHasQuickBooksConnection(false);
       setReviewOpen(false);
+      setDataQualityAcknowledged(false);
       setLoading(false);
       return;
     }
@@ -90,6 +93,7 @@ function Dashboard() {
       setHasXeroConnection(Boolean(xeroResult.data?.length));
       setHasQuickBooksConnection(Boolean(quickBooksResult.data?.length));
       setReviewOpen(false);
+      setDataQualityAcknowledged(false);
       setLoading(false);
     });
     return () => {
@@ -106,9 +110,15 @@ function Dashboard() {
     [inputs],
   );
   const health = useMemo(() => (inputs ? computeHealthScore(inputs) : null), [inputs]);
+  const dataQuality = useMemo(() => reviewFinancialData(financials), [financials]);
 
   const saveCurrentValuation = async () => {
     if (!current || !inputs || !valuation || !health) return;
+    if (dataQuality.requiredAcknowledgement && !dataQualityAcknowledged) {
+      setReviewOpen(true);
+      toast.error("Acknowledge the data quality warning before saving this valuation.");
+      return;
+    }
     setSavingValuation(true);
     try {
       const { error } = await supabase
@@ -217,6 +227,7 @@ function Dashboard() {
     ["Latest financial year", latest ? String(latest.year) : "Not available"],
     ["Revenue used", fmtCurrency(Number(latest?.revenue ?? 0))],
     ["EBITDA used", fmtCurrency(Number(latest?.ebitda ?? 0))],
+    ["Data quality", dataQuality.label],
     ["Business category", categoryLabel],
     ["Health score", `${health.total}/100`],
   ];
@@ -349,6 +360,35 @@ function Dashboard() {
             >
               <Sparkles className="h-4 w-4" />
               Review inputs
+            </button>
+          </div>
+        </div>
+      )}
+
+      {dataQuality.status !== "ready" && (
+        <div
+          className={`rounded-xl border p-4 shadow-sm ${
+            dataQuality.status === "weak"
+              ? "border-destructive/40 bg-destructive/10"
+              : "border-amber-300 bg-amber-50"
+          }`}
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex gap-3">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+              <div>
+                <h2 className="font-display text-base font-semibold text-primary">
+                  Data quality: {dataQuality.label}
+                </h2>
+                <p className="mt-1 text-sm text-muted-foreground">{dataQuality.summary}</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setReviewOpen(true)}
+              className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-md border border-border bg-background px-4 py-2 text-sm font-semibold hover:bg-secondary"
+            >
+              Review issues <ArrowRight className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -505,6 +545,9 @@ function Dashboard() {
               {lastValuationAt ? formatDateTime(lastValuationAt) : "No saved snapshot yet"}.
             </p>
           </div>
+          <div className="mt-3">
+            <DataQualityBadge review={dataQuality} />
+          </div>
           <button
             type="button"
             onClick={() => setReviewOpen((v) => !v)}
@@ -541,11 +584,18 @@ function Dashboard() {
                 Manual, CSV, Xero, and QuickBooks connections share the same stored financial
                 fields. Review normalized inputs before saving each valuation snapshot.
               </div>
+              <DataQualityPanel
+                review={dataQuality}
+                acknowledged={dataQualityAcknowledged}
+                onAcknowledgedChange={setDataQualityAcknowledged}
+              />
             </div>
             <button
               type="button"
               onClick={saveCurrentValuation}
-              disabled={savingValuation}
+              disabled={
+                savingValuation || (dataQuality.requiredAcknowledgement && !dataQualityAcknowledged)
+              }
               className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90 disabled:opacity-60"
             >
               {savingValuation ? (
@@ -758,6 +808,111 @@ function Dashboard() {
       </section>
 
       <ValuationDisclaimer className="mt-4" />
+    </div>
+  );
+}
+
+function DataQualityBadge({ review }: { review: DataQualityReview }) {
+  const isReady = review.status === "ready";
+  return (
+    <div
+      className={`rounded-lg border p-3 text-xs leading-relaxed ${
+        isReady
+          ? "border-accent/30 bg-accent-soft text-muted-foreground"
+          : review.status === "weak"
+            ? "border-destructive/30 bg-destructive/10 text-muted-foreground"
+            : "border-amber-300 bg-amber-50 text-amber-950"
+      }`}
+    >
+      <div className="flex items-center gap-1.5 font-semibold text-foreground">
+        {isReady ? (
+          <CheckCircle2 className="h-3.5 w-3.5" />
+        ) : (
+          <AlertTriangle className="h-3.5 w-3.5" />
+        )}
+        Data quality: {review.label}
+      </div>
+      <p className="mt-1">
+        {review.yearCount} year{review.yearCount === 1 ? "" : "s"} reviewed
+        {review.latestYear ? ` through ${review.latestYear}` : ""}. {review.summary}
+      </p>
+    </div>
+  );
+}
+
+function DataQualityPanel({
+  review,
+  acknowledged,
+  onAcknowledgedChange,
+}: {
+  review: DataQualityReview;
+  acknowledged: boolean;
+  onAcknowledgedChange: (value: boolean) => void;
+}) {
+  const issues = review.issues.slice(0, 6);
+  return (
+    <div className="mt-4 rounded-lg border border-border bg-background p-4">
+      <div className="flex items-start gap-2">
+        {review.status === "ready" ? (
+          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+        ) : (
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+        )}
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold text-primary">Data quality review</h3>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{review.summary}</p>
+        </div>
+      </div>
+
+      {issues.length > 0 && (
+        <ul className="mt-3 space-y-2">
+          {issues.map((issue, index) => (
+            <li
+              key={`${issue.title}-${index}`}
+              className="rounded-md border border-border bg-card p-3"
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+                    issue.severity === "critical"
+                      ? "bg-destructive/10 text-destructive"
+                      : "bg-amber-100 text-amber-800"
+                  }`}
+                >
+                  {issue.severity === "critical" ? "Weak data" : "Review"}
+                </span>
+                <span className="text-xs font-semibold text-foreground">{issue.title}</span>
+              </div>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                {issue.detail}
+                {issue.years?.length ? ` Years: ${issue.years.join(", ")}.` : ""}
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {review.issues.length > issues.length && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          {review.issues.length - issues.length} more issue
+          {review.issues.length - issues.length === 1 ? "" : "s"} are included in the full review.
+        </p>
+      )}
+
+      {review.requiredAcknowledgement && (
+        <label className="mt-4 flex items-start gap-2 rounded-md border border-border bg-secondary/30 p-3 text-xs leading-relaxed text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={acknowledged}
+            onChange={(event) => onAcknowledgedChange(event.target.checked)}
+            className="mt-0.5 accent-[oklch(0.45_0.1_158)]"
+          />
+          <span>
+            I understand these data quality issues may make the valuation less reliable and want to
+            save this snapshot anyway.
+          </span>
+        </label>
+      )}
     </div>
   );
 }
