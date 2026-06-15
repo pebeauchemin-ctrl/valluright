@@ -24,7 +24,11 @@ import { buildValuationInsert } from "@/lib/valuation-persistence";
 import { fmtCurrency, fmtPct } from "@/lib/format";
 import { MethodDetailDialog, MethodRangeBar } from "@/components/MethodDetailDialog";
 import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
-import { reviewFinancialData, type DataQualityReview } from "@/lib/data-quality";
+import {
+  dataQualityAcknowledgementKey,
+  reviewFinancialData,
+  type DataQualityReview,
+} from "@/lib/data-quality";
 import { toast } from "sonner";
 import {
   ResponsiveContainer,
@@ -93,7 +97,6 @@ function Dashboard() {
       setHasXeroConnection(Boolean(xeroResult.data?.length));
       setHasQuickBooksConnection(Boolean(quickBooksResult.data?.length));
       setReviewOpen(false);
-      setDataQualityAcknowledged(false);
       setLoading(false);
     });
     return () => {
@@ -111,6 +114,25 @@ function Dashboard() {
   );
   const health = useMemo(() => (inputs ? computeHealthScore(inputs) : null), [inputs]);
   const dataQuality = useMemo(() => reviewFinancialData(financials), [financials]);
+  const dataQualityAckKey = useMemo(
+    () => dataQualityAcknowledgementKey(current?.id, dataQuality),
+    [current?.id, dataQuality],
+  );
+
+  useEffect(() => {
+    if (!dataQualityAckKey || typeof window === "undefined") {
+      setDataQualityAcknowledged(false);
+      return;
+    }
+    setDataQualityAcknowledged(window.localStorage.getItem(dataQualityAckKey) === "true");
+  }, [dataQualityAckKey]);
+
+  const setDataQualityAcknowledgement = (value: boolean) => {
+    setDataQualityAcknowledged(value);
+    if (!dataQualityAckKey || typeof window === "undefined") return;
+    if (value) window.localStorage.setItem(dataQualityAckKey, "true");
+    else window.localStorage.removeItem(dataQualityAckKey);
+  };
 
   const openReviewPanel = () => {
     setReviewOpen(true);
@@ -599,7 +621,7 @@ function Dashboard() {
               <DataQualityPanel
                 review={dataQuality}
                 acknowledged={dataQualityAcknowledged}
-                onAcknowledgedChange={setDataQualityAcknowledged}
+                onAcknowledgedChange={setDataQualityAcknowledgement}
               />
             </div>
             <button

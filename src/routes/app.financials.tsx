@@ -35,7 +35,11 @@ import {
   type SavedAccountMapping,
   type SourceSystem,
 } from "@/lib/account-mapping";
-import { reviewFinancialData, type DataQualityReview } from "@/lib/data-quality";
+import {
+  dataQualityAcknowledgementKey,
+  reviewFinancialData,
+  type DataQualityReview,
+} from "@/lib/data-quality";
 
 export const Route = createFileRoute("/app/financials")({
   head: () => ({ meta: [{ title: "Financials — ValuRight.ai" }] }),
@@ -497,6 +501,19 @@ function Financials() {
     () => reviewFinancialData(years, { unmappedAccountCount: unmappedCount }),
     [years, unmappedCount],
   );
+  const dataQualityAckKey = useMemo(
+    () => dataQualityAcknowledgementKey(current?.id, dataQuality),
+    [current?.id, dataQuality],
+  );
+  const [dataQualityAcknowledged, setDataQualityAcknowledged] = useState(false);
+
+  useEffect(() => {
+    if (!dataQualityAckKey || typeof window === "undefined") {
+      setDataQualityAcknowledged(false);
+      return;
+    }
+    setDataQualityAcknowledged(window.localStorage.getItem(dataQualityAckKey) === "true");
+  }, [dataQualityAckKey]);
 
   if (!current)
     return <div className="p-12 text-sm text-muted-foreground">No business selected.</div>;
@@ -723,7 +740,7 @@ function Financials() {
         </div>
       )}
 
-      <FinancialDataQualityPanel review={dataQuality} />
+      <FinancialDataQualityPanel review={dataQuality} acknowledged={dataQualityAcknowledged} />
 
       {mappingRows.length > 0 && (
         <div className="rounded-xl border border-border bg-card p-5">
@@ -900,8 +917,14 @@ function Financials() {
   );
 }
 
-function FinancialDataQualityPanel({ review }: { review: DataQualityReview }) {
-  const isReady = review.status === "ready";
+function FinancialDataQualityPanel({
+  review,
+  acknowledged,
+}: {
+  review: DataQualityReview;
+  acknowledged: boolean;
+}) {
+  const isReady = review.status === "ready" || acknowledged;
   const visibleIssues = review.issues.slice(0, 5);
   return (
     <div
@@ -920,12 +943,17 @@ function FinancialDataQualityPanel({ review }: { review: DataQualityReview }) {
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
         )}
         <div>
-          <p className="font-semibold text-foreground">Data quality: {review.label}</p>
+          <p className="font-semibold text-foreground">
+            Data quality: {acknowledged ? "Acknowledged" : review.label}
+          </p>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
             {review.yearCount} year{review.yearCount === 1 ? "" : "s"} reviewed
-            {review.latestYear ? ` through ${review.latestYear}` : ""}. {review.summary}
+            {review.latestYear ? ` through ${review.latestYear}` : ""}.{" "}
+            {acknowledged
+              ? "Warnings were acknowledged on the Dashboard for this financial data set."
+              : review.summary}
           </p>
-          {visibleIssues.length > 0 && (
+          {!acknowledged && visibleIssues.length > 0 && (
             <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
               {visibleIssues.map((issue, index) => (
                 <li key={`${issue.title}-${index}`}>
@@ -936,7 +964,13 @@ function FinancialDataQualityPanel({ review }: { review: DataQualityReview }) {
               ))}
             </ul>
           )}
-          {review.requiredAcknowledgement && (
+          {acknowledged && review.requiredAcknowledgement && (
+            <p className="mt-2 text-xs font-medium text-foreground">
+              If you edit and save financials, ValuRight will re-check the new data and may ask for
+              acknowledgement again.
+            </p>
+          )}
+          {!acknowledged && review.requiredAcknowledgement && (
             <p className="mt-2 text-xs font-medium text-foreground">
               You can still save financial edits here, but the dashboard will require an explicit
               acknowledgement before saving a valuation snapshot.

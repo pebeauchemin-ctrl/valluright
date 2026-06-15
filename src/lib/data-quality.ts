@@ -21,6 +21,19 @@ export type DataQualityReview = {
   latestYear: number | null;
 };
 
+export function dataQualityAcknowledgementKey(
+  businessId: string | null | undefined,
+  review: DataQualityReview,
+) {
+  if (!businessId || review.status === "ready") return null;
+  const issueSignature = review.issues
+    .map((issue) =>
+      [issue.severity, issue.title, issue.detail, issue.years?.join(",") ?? ""].join("|"),
+    )
+    .join("::");
+  return `valuright:data-quality-ack:${businessId}:${review.status}:${review.yearCount}:${review.latestYear ?? "none"}:${issueSignature}`;
+}
+
 type FinancialLike = Partial<FinancialYearRow> & {
   year?: number | null;
   depreciation?: number | null;
