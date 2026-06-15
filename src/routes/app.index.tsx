@@ -112,10 +112,19 @@ function Dashboard() {
   const health = useMemo(() => (inputs ? computeHealthScore(inputs) : null), [inputs]);
   const dataQuality = useMemo(() => reviewFinancialData(financials), [financials]);
 
+  const openReviewPanel = () => {
+    setReviewOpen(true);
+    window.setTimeout(() => {
+      document
+        .getElementById("valuation-snapshot-review")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
+  };
+
   const saveCurrentValuation = async () => {
     if (!current || !inputs || !valuation || !health) return;
     if (dataQuality.requiredAcknowledgement && !dataQualityAcknowledged) {
-      setReviewOpen(true);
+      openReviewPanel();
       toast.error("Acknowledge the data quality warning before saving this valuation.");
       return;
     }
@@ -354,7 +363,7 @@ function Dashboard() {
             </div>
             <button
               type="button"
-              onClick={() => setReviewOpen(true)}
+              onClick={openReviewPanel}
               disabled={savingValuation}
               className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90 disabled:opacity-60"
             >
@@ -385,7 +394,7 @@ function Dashboard() {
             </div>
             <button
               type="button"
-              onClick={() => setReviewOpen(true)}
+              onClick={openReviewPanel}
               className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-md border border-border bg-background px-4 py-2 text-sm font-semibold hover:bg-secondary"
             >
               Review issues <ArrowRight className="h-4 w-4" />
@@ -560,7 +569,10 @@ function Dashboard() {
       </section>
 
       {reviewOpen && (
-        <section className="rounded-2xl border border-accent/40 bg-accent-soft p-6 shadow-sm">
+        <section
+          id="valuation-snapshot-review"
+          className="scroll-mt-6 rounded-2xl border border-accent/40 bg-accent-soft p-6 shadow-sm"
+        >
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
             <div>
               <h2 className="font-display text-lg font-semibold text-primary">

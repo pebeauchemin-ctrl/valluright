@@ -858,7 +858,7 @@ function Financials() {
                     <td key={y.id} className="py-1">
                       <input
                         type="number"
-                        value={Number((y as Record<string, unknown>)[key] ?? 0) || ""}
+                        value={formatNumberInputValue((y as Record<string, unknown>)[key])}
                         onChange={(e) => update(i, key, Number(e.target.value) || 0)}
                         className="w-32 rounded-md border border-input bg-background px-2 py-1.5 text-right focus:outline-none focus:ring-2 focus:ring-ring"
                       />
@@ -946,6 +946,12 @@ function FinancialDataQualityPanel({ review }: { review: DataQualityReview }) {
       </div>
     </div>
   );
+}
+
+function formatNumberInputValue(value: unknown) {
+  if (value === null || value === undefined || value === "") return "0";
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? String(parsed) : "0";
 }
 
 function parseCsvLine(line: string) {
