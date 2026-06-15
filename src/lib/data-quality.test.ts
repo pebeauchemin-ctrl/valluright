@@ -85,10 +85,12 @@ assert.ok(
 );
 assert.ok(weak.issues.some((issue) => issue.title === "Revenue is missing or zero"));
 
-const needsReview = reviewFinancialData(completeYears.map((row) => ({ ...row, owner_salary: 0 })));
+const zeroOwnerComp = reviewFinancialData(
+  completeYears.map((row) => ({ ...row, owner_salary: 0, addbacks: 0 })),
+);
 
-assert.equal(needsReview.status, "needs_review");
-assert.equal(needsReview.requiredAcknowledgement, true);
+assert.equal(zeroOwnerComp.status, "ready");
+assert.equal(zeroOwnerComp.requiredAcknowledgement, false);
 
 const unmapped = reviewFinancialData(completeYears, { unmappedAccountCount: 2 });
 assert.equal(unmapped.status, "weak");

@@ -98,26 +98,6 @@ export function reviewFinancialData(
     });
   }
 
-  const zeroOwnerComp = rows.filter((row) => money(row.owner_salary) === 0).map((row) => row.year);
-  if (zeroOwnerComp.length) {
-    issues.push({
-      severity: "warning",
-      title: "Owner compensation is blank",
-      detail: "Confirm the working owner's compensation is truly zero. SDE depends on this value.",
-      years: zeroOwnerComp,
-    });
-  }
-
-  const zeroAddbacks = rows.filter((row) => money(row.addbacks) === 0).map((row) => row.year);
-  if (zeroAddbacks.length) {
-    issues.push({
-      severity: "warning",
-      title: "Add-backs are blank",
-      detail: "Confirm there are no buyer-acceptable one-time add-backs or personal expenses.",
-      years: zeroAddbacks,
-    });
-  }
-
   if (latest) {
     const missingBalanceSheet = ["assets", "liabilities", "debt"].filter(
       (field) => !hasValue(latest[field as keyof FinancialLike]),
