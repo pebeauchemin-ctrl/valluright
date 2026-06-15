@@ -374,7 +374,7 @@ function Dashboard() {
         </div>
       )}
 
-      {dataQuality.status !== "ready" && (
+      {dataQuality.status !== "ready" && !dataQualityAcknowledged && (
         <div
           className={`rounded-xl border p-4 shadow-sm ${
             dataQuality.status === "weak"
@@ -555,7 +555,7 @@ function Dashboard() {
             </p>
           </div>
           <div className="mt-3">
-            <DataQualityBadge review={dataQuality} />
+            <DataQualityBadge review={dataQuality} acknowledged={dataQualityAcknowledged} />
           </div>
           <button
             type="button"
@@ -824,8 +824,14 @@ function Dashboard() {
   );
 }
 
-function DataQualityBadge({ review }: { review: DataQualityReview }) {
-  const isReady = review.status === "ready";
+function DataQualityBadge({
+  review,
+  acknowledged = false,
+}: {
+  review: DataQualityReview;
+  acknowledged?: boolean;
+}) {
+  const isReady = review.status === "ready" || acknowledged;
   return (
     <div
       className={`rounded-lg border p-3 text-xs leading-relaxed ${
@@ -842,11 +848,12 @@ function DataQualityBadge({ review }: { review: DataQualityReview }) {
         ) : (
           <AlertTriangle className="h-3.5 w-3.5" />
         )}
-        Data quality: {review.label}
+        Data quality: {acknowledged ? "Acknowledged" : review.label}
       </div>
       <p className="mt-1">
         {review.yearCount} year{review.yearCount === 1 ? "" : "s"} reviewed
-        {review.latestYear ? ` through ${review.latestYear}` : ""}. {review.summary}
+        {review.latestYear ? ` through ${review.latestYear}` : ""}.{" "}
+        {acknowledged ? "Warnings are acknowledged for this valuation snapshot." : review.summary}
       </p>
     </div>
   );
@@ -872,11 +879,28 @@ function DataQualityPanel({
         )}
         <div className="min-w-0">
           <h3 className="text-sm font-semibold text-primary">Data quality review</h3>
-          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{review.summary}</p>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+            {acknowledged
+              ? "Warnings have been acknowledged for this valuation snapshot."
+              : review.summary}
+          </p>
         </div>
       </div>
 
-      {issues.length > 0 && (
+      {acknowledged && review.requiredAcknowledgement && (
+        <div className="mt-3 rounded-md border border-accent/30 bg-accent-soft p-3 text-xs leading-relaxed text-muted-foreground">
+          <div className="flex items-center gap-1.5 font-semibold text-foreground">
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            Data quality warnings acknowledged
+          </div>
+          <p className="mt-1">
+            The warnings are retained in the review history, but they no longer block saving this
+            valuation snapshot.
+          </p>
+        </div>
+      )}
+
+      {!acknowledged && issues.length > 0 && (
         <ul className="mt-3 space-y-2">
           {issues.map((issue, index) => (
             <li
@@ -904,7 +928,7 @@ function DataQualityPanel({
         </ul>
       )}
 
-      {review.issues.length > issues.length && (
+      {!acknowledged && review.issues.length > issues.length && (
         <p className="mt-2 text-xs text-muted-foreground">
           {review.issues.length - issues.length} more issue
           {review.issues.length - issues.length === 1 ? "" : "s"} are included in the full review.
