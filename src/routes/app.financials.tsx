@@ -10,7 +10,7 @@ import {
   AlertTriangle,
   Save as SaveIcon,
 } from "lucide-react";
-import { useBusiness, type FinancialYearRow } from "@/lib/business";
+import { toBusinessInputs, useBusiness, type FinancialYearRow } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { fmtCurrency } from "@/lib/format";
@@ -40,6 +40,7 @@ import {
   reviewFinancialData,
   type DataQualityReview,
 } from "@/lib/data-quality";
+import { valueBusiness } from "@/lib/valuation";
 
 export const Route = createFileRoute("/app/financials")({
   head: () => ({ meta: [{ title: "Financials — ValuRight.ai" }] }),
@@ -70,6 +71,9 @@ const FIELD_KEYS = [
 ] as const;
 
 type AccountMappingRow = Database["public"]["Tables"]["account_mappings"]["Row"];
+type FinancialAddBackRow = Database["public"]["Tables"]["financial_addbacks"]["Row"];
+type FinancialAddBackEventInsert =
+  Database["public"]["Tables"]["financial_addback_events"]["Insert"];
 type FinancialFieldKey = (typeof FIELD_KEYS)[number];
 type XeroImportSummary = {
   importedAccounts: number;
@@ -79,11 +83,21 @@ type XeroImportSummary = {
 };
 
 const ACCOUNT_ROLLUP_KEYS: FinancialFieldKey[] = [...FIELD_KEYS];
+const ADD_BACK_CATEGORIES = [
+  "Owner personal expense",
+  "One-time expense",
+  "Non-recurring professional fees",
+  "Owner benefit",
+  "Other normalization",
+] as const;
 
 function Financials() {
   const { current } = useBusiness();
   const search = Route.useSearch();
   const [years, setYears] = useState<FinancialYearRow[]>([]);
+  const [addBacks, setAddBacks] = useState<FinancialAddBackRow[]>([]);
+  const [deletedAddBacks, setDeletedAddBacks] = useState<FinancialAddBackRow[]>([]);
+  const [originalAddBacks, setOriginalAddBacks] = useState<Record<string, FinancialAddBackRow>>({});
   const [saving, setSaving] = useState(false);
   const [accountMappings, setAccountMappings] = useState<SavedAccountMapping[]>([]);
   const [mappingReview, setMappingReview] = useState<MappedAccount[]>([]);
@@ -124,12 +138,22 @@ function Financials() {
         .eq("business_id", current.id)
         .order("year", { ascending: true }),
       supabase
+        .from("financial_addbacks")
+        .select("*")
+        .eq("business_id", current.id)
+        .order("year", { ascending: true })
+        .order("created_at", { ascending: true }),
+      supabase
         .from("account_mappings")
         .select("*")
         .eq("business_id", current.id)
         .order("source_account_name", { ascending: true }),
-    ]).then(([financialsResult, mappingsResult]) => {
+    ]).then(([financialsResult, addBacksResult, mappingsResult]) => {
       setYears(financialsResult.data ?? []);
+      const loadedAddBacks = (addBacksResult.data ?? []) as FinancialAddBackRow[];
+      setAddBacks(loadedAddBacks);
+      setDeletedAddBacks([]);
+      setOriginalAddBacks(Object.fromEntries(loadedAddBacks.map((row) => [row.id, row])));
       setAccountMappings((mappingsResult.data ?? []) as AccountMappingRow[]);
       setMappingReview([]);
       setImportWarnings([]);
@@ -187,6 +211,102 @@ function Financials() {
     Number(y.amortization ?? 0) +
     Number(y.interest ?? 0) +
     Number(y.income_taxes ?? 0);
+
+  const addBackRowsForYear = (year: number) =>
+    addBacks.filter((addBack) => Number(addBack.year) === Number(year));
+
+  const reviewedAddBackTotal = (year: number, fallback: number | null | undefined) => {
+    const rowsForYear = addBackRowsForYear(year);
+    if (!rowsForYear.length) return Number(fallback ?? 0);
+    return rowsForYear.reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
+  };
+
+  const addBackTotalsByYear = useMemo(() => {
+    const totals = new Map<number, number>();
+    for (const year of years) {
+      totals.set(year.year, reviewedAddBackTotal(year.year, year.addbacks));
+    }
+    return totals;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [years, addBacks]);
+
+  const yearsWithReviewedAddBacks = useMemo(
+    () =>
+      years.map(
+        (year) =>
+          ({
+            ...year,
+            addbacks: addBackTotalsByYear.get(year.year) ?? Number(year.addbacks ?? 0),
+          }) as FinancialYearRow,
+      ),
+    [years, addBackTotalsByYear],
+  );
+
+  const addBackImpact = useMemo(() => {
+    if (!current || years.length === 0) return null;
+    const withReview = valueBusiness(toBusinessInputs(current, yearsWithReviewedAddBacks));
+    const withoutAddBacks = valueBusiness(
+      toBusinessInputs(
+        current,
+        yearsWithReviewedAddBacks.map((year) => ({ ...year, addbacks: 0 }) as FinancialYearRow),
+      ),
+    );
+    return {
+      amount: Array.from(addBackTotalsByYear.values()).reduce((sum, value) => sum + value, 0),
+      rangeLowDelta: withReview.rangeLow - withoutAddBacks.rangeLow,
+      rangeHighDelta: withReview.rangeHigh - withoutAddBacks.rangeHigh,
+    };
+  }, [addBackTotalsByYear, current, years.length, yearsWithReviewedAddBacks]);
+
+  const addAddBack = (year: number) => {
+    if (!current) return;
+    const now = new Date().toISOString();
+    setAddBacks((prev) => [
+      ...prev,
+      {
+        id: `tmp-addback-${crypto.randomUUID()}`,
+        business_id: current.id,
+        year,
+        amount: 0,
+        category: ADD_BACK_CATEGORIES[0],
+        note: "",
+        is_recurring: false,
+        created_at: now,
+        updated_at: now,
+      },
+    ]);
+  };
+
+  const updateAddBack = (
+    id: string,
+    key: "year" | "amount" | "category" | "note" | "is_recurring",
+    value: string | number | boolean,
+  ) => {
+    setAddBacks((prev) =>
+      prev.map((row) => (row.id === id ? ({ ...row, [key]: value } as FinancialAddBackRow) : row)),
+    );
+  };
+
+  const removeAddBack = (row: FinancialAddBackRow) => {
+    if (!row.id.startsWith("tmp-addback-")) {
+      setDeletedAddBacks((prev) => [...prev, row]);
+    }
+    setAddBacks((prev) => prev.filter((addBack) => addBack.id !== row.id));
+  };
+
+  const addBackSnapshot = (row: FinancialAddBackRow) => ({
+    amount: Number(row.amount ?? 0),
+    category: row.category,
+    note: row.note ?? null,
+    is_recurring: Boolean(row.is_recurring),
+    year: Number(row.year),
+  });
+
+  const writeAddBackEvents = async (events: FinancialAddBackEventInsert[]) => {
+    if (!events.length) return;
+    const { error } = await supabase.from("financial_addback_events").insert(events);
+    if (error) throw error;
+  };
 
   const blankYear = (year: number): FinancialYearRow =>
     ({
@@ -449,7 +569,9 @@ function Financials() {
     if (!current) return;
     setSaving(true);
     try {
-      for (const y of years) {
+      const auditEvents: FinancialAddBackEventInsert[] = [];
+
+      for (const y of yearsWithReviewedAddBacks) {
         const payload = {
           year: y.year,
           revenue: Number(y.revenue ?? 0),
@@ -457,7 +579,7 @@ function Financials() {
           gross_profit: Number(y.revenue ?? 0) - Number(y.cogs ?? 0),
           operating_expenses: Number(y.operating_expenses ?? 0),
           owner_salary: Number(y.owner_salary ?? 0),
-          addbacks: Number(y.addbacks ?? 0),
+          addbacks: Number(addBackTotalsByYear.get(y.year) ?? y.addbacks ?? 0),
           depreciation: Number((y as Record<string, unknown>).depreciation ?? 0),
           amortization: Number((y as Record<string, unknown>).amortization ?? 0),
           interest: Number((y as Record<string, unknown>).interest ?? 0),
@@ -474,13 +596,91 @@ function Financials() {
           await supabase.from("financial_years").update(payload).eq("id", y.id);
         }
       }
+
+      for (const row of addBacks) {
+        const payload = {
+          business_id: current.id,
+          year: Number(row.year),
+          amount: Number(row.amount ?? 0),
+          category: row.category || ADD_BACK_CATEGORIES[0],
+          note: row.note?.trim() || null,
+          is_recurring: Boolean(row.is_recurring),
+        };
+        if (row.id.startsWith("tmp-addback-")) {
+          const { data, error } = await supabase
+            .from("financial_addbacks")
+            .insert(payload)
+            .select("*")
+            .single();
+          if (error) throw error;
+          if (data) {
+            auditEvents.push({
+              action: "created",
+              addback_id: data.id,
+              business_id: current.id,
+              year: Number(data.year),
+              after_value: addBackSnapshot(data as FinancialAddBackRow),
+            });
+          }
+        } else {
+          const before = originalAddBacks[row.id];
+          const { data, error } = await supabase
+            .from("financial_addbacks")
+            .update(payload)
+            .eq("id", row.id)
+            .select("*")
+            .single();
+          if (error) throw error;
+          if (
+            data &&
+            JSON.stringify(addBackSnapshot(before ?? row)) !==
+              JSON.stringify(addBackSnapshot(data as FinancialAddBackRow))
+          ) {
+            auditEvents.push({
+              action: "updated",
+              addback_id: row.id,
+              business_id: current.id,
+              year: Number(data.year),
+              before_value: before ? addBackSnapshot(before) : null,
+              after_value: addBackSnapshot(data as FinancialAddBackRow),
+            });
+          }
+        }
+      }
+
+      for (const row of deletedAddBacks) {
+        const { error } = await supabase.from("financial_addbacks").delete().eq("id", row.id);
+        if (error) throw error;
+        auditEvents.push({
+          action: "deleted",
+          addback_id: row.id,
+          business_id: current.id,
+          year: Number(row.year),
+          before_value: addBackSnapshot(row),
+        });
+      }
+
+      await writeAddBackEvents(auditEvents);
+
       toast.success("Financials saved");
-      const { data } = await supabase
-        .from("financial_years")
-        .select("*")
-        .eq("business_id", current.id)
-        .order("year", { ascending: true });
-      setYears(data ?? []);
+      const [financialsResult, addBacksResult] = await Promise.all([
+        supabase
+          .from("financial_years")
+          .select("*")
+          .eq("business_id", current.id)
+          .order("year", { ascending: true }),
+        supabase
+          .from("financial_addbacks")
+          .select("*")
+          .eq("business_id", current.id)
+          .order("year", { ascending: true })
+          .order("created_at", { ascending: true }),
+      ]);
+      setYears(financialsResult.data ?? []);
+      const loadedAddBacks = (addBacksResult.data ?? []) as FinancialAddBackRow[];
+      setAddBacks(loadedAddBacks);
+      setDeletedAddBacks([]);
+      setOriginalAddBacks(Object.fromEntries(loadedAddBacks.map((row) => [row.id, row])));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to save");
     } finally {
@@ -490,6 +690,29 @@ function Financials() {
 
   const removeYear = async (i: number) => {
     const y = years[i];
+    const removedYearAddBacks = addBackRowsForYear(y.year);
+    const persistedRemovedAddBacks = removedYearAddBacks.filter(
+      (row) => !row.id.startsWith("tmp-addback-"),
+    );
+    if (current && persistedRemovedAddBacks.length > 0) {
+      await writeAddBackEvents(
+        persistedRemovedAddBacks.map((row) => ({
+          action: "deleted",
+          addback_id: row.id,
+          business_id: current.id,
+          year: Number(row.year),
+          before_value: addBackSnapshot(row),
+        })),
+      );
+      await supabase
+        .from("financial_addbacks")
+        .delete()
+        .in(
+          "id",
+          persistedRemovedAddBacks.map((row) => row.id),
+        );
+    }
+    setAddBacks((prev) => prev.filter((row) => Number(row.year) !== Number(y.year)));
     if (typeof y.id === "string" && !y.id.startsWith("tmp-")) {
       await supabase.from("financial_years").delete().eq("id", y.id);
     }
@@ -536,6 +759,10 @@ function Financials() {
   const mappingRows = uniqueMappedAccounts(mappingReview);
   const selectedXeroTenant = xeroTenants.find((tenant) => tenant.tenant_id === selectedTenant);
   const xeroLastSyncedAt = xeroImportSummary?.lastSyncedAt ?? selectedXeroTenant?.last_synced_at;
+  const latestYear = years.length
+    ? Math.max(...years.map((year) => year.year))
+    : new Date().getFullYear();
+  const sortedAddBacks = [...addBacks].sort((a, b) => Number(b.year) - Number(a.year));
 
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-10">
@@ -742,6 +969,159 @@ function Financials() {
 
       <FinancialDataQualityPanel review={dataQuality} acknowledged={dataQualityAcknowledged} />
 
+      <div className="rounded-xl border border-border bg-card p-5">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h2 className="text-sm font-semibold text-foreground">Owner add-back review</h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Itemize owner benefits and one-time adjustments by year. These rows roll up into SDE
+              and the valuation range when you save.
+            </p>
+          </div>
+          <button
+            onClick={() => addAddBack(latestYear)}
+            disabled={years.length === 0}
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-2 text-xs font-medium hover:bg-secondary disabled:opacity-60"
+          >
+            <Plus className="h-3.5 w-3.5" /> Add add-back
+          </button>
+        </div>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <div className="rounded-lg border border-border bg-secondary/30 p-3">
+            <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+              Reviewed add-backs
+            </p>
+            <p className="mt-1 font-display text-xl font-semibold text-primary">
+              {fmtCurrency(addBackImpact?.amount ?? 0, { compact: true })}
+            </p>
+          </div>
+          <div className="rounded-lg border border-border bg-secondary/30 p-3 md:col-span-2">
+            <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+              Estimated valuation range effect
+            </p>
+            <p className="mt-1 font-display text-xl font-semibold text-primary">
+              {addBackImpact
+                ? `${fmtCurrency(addBackImpact.rangeLowDelta, { compact: true })} - ${fmtCurrency(addBackImpact.rangeHighDelta, { compact: true })}`
+                : "$0 - $0"}
+            </p>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Compared with the same financials before owner add-backs.
+            </p>
+          </div>
+        </div>
+
+        {years.length === 0 ? (
+          <p className="mt-4 text-sm text-muted-foreground">
+            Add financial years before reviewing add-backs.
+          </p>
+        ) : sortedAddBacks.length === 0 ? (
+          <p className="mt-4 text-sm text-muted-foreground">
+            No itemized add-backs yet. Existing annual add-back totals remain in the financial table
+            until reviewed here.
+          </p>
+        ) : (
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[760px] text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-xs text-muted-foreground">
+                  <th className="py-2 pr-3 font-medium">Year</th>
+                  <th className="py-2 pr-3 font-medium">Amount</th>
+                  <th className="py-2 pr-3 font-medium">Category</th>
+                  <th className="py-2 pr-3 font-medium">Note</th>
+                  <th className="py-2 pr-3 font-medium">Recurring</th>
+                  <th className="py-2 font-medium"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedAddBacks.map((row) => (
+                  <tr key={row.id} className="border-b border-border/60 last:border-0">
+                    <td className="py-2 pr-3">
+                      <select
+                        value={row.year}
+                        onChange={(event) =>
+                          updateAddBack(row.id, "year", Number(event.target.value))
+                        }
+                        className="w-24 rounded-md border border-input bg-background px-2 py-1.5 text-xs"
+                      >
+                        {years.map((year) => (
+                          <option key={year.id} value={year.year}>
+                            {year.year}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="py-2 pr-3">
+                      <input
+                        type="number"
+                        value={formatNumberInputValue(row.amount)}
+                        onChange={(event) =>
+                          updateAddBack(row.id, "amount", Number(event.target.value) || 0)
+                        }
+                        className="w-28 rounded-md border border-input bg-background px-2 py-1.5 text-right text-xs"
+                      />
+                    </td>
+                    <td className="py-2 pr-3">
+                      <select
+                        value={row.category}
+                        onChange={(event) => updateAddBack(row.id, "category", event.target.value)}
+                        className="w-52 rounded-md border border-input bg-background px-2 py-1.5 text-xs"
+                      >
+                        {ADD_BACK_CATEGORIES.map((category) => (
+                          <option key={category} value={category}>
+                            {category}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="py-2 pr-3">
+                      <input
+                        value={row.note ?? ""}
+                        onChange={(event) => updateAddBack(row.id, "note", event.target.value)}
+                        placeholder="Reason or support"
+                        className="w-64 rounded-md border border-input bg-background px-2 py-1.5 text-xs"
+                      />
+                    </td>
+                    <td className="py-2 pr-3">
+                      <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+                        <input
+                          type="checkbox"
+                          checked={row.is_recurring}
+                          onChange={(event) =>
+                            updateAddBack(row.id, "is_recurring", event.target.checked)
+                          }
+                          className="accent-[oklch(0.45_0.1_158)]"
+                        />
+                        Recurring
+                      </label>
+                    </td>
+                    <td className="py-2 text-right">
+                      <button
+                        onClick={() => removeAddBack(row)}
+                        className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1.5 text-xs text-destructive hover:bg-secondary"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" /> Remove
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        <div className="mt-4 grid gap-2 md:grid-cols-3">
+          {yearsWithReviewedAddBacks.map((year) => (
+            <div key={year.id} className="rounded-md border border-border px-3 py-2 text-xs">
+              <span className="font-semibold text-foreground">{year.year}</span>
+              <span className="ml-2 text-muted-foreground">
+                SDE add-back total {fmtCurrency(Number(year.addbacks ?? 0), { compact: true })}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {mappingRows.length > 0 && (
         <div className="rounded-xl border border-border bg-card p-5">
           <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -875,9 +1255,18 @@ function Financials() {
                     <td key={y.id} className="py-1">
                       <input
                         type="number"
-                        value={formatNumberInputValue((y as Record<string, unknown>)[key])}
+                        value={
+                          key === "addbacks"
+                            ? formatNumberInputValue(addBackTotalsByYear.get(y.year) ?? y.addbacks)
+                            : formatNumberInputValue((y as Record<string, unknown>)[key])
+                        }
+                        readOnly={key === "addbacks"}
                         onChange={(e) => update(i, key, Number(e.target.value) || 0)}
-                        className="w-32 rounded-md border border-input bg-background px-2 py-1.5 text-right focus:outline-none focus:ring-2 focus:ring-ring"
+                        className={`w-32 rounded-md border border-input px-2 py-1.5 text-right focus:outline-none focus:ring-2 focus:ring-ring ${
+                          key === "addbacks"
+                            ? "bg-secondary text-muted-foreground"
+                            : "bg-background"
+                        }`}
                       />
                     </td>
                   ))}
