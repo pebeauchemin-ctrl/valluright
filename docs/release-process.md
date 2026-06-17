@@ -23,6 +23,14 @@ Use this process for every pull request before publishing the app.
 - Confirm the live public site and logged-in dashboard load after publish.
 - Run a short smoke test for the changed workflow on production.
 
+## Backup and Restore Readiness
+
+- Before broader customer launch, confirm the active production backend project and backup settings.
+- Confirm daily database backups are enabled and record the retention window.
+- Confirm whether point-in-time recovery and private storage recovery/versioning are available.
+- Run at least one non-production restore test and record the backup timestamp, tester, validation steps, and result.
+- Use `docs/backup-restore-data-retention.md` as the operating procedure for restore incidents, data export requests, and deletion requests.
+
 ## Release Notes
 
 Add these notes to the pull request description or release tracker:
@@ -31,6 +39,7 @@ Add these notes to the pull request description or release tracker:
 - User-visible change:
 - Database migrations applied:
 - QA completed:
+- Backup/restore impact:
 - Known follow-ups:
 
 GitHub pull requests provide the release history. Lovable publish history provides the deployment history.
