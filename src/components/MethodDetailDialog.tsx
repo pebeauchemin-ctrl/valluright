@@ -1,4 +1,11 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 import { fmtCurrency } from "@/lib/format";
 import type { MethodResult } from "@/lib/valuation";
 
@@ -19,7 +26,9 @@ export function MethodRangeBar({ low, mid, high }: { low: number; mid: number; h
       </div>
       <div className="mt-1.5 flex justify-between text-[10px] text-muted-foreground tabular-nums">
         <span>{fmtCurrency(low, { compact: true })}</span>
-        <span className="font-semibold text-foreground">Median {fmtCurrency(mid, { compact: true })}</span>
+        <span className="font-semibold text-foreground">
+          Median {fmtCurrency(mid, { compact: true })}
+        </span>
         <span>{fmtCurrency(high, { compact: true })}</span>
       </div>
     </div>
@@ -47,8 +56,8 @@ export function MethodDetailDialog({
                 method.confidence === "high"
                   ? "bg-accent-soft text-accent"
                   : method.confidence === "medium"
-                  ? "bg-gold/15 text-foreground"
-                  : "bg-secondary text-muted-foreground"
+                    ? "bg-gold/15 text-foreground"
+                    : "bg-secondary text-muted-foreground"
               }`}
             >
               {method.confidence} confidence
@@ -113,7 +122,7 @@ export function MethodDetailDialog({
         )}
 
         <p className="border-t border-border pt-3 text-[11px] leading-relaxed text-muted-foreground">
-          Software-generated estimate for planning purposes only. Not a certified appraisal, tax advice, legal advice, or guaranteed sale price.
+          {VALUATION_DISCLAIMER_SHORT}
         </p>
       </DialogContent>
     </Dialog>
@@ -122,8 +131,12 @@ export function MethodDetailDialog({
 
 function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className={`rounded-lg border p-2.5 text-center ${highlight ? "border-accent bg-accent-soft" : "border-border bg-secondary/40"}`}>
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{label}</div>
+    <div
+      className={`rounded-lg border p-2.5 text-center ${highlight ? "border-accent bg-accent-soft" : "border-border bg-secondary/40"}`}
+    >
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+        {label}
+      </div>
       <div className="mt-0.5 font-semibold text-foreground text-sm tabular-nums">{value}</div>
     </div>
   );

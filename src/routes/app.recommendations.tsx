@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { valueBusiness, computeHealthScore } from "@/lib/valuation";
 import { fmtCurrency } from "@/lib/format";
 import { toast } from "sonner";
+import { COUNSEL_REVIEW_TEXT, VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 
 export const Route = createFileRoute("/app/recommendations")({
   head: () => ({ meta: [{ title: "Recommendations — ValuRight.ai" }] }),
@@ -70,8 +71,8 @@ function Recs() {
         <div>
           <h1 className="font-display text-3xl font-semibold text-primary">Recommendations</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            AI-assisted draft actions based on your current valuation inputs. Review before relying
-            on them.
+            AI-assisted draft actions based on your current valuation inputs. Treat them as planning
+            suggestions, not professional advice.
           </p>
         </div>
         <button
@@ -103,6 +104,12 @@ function Recs() {
           </p>
         </div>
       )}
+
+      <div className="rounded-lg border border-border bg-secondary/40 p-4 text-xs leading-relaxed text-muted-foreground">
+        <span className="font-semibold text-foreground">Important context. </span>
+        Estimated impact ranges and recommendation text are software-generated planning outputs.
+        {` ${VALUATION_DISCLAIMER_SHORT} ${COUNSEL_REVIEW_TEXT}`}
+      </div>
 
       <div className="grid gap-4">
         {recs.map((r, i) => (
@@ -150,6 +157,7 @@ function Recs() {
                   +{fmtCurrency(r.estimated_impact_low, { compact: true })} –{" "}
                   {fmtCurrency(r.estimated_impact_high, { compact: true })}
                 </div>
+                <div className="mt-1 text-[10px] text-muted-foreground">Planning range</div>
               </div>
             </div>
           </div>

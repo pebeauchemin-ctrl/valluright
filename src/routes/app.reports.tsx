@@ -33,7 +33,7 @@ const REPORTS: {
     key: "owner",
     title: "Owner Valuation Report",
     description:
-      "Complete valuation with full financial detail, methods, assumptions, and improvement areas. For your eyes only.",
+      "Owner planning report with full financial detail, methods, assumptions, and improvement areas. For your eyes only.",
     audience: "You",
     icon: FileText,
     accent: "bg-accent/10 text-accent",
@@ -51,7 +51,7 @@ const REPORTS: {
     key: "advisor",
     title: "Advisor Review Report",
     description:
-      "Detailed assumptions, valuation methods, and risk drivers for your CPA, broker, or attorney to review and approve.",
+      "Detailed assumptions, valuation methods, and risk drivers for your CPA, broker, or attorney to review and comment on.",
     audience: "Advisors",
     icon: Users,
     accent: "bg-primary/10 text-primary",
@@ -394,8 +394,9 @@ function ReportPreview({
               </Section>
               <Section title="Status">
                 <div className="text-sm text-neutral-700">
-                  Awaiting advisor review &amp; approval. Permissioned advisors can comment on
-                  assumptions, edit inputs, or sign off.
+                  Awaiting advisor review. Permissioned advisors can comment on assumptions and edit
+                  inputs. Advisor workflow status does not make this a certified appraisal, legal
+                  opinion, tax opinion, investment advice, or guaranteed sale price.
                 </div>
               </Section>
             </>
