@@ -21,14 +21,13 @@ function SecurityPage() {
       eyebrow="Security"
       title="Security posture"
       description="ValuRight.ai is built around owner-controlled sharing, private financial data, and limited public exposure for buyer-safe materials."
-      updated="June 8, 2026"
+      updated="June 17, 2026"
     >
       <LegalSection title="Private by default">
         <p>
-          Business records, financial inputs, valuation outputs, advisor review
-          materials, and data room documents are intended to be private by
-          default and available only to authenticated users with appropriate
-          access.
+          Business records, financial inputs, valuation outputs, advisor review materials, and data
+          room documents are intended to be private by default and available only to authenticated
+          users with appropriate access.
         </p>
         <p>
           Database policies and server-side checks should scope access to the business owner,
@@ -39,10 +38,9 @@ function SecurityPage() {
 
       <LegalSection title="Buyer-safe sharing">
         <p>
-          Public teaser pages are designed to expose only owner-approved,
-          buyer-safe fields. Full financial detail, uploaded documents, and
-          sensitive company records should remain behind authenticated access and
-          owner-controlled permissions.
+          Public teaser pages are designed to expose only owner-approved, buyer-safe fields. Full
+          financial detail, uploaded documents, and sensitive company records should remain behind
+          authenticated access and owner-controlled permissions.
         </p>
         <p>
           Buyer request workflows are designed to collect buyer information before sensitive
@@ -67,10 +65,9 @@ function SecurityPage() {
 
       <LegalSection title="Storage and access controls">
         <p>
-          Financial documents and data room files should use private storage
-          policies. Database access should enforce account ownership, advisor
-          permissions, and buyer-view limitations at the server or database
-          layer.
+          Financial documents and data room files should use private storage policies. Database
+          access should enforce account ownership, advisor permissions, and buyer-view limitations
+          at the server or database layer.
         </p>
         <p>
           The product includes audit records for sensitive actions such as accounting connection
@@ -92,6 +89,26 @@ function SecurityPage() {
         </p>
       </LegalSection>
 
+      <LegalSection title="Backups and restore readiness">
+        <p>
+          Production database backups should be enabled on the active backend before broader
+          customer launch, with a documented retention window and restore owner. Where available,
+          point-in-time recovery and private storage recovery/versioning should be enabled for
+          financial data and data room materials.
+        </p>
+        <p>
+          Restore testing should be performed against a non-production database before launch. A
+          restore test should verify that an owner account, business profile, financial years,
+          valuation output, buyer settings, and uploaded-file metadata can be recovered without
+          exposing another customer's data.
+        </p>
+        <p>
+          Restore incidents should preserve evidence, identify the affected provider project,
+          validate recovered records, reload the database schema cache when needed, and document the
+          restore point, data-loss window, validation result, and follow-up actions.
+        </p>
+      </LegalSection>
+
       <LegalSection title="Customer responsibilities">
         <p>
           Customers should use strong account credentials, limit advisor and buyer access to people
@@ -103,10 +120,9 @@ function SecurityPage() {
 
       <LegalSection title="Responsible reporting">
         <p>
-          If you believe you have found a security issue, do not access,
-          download, modify, or share data that is not yours. Report the issue
-          through the support contact listed in your account or onboarding
-          materials.
+          If you believe you have found a security issue, do not access, download, modify, or share
+          data that is not yours. Report the issue through the support contact listed in your
+          account or onboarding materials.
         </p>
         <p>
           This security posture page is a transparency summary, not a guarantee that a system is
