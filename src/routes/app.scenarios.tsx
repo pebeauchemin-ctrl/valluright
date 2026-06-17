@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { valueBusiness, computeHealthScore, type Valuation } from "@/lib/valuation";
 import { fmtCurrency } from "@/lib/format";
 import { toast } from "sonner";
+import { COUNSEL_REVIEW_TEXT, VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 
 type ScenarioRow = {
   id: string;
@@ -263,8 +264,15 @@ function Scenarios() {
       <div>
         <h1 className="font-display text-3xl font-semibold text-primary">What-if scenarios</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Move the sliders to see how each lever moves your valuation, multiple, health and risk.
+          Move the sliders to see how each lever may affect your planning estimate, multiple,
+          health, and risk.
         </p>
+      </div>
+
+      <div className="rounded-lg border border-border bg-secondary/40 p-4 text-xs leading-relaxed text-muted-foreground">
+        <span className="font-semibold text-foreground">Scenario disclaimer. </span>
+        Scenario values are model outputs based on hypothetical assumptions you enter.{" "}
+        {VALUATION_DISCLAIMER_SHORT} {COUNSEL_REVIEW_TEXT}
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
@@ -389,7 +397,7 @@ function Scenarios() {
                 EBITDA drops from {fmtCurrency(baseEbitda, { compact: true })} to{" "}
                 {fmtCurrency(projEbitda, { compact: true })}, but the multiple rises from{" "}
                 {baseMultiple.toFixed(2)}× to {projMultiple.toFixed(2)}× because the business is no
-                longer dependent on you. Net effect on value:{" "}
+                longer dependent on you. Estimated model effect on the planning range midpoint:{" "}
                 <strong>
                   {delta >= 0 ? "+" : ""}
                   {fmtCurrency(delta, { compact: true })}

@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { fmtCurrency } from "@/lib/format";
 import type { Database } from "@/integrations/supabase/types";
+import { COUNSEL_REVIEW_TEXT, VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 
 export const Route = createFileRoute("/app/advisors")({
   head: () => ({ meta: [{ title: "Advisors — ValuRight.ai" }] }),
@@ -42,8 +43,8 @@ const PERMISSIONS = [
   },
   {
     value: "approve",
-    label: "Approve report",
-    desc: "Comment, edit, and sign off on the final report.",
+    label: "Record review status",
+    desc: "Comment, edit, and record internal review status. This does not make the output a certified appraisal or professional opinion.",
   },
 ] as const;
 
@@ -233,9 +234,15 @@ function Advisors() {
         <h1 className="font-display text-3xl font-semibold text-primary">Advisor Review</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Invite your CPA, broker, attorney, consultant, or financial advisor to review assumptions,
-          reports, and valuation outputs. Email delivery is not automated yet; share access details
-          manually for now.
+          planning reports, and valuation outputs. Email delivery is not automated yet; share access
+          details manually for now.
         </p>
+      </div>
+
+      <div className="rounded-lg border border-border bg-secondary/40 p-4 text-xs leading-relaxed text-muted-foreground">
+        <span className="font-semibold text-foreground">Advisor review context. </span>
+        Advisor comments and approvals are workflow records only. {VALUATION_DISCLAIMER_SHORT}{" "}
+        {COUNSEL_REVIEW_TEXT}
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -381,7 +388,7 @@ function Advisors() {
       <div className="rounded-xl border border-border bg-card p-6">
         <h2 className="font-display font-semibold text-primary mb-3">Advisor review package</h2>
         <p className="mb-4 text-sm text-muted-foreground">
-          These are the core items an advisor should review before approving the report or
+          These are the core items an advisor should review before recording review status or
           requesting changes.
         </p>
         <div className="grid gap-4 lg:grid-cols-2">
@@ -514,7 +521,7 @@ function Advisors() {
             >
               <option value="reviewing">Reviewing</option>
               <option value="changes_requested">Changes requested</option>
-              <option value="approved">Approved</option>
+              <option value="approved">Reviewed</option>
             </select>
           </div>
           <div>
@@ -525,7 +532,7 @@ function Advisors() {
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
               rows={3}
-              placeholder="Add advisor notes, approval language, or requested changes..."
+              placeholder="Add advisor notes, review language, or requested changes..."
               className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
@@ -541,11 +548,11 @@ function Advisors() {
 
       <div className="rounded-xl border border-border bg-card p-6">
         <h2 className="font-display font-semibold text-primary mb-3 flex items-center gap-2">
-          <MessageSquare className="h-4 w-4" /> Advisor comments &amp; approvals
+          <MessageSquare className="h-4 w-4" /> Advisor comments &amp; review status
         </h2>
         {comments.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            Comments and approval status from your advisor will appear here once they review the
+            Comments and review status from your advisor will appear here once they review the
             report.
           </p>
         ) : (
@@ -628,15 +635,15 @@ function getApprovalState(comments: Comment[]) {
   if (comments.some((comment) => comment.is_approval)) {
     return {
       icon: CheckCircle2,
-      label: "Approved",
-      detail: "Advisor approval has been recorded.",
+      label: "Reviewed",
+      detail: "Advisor review status has been recorded.",
     };
   }
   if (comments.some((comment) => /^changes requested:/i.test(comment.body))) {
     return {
       icon: AlertTriangle,
       label: "Changes requested",
-      detail: "Advisor requested updates before approval.",
+      detail: "Advisor requested updates before review is complete.",
     };
   }
   if (comments.length > 0) {

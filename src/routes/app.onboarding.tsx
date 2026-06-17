@@ -32,6 +32,7 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { startXeroConnect, importXeroFinancials, listXeroConnections } from "@/lib/xero.functions";
 import { listQuickBooksConnections, startQuickBooksConnect } from "@/lib/quickbooks.functions";
+import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 
 type OnboardingSearch = {
   xero?: "connected" | "error";
@@ -1161,7 +1162,7 @@ function ReviewStep({ data }: { data: Record<string, unknown> }) {
       </div>
       <div className="rounded-xl border border-border bg-secondary/40 p-6">
         <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Estimated value range
+          Estimated planning range
         </div>
         <div className="mt-2 font-display text-4xl font-semibold text-primary">
           {fmtCurrency(v.rangeLow, { compact: true })}{" "}
@@ -1172,6 +1173,7 @@ function ReviewStep({ data }: { data: Record<string, unknown> }) {
           Health Score: <span className="font-semibold text-foreground">{h.total}/100</span>
         </div>
       </div>
+      <ValuationDisclaimer />
     </div>
   );
 }

@@ -67,8 +67,8 @@ function Landing() {
                 <span className="text-accent">Live Your Freedom.</span>
               </h1>
               <p className="mt-6 max-w-xl text-lg text-muted-foreground leading-relaxed">
-                ValuRight.ai estimates what your business is worth, shows you exactly what's holding
-                the number down, and helps you grow it before you sell. Built for small-business
+                ValuRight.ai estimates a planning range, shows which risks may be holding the number
+                down, and helps you improve exit readiness before you sell. Built for small-business
                 owners — not Wall Street.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -148,8 +148,8 @@ function Landing() {
             />
             <Step
               n="3"
-              title="Grow what it's worth"
-              desc="Prioritized recommendations and a what-if builder that shows exactly how each change moves the number."
+              title="Improve exit readiness"
+              desc="Prioritized recommendations and a what-if builder that shows how each change may affect the planning range."
             />
           </div>
         </div>
@@ -172,7 +172,7 @@ function Landing() {
             <Feature
               icon={<Users />}
               title="Advisor review workspace"
-              desc="Create advisor access records, permissions, comments, and approval status. Email delivery is manual today."
+              desc="Create advisor access records, permissions, comments, and review status. Email delivery is manual today."
             />
             <Feature
               icon={<FileCheck />}
@@ -229,7 +229,7 @@ function Landing() {
               features={[
                 "Portfolio dashboard planned",
                 "White-label reports planned",
-                "Review & approve workflow",
+                "Advisor review workflow",
                 "Multiple client businesses planned",
               ]}
             />

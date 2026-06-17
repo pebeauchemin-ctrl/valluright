@@ -1,4 +1,11 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts, useRouter } from "@tanstack/react-router";
+import {
+  Outlet,
+  Link,
+  createRootRoute,
+  HeadContent,
+  Scripts,
+  useRouter,
+} from "@tanstack/react-router";
 import { AuthProvider } from "@/lib/auth";
 import { BusinessProvider } from "@/lib/business";
 import { Toaster } from "@/components/ui/sonner";
@@ -74,21 +81,50 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "ValuRight.ai — Know Your Value. Plan Your Exit. Live Your Freedom." },
-      { name: "description", content: "Exit-readiness and business valuation software for owners preparing to retire or sell. Estimate value, identify risks, and grow what your business is worth." },
+      {
+        name: "description",
+        content:
+          "Exit-readiness and business valuation software for owners preparing to retire or sell. Estimate a planning range, identify risks, and improve exit readiness.",
+      },
       { name: "author", content: "ValuRight.ai" },
-      { property: "og:title", content: "ValuRight.ai — Know Your Value. Plan Your Exit. Live Your Freedom." },
-      { property: "og:description", content: "Exit-readiness and business valuation software for owners preparing to retire or sell. Estimate value, identify risks, and grow what your business is worth." },
+      {
+        property: "og:title",
+        content: "ValuRight.ai — Know Your Value. Plan Your Exit. Live Your Freedom.",
+      },
+      {
+        property: "og:description",
+        content:
+          "Exit-readiness and business valuation software for owners preparing to retire or sell. Estimate a planning range, identify risks, and improve exit readiness.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "ValuRight.ai — Know Your Value. Plan Your Exit. Live Your Freedom." },
-      { name: "twitter:description", content: "Exit-readiness and business valuation software for owners preparing to retire or sell. Estimate value, identify risks, and grow what your business is worth." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b39a52b5-670d-4abd-9568-36c258c4b902/id-preview-75396d10--0d57c900-6da7-4fcb-893e-afdbe8e9158c.lovable.app-1778810957571.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b39a52b5-670d-4abd-9568-36c258c4b902/id-preview-75396d10--0d57c900-6da7-4fcb-893e-afdbe8e9158c.lovable.app-1778810957571.png" },
+      {
+        name: "twitter:title",
+        content: "ValuRight.ai — Know Your Value. Plan Your Exit. Live Your Freedom.",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "Exit-readiness and business valuation software for owners preparing to retire or sell. Estimate a planning range, identify risks, and improve exit readiness.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b39a52b5-670d-4abd-9568-36c258c4b902/id-preview-75396d10--0d57c900-6da7-4fcb-893e-afdbe8e9158c.lovable.app-1778810957571.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b39a52b5-670d-4abd-9568-36c258c4b902/id-preview-75396d10--0d57c900-6da7-4fcb-893e-afdbe8e9158c.lovable.app-1778810957571.png",
+      },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap",
+      },
       { rel: "stylesheet", href: appCss },
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
     ],

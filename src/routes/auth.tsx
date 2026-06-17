@@ -40,30 +40,39 @@ function AuthPage() {
 
     if (mode === "forgot") {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: typeof window !== "undefined" ? window.location.origin + "/reset-password" : undefined,
+        redirectTo:
+          typeof window !== "undefined" ? window.location.origin + "/reset-password" : undefined,
       });
       setBusy(false);
       if (error) setError(error.message);
-      else setInfo("If an account exists for that email, a reset link is on its way. Check your inbox.");
+      else
+        setInfo(
+          "If an account exists for that email, a reset link is on its way. Check your inbox.",
+        );
       return;
     }
 
-    const { error } = mode === "signin"
-      ? await signIn(email, password)
-      : await signUp(email, password, fullName);
+    const { error } =
+      mode === "signin" ? await signIn(email, password) : await signUp(email, password, fullName);
     setBusy(false);
     if (error) setError(error);
     else navigate({ to: "/app" });
   };
 
-  const heading = mode === "signin" ? "Welcome back" : mode === "signup" ? "Create your account" : "Reset your password";
+  const heading =
+    mode === "signin"
+      ? "Welcome back"
+      : mode === "signup"
+        ? "Create your account"
+        : "Reset your password";
   const subheading =
     mode === "signin"
       ? "Sign in to your dashboard."
       : mode === "signup"
         ? "Start your first valuation in minutes."
         : "Enter your email and we'll send you a link to choose a new password.";
-  const cta = mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link";
+  const cta =
+    mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link";
 
   return (
     <div className="min-h-screen flex bg-background">
@@ -73,13 +82,17 @@ function AuthPage() {
         </Link>
         <div>
           <h2 className="font-display text-4xl font-semibold leading-tight">
-            Know what your<br />business is worth.
+            Estimate your
+            <br />
+            planning range.
           </h2>
           <p className="mt-4 text-primary-foreground/70 max-w-md">
             Join owners using ValuRight.ai to plan a confident exit on their terms.
           </p>
         </div>
-        <p className="text-xs text-primary-foreground/50">© ValuRight.ai · Software-generated estimates only.</p>
+        <p className="text-xs text-primary-foreground/50">
+          © ValuRight.ai · Software-generated estimates only.
+        </p>
       </div>
 
       <div className="flex-1 flex items-center justify-center p-8">
@@ -93,12 +106,25 @@ function AuthPage() {
 
           <form onSubmit={submit} className="mt-8 space-y-4">
             {mode === "signup" && (
-              <Field label="Full name" type="text" value={fullName} onChange={setFullName} required />
+              <Field
+                label="Full name"
+                type="text"
+                value={fullName}
+                onChange={setFullName}
+                required
+              />
             )}
             <Field label="Email" type="email" value={email} onChange={setEmail} required />
             {mode !== "forgot" && (
               <div>
-                <Field label="Password" type="password" value={password} onChange={setPassword} required minLength={6} />
+                <Field
+                  label="Password"
+                  type="password"
+                  value={password}
+                  onChange={setPassword}
+                  required
+                  minLength={6}
+                />
                 {mode === "signin" && (
                   <div className="mt-2 text-right">
                     <button
@@ -133,7 +159,10 @@ function AuthPage() {
 
           <div className="mt-6 text-center text-sm text-muted-foreground">
             {mode === "forgot" ? (
-              <button onClick={() => switchMode("signin")} className="font-semibold text-accent hover:underline">
+              <button
+                onClick={() => switchMode("signin")}
+                className="font-semibold text-accent hover:underline"
+              >
                 Back to sign in
               </button>
             ) : (
@@ -154,7 +183,21 @@ function AuthPage() {
   );
 }
 
-function Field({ label, type, value, onChange, required, minLength }: { label: string; type: string; value: string; onChange: (v: string) => void; required?: boolean; minLength?: number }) {
+function Field({
+  label,
+  type,
+  value,
+  onChange,
+  required,
+  minLength,
+}: {
+  label: string;
+  type: string;
+  value: string;
+  onChange: (v: string) => void;
+  required?: boolean;
+  minLength?: number;
+}) {
   return (
     <label className="block">
       <span className="text-sm font-medium text-foreground">{label}</span>

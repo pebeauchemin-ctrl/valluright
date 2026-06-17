@@ -50,7 +50,7 @@ const PLANS = [
     features: [
       "Portfolio dashboard",
       "White-label reports",
-      "Review and approve workflow",
+      "Advisor review workflow",
       "Multiple client businesses",
     ],
   },
@@ -90,14 +90,10 @@ function PricingPage() {
                 Most popular
               </div>
             )}
-            <h2 className="font-display text-xl font-semibold text-primary">
-              {plan.name}
-            </h2>
+            <h2 className="font-display text-xl font-semibold text-primary">{plan.name}</h2>
             <p className="mt-1 text-xs text-muted-foreground">{plan.who}</p>
             <div className="mt-4 flex items-baseline gap-1">
-              <span className="font-display text-4xl font-semibold text-primary">
-                {plan.price}
-              </span>
+              <span className="font-display text-4xl font-semibold text-primary">{plan.price}</span>
               <span className="text-sm text-muted-foreground">{plan.sub}</span>
             </div>
             <ul className="mt-5 space-y-2 text-sm text-foreground">
@@ -117,8 +113,8 @@ function PricingPage() {
           Start with the owner workflow
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Create an account, enter business details and financials, then review
-          the estimated value range before deciding whether a paid plan fits.
+          Create an account, enter business details and financials, then review the estimated value
+          range before deciding whether a paid plan fits.
         </p>
         <Link
           to="/auth"
