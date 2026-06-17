@@ -452,6 +452,101 @@ export type Database = {
           },
         ]
       }
+      financial_addback_events: {
+        Row: {
+          action: string
+          actor_user_id: string
+          addback_id: string | null
+          after_value: Json | null
+          before_value: Json | null
+          business_id: string
+          created_at: string
+          id: string
+          year: number
+        }
+        Insert: {
+          action: string
+          actor_user_id?: string
+          addback_id?: string | null
+          after_value?: Json | null
+          before_value?: Json | null
+          business_id: string
+          created_at?: string
+          id?: string
+          year: number
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string
+          addback_id?: string | null
+          after_value?: Json | null
+          before_value?: Json | null
+          business_id?: string
+          created_at?: string
+          id?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_addback_events_addback_id_fkey"
+            columns: ["addback_id"]
+            isOneToOne: false
+            referencedRelation: "financial_addbacks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_addback_events_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_addbacks: {
+        Row: {
+          amount: number
+          business_id: string
+          category: string
+          created_at: string
+          id: string
+          is_recurring: boolean
+          note: string | null
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          amount?: number
+          business_id: string
+          category: string
+          created_at?: string
+          id?: string
+          is_recurring?: boolean
+          note?: string | null
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          amount?: number
+          business_id?: string
+          category?: string
+          created_at?: string
+          id?: string
+          is_recurring?: boolean
+          note?: string | null
+          updated_at?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_addbacks_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       financial_years: {
         Row: {
           addbacks: number | null
