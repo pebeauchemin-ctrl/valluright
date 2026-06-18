@@ -33,6 +33,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { startXeroConnect, importXeroFinancials, listXeroConnections } from "@/lib/xero.functions";
 import { listQuickBooksConnections, startQuickBooksConnect } from "@/lib/quickbooks.functions";
 import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
+import { recordProductEvent } from "@/lib/observability.functions";
 
 type OnboardingSearch = {
   xero?: "connected" | "error";
@@ -238,6 +239,7 @@ function Onboarding() {
   const fetchConnections = useServerFn(listXeroConnections);
   const startQuickBooks = useServerFn(startQuickBooksConnect);
   const fetchQuickBooksConnections = useServerFn(listQuickBooksConnections);
+  const recordEvent = useServerFn(recordProductEvent);
   const [xeroLoading, setXeroLoading] = useState(false);
   const [quickBooksLoading, setQuickBooksLoading] = useState(false);
   const [xeroTenants, setXeroTenants] = useState<
@@ -393,7 +395,7 @@ function Onboarding() {
     try {
       setXeroLoading(true);
       const requestedYears = [currentYear - 3, currentYear - 2, currentYear - 1];
-      const { years: imported } = await importXero({
+      const { years: imported, summary } = await importXero({
         data: { tenantId, years: requestedYears },
       });
       setYears((prev) =>
@@ -405,6 +407,18 @@ function Onboarding() {
       toast.success(
         `Imported ${imported.length} year(s) of P&L and Balance Sheet from Xero. Review and adjust owner salary and add-backs.`,
       );
+      recordEvent({
+        data: {
+          eventName: "accounting_import_completed_viewed",
+          area: "import",
+          metadata: {
+            source: "xero",
+            years_count: imported.length,
+            unmapped_accounts_count: summary.unmappedAccounts.length,
+            warnings_count: summary.warnings.length,
+          },
+        },
+      }).catch(() => undefined);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Xero import failed");
     } finally {
@@ -528,9 +542,11 @@ function Onboarding() {
   const save = async () => {
     if (!user) return;
     setSaving(true);
+    let savedBusinessId: string | null = businessId;
     try {
       const bizId = await persistBusiness();
       if (!bizId) throw new Error("Failed to create business");
+      savedBusinessId = bizId;
       await persistFinancials(bizId);
 
       const { data: biz } = await supabase.from("businesses").select("*").eq("id", bizId).single();
@@ -548,11 +564,51 @@ function Onboarding() {
         .insert(buildValuationInsert(bizId, inputs, v, h));
       if (valuationError) throw valuationError;
 
+      await recordEvent({
+        data: {
+          eventName: "onboarding_completed",
+          area: "onboarding",
+          businessId: bizId,
+          targetType: "business",
+          targetId: bizId,
+          metadata: {
+            years_count: (yearsRows ?? []).length,
+            is_sample: Boolean(biz?.is_sample),
+          },
+        },
+      });
+      await recordEvent({
+        data: {
+          eventName: "valuation_generated",
+          area: "valuation",
+          businessId: bizId,
+          targetType: "business",
+          targetId: bizId,
+          metadata: {
+            source: "onboarding",
+            years_count: (yearsRows ?? []).length,
+          },
+        },
+      });
       await refresh();
       if (biz) setCurrent(biz);
       toast.success("Your business is saved. Welcome to your dashboard.");
       navigate({ to: "/app" });
     } catch (e) {
+      recordEvent({
+        data: {
+          eventName: "onboarding_save_failed",
+          severity: "error",
+          area: "onboarding",
+          businessId: savedBusinessId,
+          targetType: savedBusinessId ? "business" : null,
+          targetId: savedBusinessId,
+          metadata: {
+            stage: "final_save",
+            error_name: e instanceof Error ? e.name : "Error",
+          },
+        },
+      }).catch(() => undefined);
       toast.error(e instanceof Error ? e.message : "Failed to save");
     } finally {
       setSaving(false);

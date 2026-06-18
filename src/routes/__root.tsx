@@ -6,9 +6,12 @@ import {
   Scripts,
   useRouter,
 } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { AuthProvider } from "@/lib/auth";
 import { BusinessProvider } from "@/lib/business";
 import { Toaster } from "@/components/ui/sonner";
+import { recordPublicClientEvent } from "@/lib/observability.functions";
 
 import appCss from "../styles.css?url";
 
@@ -36,7 +39,22 @@ function NotFoundComponent() {
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
+  const recordEvent = useServerFn(recordPublicClientEvent);
   console.error(error);
+
+  useEffect(() => {
+    recordEvent({
+      data: {
+        eventName: "route_error",
+        severity: "error",
+        area: "routing",
+        metadata: {
+          path: typeof window !== "undefined" ? window.location.pathname : "unknown",
+          error_name: error.name || "Error",
+        },
+      },
+    }).catch(() => undefined);
+  }, [error.name, recordEvent]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -150,6 +168,45 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  const recordEvent = useServerFn(recordPublicClientEvent);
+
+  useEffect(() => {
+    const onError = (event: ErrorEvent) => {
+      recordEvent({
+        data: {
+          eventName: "frontend_error",
+          severity: "error",
+          area: "frontend",
+          metadata: {
+            path: window.location.pathname,
+            error_name: event.error instanceof Error ? event.error.name : "Error",
+          },
+        },
+      }).catch(() => undefined);
+    };
+
+    const onUnhandledRejection = (event: PromiseRejectionEvent) => {
+      recordEvent({
+        data: {
+          eventName: "unhandled_rejection",
+          severity: "error",
+          area: "frontend",
+          metadata: {
+            path: window.location.pathname,
+            error_name: event.reason instanceof Error ? event.reason.name : "PromiseRejection",
+          },
+        },
+      }).catch(() => undefined);
+    };
+
+    window.addEventListener("error", onError);
+    window.addEventListener("unhandledrejection", onUnhandledRejection);
+    return () => {
+      window.removeEventListener("error", onError);
+      window.removeEventListener("unhandledrejection", onUnhandledRejection);
+    };
+  }, [recordEvent]);
+
   return (
     <AuthProvider>
       <BusinessProvider>

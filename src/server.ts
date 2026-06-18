@@ -1,6 +1,7 @@
 import "./lib/error-capture";
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
+import { recordObservabilityEvent } from "./lib/observability.server";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -28,6 +29,12 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   }
 
   console.error(consumeLastCapturedError() ?? new Error(`SSR rendering failed: ${body}`));
+  await recordObservabilityEvent({
+    eventName: "ssr_render_failed",
+    severity: "critical",
+    area: "ssr",
+    metadata: { status: response.status },
+  });
 
   return new Response(renderErrorPage(), {
     status: 500,
@@ -43,6 +50,12 @@ export default {
       return await normalizeCatastrophicSsrResponse(response);
     } catch (error) {
       console.error(error);
+      await recordObservabilityEvent({
+        eventName: "server_request_failed",
+        severity: "critical",
+        area: "server",
+        metadata: { request_path: new URL(request.url).pathname },
+      });
       return new Response(renderErrorPage(), {
         status: 500,
         headers: { "content-type": "text/html; charset=utf-8" },
