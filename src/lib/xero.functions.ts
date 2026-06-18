@@ -16,6 +16,7 @@ import {
 } from "./xero.server";
 import { decryptToken, encryptToken, isEncryptedToken } from "./token-crypto.server";
 import { recordSecurityAuditEvent } from "./security-audit.server";
+import { recordObservabilityEvent } from "./observability.server";
 
 function getOrigin() {
   const req = getRequest();
@@ -121,62 +122,109 @@ export const importXeroFinancials = createServerFn({ method: "POST" })
         lastSyncedAt: string;
       };
     }> => {
-      const { data: conn, error } = await supabaseAdmin
-        .from("xero_connections")
-        .select("id, business_id, access_token, refresh_token, expires_at, tenant_name")
-        .eq("user_id", context.userId)
-        .eq("tenant_id", data.tenantId)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (error) throw new Error(error.message);
-      if (!conn)
-        throw new Error("No Xero connection found for this organisation. Connect Xero first.");
+      let connectionId: string | null = null;
+      let businessId: string | null = null;
+      try {
+        const { data: conn, error } = await supabaseAdmin
+          .from("xero_connections")
+          .select("id, business_id, access_token, refresh_token, expires_at, tenant_name")
+          .eq("user_id", context.userId)
+          .eq("tenant_id", data.tenantId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (error) throw new Error(error.message);
+        if (!conn)
+          throw new Error("No Xero connection found for this organisation. Connect Xero first.");
 
-      const accessToken = await ensureFreshToken(conn);
+        connectionId = conn.id;
+        businessId = conn.business_id ?? null;
+        await recordObservabilityEvent({
+          actorUserId: context.userId,
+          businessId,
+          eventName: "accounting_import_started",
+          area: "import",
+          targetType: "xero_connection",
+          targetId: connectionId,
+          metadata: { source: "xero", years_count: data.years.length },
+        });
 
-      // Fetch each year sequentially to avoid Xero rate limits.
-      const out: ParsedYear[] = [];
-      for (const y of data.years) {
-        out.push(await fetchYearSummary({ accessToken, tenantId: data.tenantId, year: y }));
+        const accessToken = await ensureFreshToken(conn);
+
+        // Fetch each year sequentially to avoid Xero rate limits.
+        const out: ParsedYear[] = [];
+        for (const y of data.years) {
+          out.push(await fetchYearSummary({ accessToken, tenantId: data.tenantId, year: y }));
+        }
+        const lastSyncedAt = new Date().toISOString();
+        await supabaseAdmin
+          .from("xero_connections")
+          .update({ last_synced_at: lastSyncedAt })
+          .eq("id", conn.id);
+        const accounts = out.flatMap((year) => year.accounts ?? []) as XeroMappedAccount[];
+        const unmappedAccounts = Array.from(
+          new Set(
+            accounts
+              .filter((account) => account.normalizedField === "unmapped")
+              .map((account) => account.sourceAccountName),
+          ),
+        ).sort((a, b) => a.localeCompare(b));
+        const warnings = Array.from(new Set(out.flatMap((year) => year.warnings ?? [])));
+        await recordSecurityAuditEvent({
+          actorUserId: context.userId,
+          businessId: conn.business_id,
+          action: "xero_financials_imported",
+          targetType: "xero_connection",
+          targetId: conn.id,
+          metadata: {
+            tenant_id: data.tenantId,
+            years: data.years,
+            imported_accounts: accounts.length,
+            unmapped_accounts: unmappedAccounts,
+          },
+        });
+        await recordObservabilityEvent({
+          actorUserId: context.userId,
+          businessId,
+          eventName: "accounting_import_completed",
+          area: "import",
+          targetType: "xero_connection",
+          targetId: connectionId,
+          metadata: {
+            source: "xero",
+            years_count: out.length,
+            imported_accounts_count: accounts.length,
+            unmapped_accounts_count: unmappedAccounts.length,
+            warnings_count: warnings.length,
+          },
+        });
+        return {
+          years: out,
+          tenantName: conn.tenant_name ?? null,
+          summary: {
+            importedAccounts: accounts.length,
+            unmappedAccounts,
+            warnings,
+            lastSyncedAt,
+          },
+        };
+      } catch (error) {
+        await recordObservabilityEvent({
+          actorUserId: context.userId,
+          businessId,
+          eventName: "accounting_import_failed",
+          severity: "error",
+          area: "import",
+          targetType: connectionId ? "xero_connection" : null,
+          targetId: connectionId,
+          metadata: {
+            source: "xero",
+            years_count: data.years.length,
+            error_name: error instanceof Error ? error.name : "Error",
+          },
+        });
+        throw error;
       }
-      const lastSyncedAt = new Date().toISOString();
-      await supabaseAdmin
-        .from("xero_connections")
-        .update({ last_synced_at: lastSyncedAt })
-        .eq("id", conn.id);
-      const accounts = out.flatMap((year) => year.accounts ?? []) as XeroMappedAccount[];
-      const unmappedAccounts = Array.from(
-        new Set(
-          accounts
-            .filter((account) => account.normalizedField === "unmapped")
-            .map((account) => account.sourceAccountName),
-        ),
-      ).sort((a, b) => a.localeCompare(b));
-      const warnings = Array.from(new Set(out.flatMap((year) => year.warnings ?? [])));
-      await recordSecurityAuditEvent({
-        actorUserId: context.userId,
-        businessId: conn.business_id,
-        action: "xero_financials_imported",
-        targetType: "xero_connection",
-        targetId: conn.id,
-        metadata: {
-          tenant_id: data.tenantId,
-          years: data.years,
-          imported_accounts: accounts.length,
-          unmapped_accounts: unmappedAccounts,
-        },
-      });
-      return {
-        years: out,
-        tenantName: conn.tenant_name ?? null,
-        summary: {
-          importedAccounts: accounts.length,
-          unmappedAccounts,
-          warnings,
-          lastSyncedAt,
-        },
-      };
     },
   );
 

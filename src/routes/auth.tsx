@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { recordPublicClientEvent } from "@/lib/observability.functions";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — ValuRight.ai" }] }),
@@ -14,6 +16,7 @@ type Mode = "signin" | "signup" | "forgot";
 function AuthPage() {
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
+  const recordEvent = useServerFn(recordPublicClientEvent);
   const [mode, setMode] = useState<Mode>("signin");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -55,8 +58,21 @@ function AuthPage() {
     const { error } =
       mode === "signin" ? await signIn(email, password) : await signUp(email, password, fullName);
     setBusy(false);
-    if (error) setError(error);
-    else navigate({ to: "/app" });
+    if (error) {
+      setError(error);
+    } else {
+      if (mode === "signup") {
+        recordEvent({
+          data: {
+            eventName: "signup_completed",
+            severity: "info",
+            area: "auth",
+            metadata: { method: "email" },
+          },
+        }).catch(() => undefined);
+      }
+      navigate({ to: "/app" });
+    }
   };
 
   const heading =

@@ -7,6 +7,8 @@ import { fmtCurrency, fmtPct } from "@/lib/format";
 import { toast } from "sonner";
 import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 import type { Database } from "@/integrations/supabase/types";
+import { useServerFn } from "@tanstack/react-start";
+import { recordProductEvent } from "@/lib/observability.functions";
 
 export const Route = createFileRoute("/app/reports")({
   head: () => ({ meta: [{ title: "Reports — ValuRight.ai" }] }),
@@ -78,6 +80,7 @@ type Bundle = {
 
 function Reports() {
   const { current } = useBusiness();
+  const recordEvent = useServerFn(recordProductEvent);
   const [bundle, setBundle] = useState<Bundle | null>(null);
   const [open, setOpen] = useState<ReportKey | null>(null);
   const [printOnOpen, setPrintOnOpen] = useState(false);
@@ -159,7 +162,19 @@ function Reports() {
               <p className="mt-2 text-sm text-muted-foreground flex-1">{r.description}</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 <button
-                  onClick={() => setOpen(r.key)}
+                  onClick={() => {
+                    setOpen(r.key);
+                    recordEvent({
+                      data: {
+                        eventName: "report_previewed",
+                        area: "report",
+                        businessId: current.id,
+                        targetType: "report",
+                        targetId: r.key,
+                        metadata: { report_type: r.key },
+                      },
+                    }).catch(() => undefined);
+                  }}
                   className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-md bg-accent px-3 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90"
                 >
                   <Eye className="h-4 w-4" /> Preview
@@ -168,6 +183,16 @@ function Reports() {
                   onClick={() => {
                     setOpen(r.key);
                     setPrintOnOpen(true);
+                    recordEvent({
+                      data: {
+                        eventName: "report_generated",
+                        area: "report",
+                        businessId: current.id,
+                        targetType: "report",
+                        targetId: r.key,
+                        metadata: { report_type: r.key, output: "print_pdf" },
+                      },
+                    }).catch(() => undefined);
                     toast.info(`Opening print dialog for ${r.title}. Choose "Save as PDF".`);
                   }}
                   className="inline-flex items-center justify-center gap-1.5 rounded-md border border-border px-3 py-2 text-sm font-semibold hover:bg-secondary"
