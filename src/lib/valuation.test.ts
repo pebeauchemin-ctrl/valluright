@@ -2,6 +2,7 @@ import {
   SAMPLE_HVAC_BUSINESS,
   SAMPLE_HVAC_FINANCIALS,
   calculateNormalizedEarnings,
+  computeHealthScore,
   methodAsset,
   methodComparable,
   methodDCF,
@@ -316,6 +317,38 @@ test("empty financials return unavailable method outputs and a zero blended rang
   assertApprox(valuation.rangeLow, 0, "empty financials low");
   assertApprox(valuation.rangeMid, 0, "empty financials mid");
   assertApprox(valuation.rangeHigh, 0, "empty financials high");
+});
+
+test("health score uses an explicit 100-point exit-readiness rubric", () => {
+  const health = computeHealthScore(hvacFixture);
+  const max = Object.values(health.breakdown).reduce((sum, item) => sum + item.max, 0);
+  const total = Object.values(health.breakdown).reduce((sum, item) => sum + item.score, 0);
+
+  assertEqual(health.max, 100, "health score max");
+  assertEqual(max, 100, "health category max total");
+  assertEqual(health.total, total, "health score total matches category scores");
+  assert(health.ratingLabel.includes("readiness"), "health score is framed as readiness");
+  assert(
+    Object.values(health.breakdown).every(
+      (item) => item.label && item.threshold && item.driver && item.detail,
+    ),
+    "each health category explains threshold and driver",
+  );
+});
+
+test("health score responds to financial and profile input changes", () => {
+  const weak = computeHealthScore(distressedFixture);
+  const strong = computeHealthScore(campgroundFixture);
+
+  assert(strong.total > weak.total, "strong fixture should outscore distressed fixture");
+  assert(
+    strong.breakdown.owner_independence.score > weak.breakdown.owner_independence.score,
+    "owner independence should improve with lower owner involvement",
+  );
+  assert(
+    strong.breakdown.financial_performance.score > weak.breakdown.financial_performance.score,
+    "financial performance should improve with stronger normalized earnings",
+  );
 });
 
 let failures = 0;

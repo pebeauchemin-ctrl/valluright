@@ -490,8 +490,21 @@ function Dashboard() {
             </ResponsiveContainer>
             <div className="-mt-24 text-center">
               <div className="font-display text-4xl font-semibold text-primary">{health.total}</div>
-              <div className="text-xs text-muted-foreground">out of 100 · click to explore</div>
+              <div className="text-xs text-muted-foreground">out of 100 · {health.ratingLabel}</div>
             </div>
+          </div>
+          <div className="mt-4 rounded-lg bg-secondary/40 p-3">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Main score driver
+            </div>
+            <div className="mt-1 text-sm font-semibold text-foreground">
+              {health.weaknesses[0]?.label ?? health.strengths[0]?.label ?? "Inputs needed"}
+            </div>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              {health.weaknesses[0]?.driver ??
+                health.strengths[0]?.driver ??
+                "Add profile and financial details to explain the score."}
+            </p>
           </div>
           <div className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-accent group-hover:underline">
             See category breakdown <ArrowRight className="h-3.5 w-3.5" />
