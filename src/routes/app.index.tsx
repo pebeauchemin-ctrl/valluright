@@ -19,6 +19,7 @@ import {
   computeHealthScore,
   type Valuation,
   type MethodResult,
+  type MultipleAssumption,
 } from "@/lib/valuation";
 import { buildValuationInsert } from "@/lib/valuation-persistence";
 import { fmtCurrency, fmtPct } from "@/lib/format";
@@ -60,6 +61,7 @@ function Dashboard() {
   const [hasQuickBooksConnection, setHasQuickBooksConnection] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [dataQualityAcknowledged, setDataQualityAcknowledged] = useState(false);
+  const [multipleAssumptions, setMultipleAssumptions] = useState<MultipleAssumption[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -69,6 +71,7 @@ function Dashboard() {
       setLastValuationAt(null);
       setHasXeroConnection(false);
       setHasQuickBooksConnection(false);
+      setMultipleAssumptions([]);
       setReviewOpen(false);
       setDataQualityAcknowledged(false);
       setLoading(false);
@@ -89,24 +92,28 @@ function Dashboard() {
         .limit(1),
       supabase.from("xero_connections").select("id").eq("business_id", current.id).limit(1),
       supabase.from("quickbooks_connections").select("id").eq("business_id", current.id).limit(1),
-    ]).then(([financialsResult, valuationsResult, xeroResult, quickBooksResult]) => {
-      if (cancelled) return;
-      setFinancials(financialsResult.data ?? []);
-      setHasSavedValuation(Boolean(valuationsResult.data?.length));
-      setLastValuationAt(valuationsResult.data?.[0]?.computed_at ?? null);
-      setHasXeroConnection(Boolean(xeroResult.data?.length));
-      setHasQuickBooksConnection(Boolean(quickBooksResult.data?.length));
-      setReviewOpen(false);
-      setLoading(false);
-    });
+      (supabase as any).from("industry_multiple_assumptions").select("*").eq("active", true),
+    ]).then(
+      ([financialsResult, valuationsResult, xeroResult, quickBooksResult, assumptionsResult]) => {
+        if (cancelled) return;
+        setFinancials(financialsResult.data ?? []);
+        setHasSavedValuation(Boolean(valuationsResult.data?.length));
+        setLastValuationAt(valuationsResult.data?.[0]?.computed_at ?? null);
+        setHasXeroConnection(Boolean(xeroResult.data?.length));
+        setHasQuickBooksConnection(Boolean(quickBooksResult.data?.length));
+        setMultipleAssumptions(normalizeMultipleAssumptions(assumptionsResult.data));
+        setReviewOpen(false);
+        setLoading(false);
+      },
+    );
     return () => {
       cancelled = true;
     };
   }, [current]);
 
   const inputs = useMemo(
-    () => (current ? toBusinessInputs(current, financials) : null),
-    [current, financials],
+    () => (current ? toBusinessInputs(current, financials, multipleAssumptions) : null),
+    [current, financials, multipleAssumptions],
   );
   const valuation: Valuation | null = useMemo(
     () => (inputs ? valueBusiness(inputs) : null),
@@ -1049,6 +1056,49 @@ function getInputSourceLabel(
   if (hasXeroConnection) return "Xero or manual edits";
   if (hasQuickBooksConnection) return "QuickBooks or manual edits";
   return "Manual or CSV entry";
+}
+
+function normalizeMultipleAssumptions(rows: unknown): MultipleAssumption[] {
+  if (!Array.isArray(rows)) return [];
+  return rows
+    .map((row) => row as Record<string, unknown>)
+    .filter((row) => typeof row.slug === "string" && typeof row.industry === "string")
+    .map((row) => ({
+      slug: String(row.slug),
+      industry: String(row.industry),
+      business_category: typeof row.business_category === "string" ? row.business_category : "any",
+      revenue_min: row.revenue_min == null ? null : Number(row.revenue_min),
+      revenue_max: row.revenue_max == null ? null : Number(row.revenue_max),
+      owner_dependence: typeof row.owner_dependence === "string" ? row.owner_dependence : "any",
+      confidence_level:
+        row.confidence_level === "low" || row.confidence_level === "high"
+          ? row.confidence_level
+          : "medium",
+      sde_low: Number(row.sde_low),
+      sde_mid: Number(row.sde_mid),
+      sde_high: Number(row.sde_high),
+      ebitda_low: Number(row.ebitda_low),
+      ebitda_mid: Number(row.ebitda_mid),
+      ebitda_high: Number(row.ebitda_high),
+      revenue_low: Number(row.revenue_low),
+      revenue_mid: Number(row.revenue_mid),
+      revenue_high: Number(row.revenue_high),
+      source_label: String(row.source_label ?? "Configured assumption"),
+      source_notes: String(row.source_notes ?? "Configured planning assumption."),
+      active: row.active !== false,
+    }))
+    .filter(
+      (row) =>
+        Number.isFinite(row.sde_low) &&
+        Number.isFinite(row.sde_mid) &&
+        Number.isFinite(row.sde_high) &&
+        Number.isFinite(row.ebitda_low) &&
+        Number.isFinite(row.ebitda_mid) &&
+        Number.isFinite(row.ebitda_high) &&
+        Number.isFinite(row.revenue_low) &&
+        Number.isFinite(row.revenue_mid) &&
+        Number.isFinite(row.revenue_high),
+    ) as MultipleAssumption[];
 }
 
 function getLatestTimestamp(values: Array<string | null | undefined>) {

@@ -141,6 +141,7 @@ export type BusinessInputs = {
   top_customer_concentration_pct?: number | null; // 0-100
   sop_status?: string | null; // 'none' | 'partial' | 'complete'
   manager_team_depth?: string | null; // 'none' | 'partial' | 'strong'
+  multiple_assumptions?: MultipleAssumption[] | null;
   financials: FinancialYear[]; // 1-3 years, latest first preferred
 };
 
@@ -149,50 +150,231 @@ export type BusinessInputs = {
 // Calibrated from public small-business comp data (BizBuySell/IBBA-style ranges).
 // These are intentionally conservative for an estimate, not appraisal.
 // ---------------------------------------------------------------------------
-type Multiples = {
+export type Multiples = {
   sde: [number, number, number];
   ebitda: [number, number, number];
   revenue: [number, number, number];
 };
 
-const INDUSTRY_MULTIPLES: Record<string, Multiples> = {
-  "HVAC / Trades": { sde: [2.4, 3.0, 3.8], ebitda: [3.5, 4.5, 5.5], revenue: [0.45, 0.65, 0.95] },
-  "Professional Services": {
-    sde: [2.0, 2.6, 3.2],
-    ebitda: [3.0, 4.0, 5.0],
-    revenue: [0.6, 0.9, 1.4],
-  },
-  "Healthcare Practice": {
-    sde: [2.5, 3.2, 4.0],
-    ebitda: [3.5, 4.8, 6.0],
-    revenue: [0.7, 1.0, 1.5],
-  },
-  Construction: { sde: [2.0, 2.5, 3.0], ebitda: [3.0, 3.8, 4.5], revenue: [0.3, 0.5, 0.7] },
-  "Restaurant / Hospitality": {
-    sde: [1.6, 2.0, 2.5],
-    ebitda: [2.5, 3.2, 4.0],
-    revenue: [0.25, 0.4, 0.6],
-  },
-  Retail: { sde: [1.8, 2.3, 2.8], ebitda: [2.8, 3.5, 4.2], revenue: [0.3, 0.45, 0.6] },
-  Manufacturing: { sde: [2.5, 3.2, 4.0], ebitda: [3.5, 4.5, 5.5], revenue: [0.5, 0.8, 1.2] },
-  "E-commerce / Online": {
-    sde: [2.5, 3.5, 4.5],
-    ebitda: [3.5, 5.0, 6.5],
-    revenue: [0.6, 1.0, 1.6],
-  },
-  "Software / SaaS": { sde: [3.0, 4.5, 6.0], ebitda: [5.0, 7.0, 10.0], revenue: [1.5, 2.5, 4.0] },
-  "Auto Repair / Service": {
-    sde: [2.2, 2.8, 3.5],
-    ebitda: [3.0, 4.0, 5.0],
-    revenue: [0.35, 0.55, 0.8],
-  },
-  "Logistics / Transport": {
-    sde: [2.0, 2.6, 3.2],
-    ebitda: [3.0, 4.0, 5.0],
-    revenue: [0.4, 0.6, 0.9],
-  },
-  Other: { sde: [2.0, 2.7, 3.4], ebitda: [3.0, 4.0, 5.0], revenue: [0.4, 0.6, 0.9] },
+export type OwnerDependenceBand = "any" | "low" | "medium" | "high";
+export type MultipleConfidenceLevel = "low" | "medium" | "high";
+
+export type MultipleAssumption = {
+  slug: string;
+  industry: string;
+  business_category?: BusinessCategory | "any" | null;
+  revenue_min?: number | null;
+  revenue_max?: number | null;
+  owner_dependence?: OwnerDependenceBand | null;
+  confidence_level: MultipleConfidenceLevel;
+  sde_low: number;
+  sde_mid: number;
+  sde_high: number;
+  ebitda_low: number;
+  ebitda_mid: number;
+  ebitda_high: number;
+  revenue_low: number;
+  revenue_mid: number;
+  revenue_high: number;
+  source_label: string;
+  source_notes: string;
+  active?: boolean | null;
 };
+
+function assumption(
+  slug: string,
+  industry: string,
+  multiples: Multiples,
+  sourceNotes: string,
+): MultipleAssumption {
+  return {
+    slug,
+    industry,
+    business_category: "any",
+    revenue_min: null,
+    revenue_max: null,
+    owner_dependence: "any",
+    confidence_level: "medium",
+    sde_low: multiples.sde[0],
+    sde_mid: multiples.sde[1],
+    sde_high: multiples.sde[2],
+    ebitda_low: multiples.ebitda[0],
+    ebitda_mid: multiples.ebitda[1],
+    ebitda_high: multiples.ebitda[2],
+    revenue_low: multiples.revenue[0],
+    revenue_mid: multiples.revenue[1],
+    revenue_high: multiples.revenue[2],
+    source_label: "ValuRight planning baseline",
+    source_notes: sourceNotes,
+    active: true,
+  };
+}
+
+export const DEFAULT_MULTIPLE_ASSUMPTIONS: MultipleAssumption[] = [
+  assumption(
+    "hvac-trades-default",
+    "HVAC / Trades",
+    { sde: [2.4, 3.0, 3.8], ebitda: [3.5, 4.5, 5.5], revenue: [0.45, 0.65, 0.95] },
+    "Directional SMB planning range for service-trade businesses. Review against current local comps before relying on an asking price.",
+  ),
+  assumption(
+    "professional-services-default",
+    "Professional Services",
+    { sde: [2.0, 2.6, 3.2], ebitda: [3.0, 4.0, 5.0], revenue: [0.6, 0.9, 1.4] },
+    "Directional professional-services planning range; owner dependence and client concentration can materially lower realized multiples.",
+  ),
+  assumption(
+    "healthcare-practice-default",
+    "Healthcare Practice",
+    { sde: [2.5, 3.2, 4.0], ebitda: [3.5, 4.8, 6.0], revenue: [0.7, 1.0, 1.5] },
+    "Directional healthcare-practice planning range; payer mix, provider retention, and compliance diligence should be reviewed separately.",
+  ),
+  assumption(
+    "construction-default",
+    "Construction",
+    { sde: [2.0, 2.5, 3.0], ebitda: [3.0, 3.8, 4.5], revenue: [0.3, 0.5, 0.7] },
+    "Directional contractor planning range; backlog quality, bonding capacity, and cyclicality can shift market outcomes.",
+  ),
+  assumption(
+    "restaurant-hospitality-default",
+    "Restaurant / Hospitality",
+    { sde: [1.6, 2.0, 2.5], ebitda: [2.5, 3.2, 4.0], revenue: [0.25, 0.4, 0.6] },
+    "Directional restaurant and hospitality planning range; location, lease terms, owner replacement needs, and concept durability are key diligence items.",
+  ),
+  assumption(
+    "retail-default",
+    "Retail",
+    { sde: [1.8, 2.3, 2.8], ebitda: [2.8, 3.5, 4.2], revenue: [0.3, 0.45, 0.6] },
+    "Directional retail planning range; inventory quality, foot traffic, lease terms, and online competition should be reviewed.",
+  ),
+  assumption(
+    "manufacturing-default",
+    "Manufacturing",
+    { sde: [2.5, 3.2, 4.0], ebitda: [3.5, 4.5, 5.5], revenue: [0.5, 0.8, 1.2] },
+    "Directional manufacturing planning range; equipment condition, customer concentration, and working-capital needs can shift realized multiples.",
+  ),
+  assumption(
+    "ecommerce-online-default",
+    "E-commerce / Online",
+    { sde: [2.5, 3.5, 4.5], ebitda: [3.5, 5.0, 6.5], revenue: [0.6, 1.0, 1.6] },
+    "Directional online-business planning range; channel concentration, CAC durability, and owner-operated marketing risk need separate review.",
+  ),
+  assumption(
+    "software-saas-default",
+    "Software / SaaS",
+    { sde: [3.0, 4.5, 6.0], ebitda: [5.0, 7.0, 10.0], revenue: [1.5, 2.5, 4.0] },
+    "Directional SaaS planning range; retention, growth, gross margin, and customer concentration are usually more important than industry label alone.",
+  ),
+  assumption(
+    "auto-repair-service-default",
+    "Auto Repair / Service",
+    { sde: [2.2, 2.8, 3.5], ebitda: [3.0, 4.0, 5.0], revenue: [0.35, 0.55, 0.8] },
+    "Directional auto-service planning range; technician retention, facility control, and equipment condition are key buyer diligence items.",
+  ),
+  assumption(
+    "logistics-transport-default",
+    "Logistics / Transport",
+    { sde: [2.0, 2.6, 3.2], ebitda: [3.0, 4.0, 5.0], revenue: [0.4, 0.6, 0.9] },
+    "Directional logistics planning range; fleet age, contract durability, and fuel/labor exposure can materially change outcomes.",
+  ),
+  assumption(
+    "other-default",
+    "Other",
+    { sde: [2.0, 2.7, 3.4], ebitda: [3.0, 4.0, 5.0], revenue: [0.4, 0.6, 0.9] },
+    "Fallback planning range for industries without a more specific assumption. Replace with a reviewed comp set when available.",
+  ),
+];
+
+const INDUSTRY_MULTIPLES: Record<string, Multiples> = Object.fromEntries(
+  DEFAULT_MULTIPLE_ASSUMPTIONS.map((row) => [
+    row.industry,
+    {
+      sde: [row.sde_low, row.sde_mid, row.sde_high],
+      ebitda: [row.ebitda_low, row.ebitda_mid, row.ebitda_high],
+      revenue: [row.revenue_low, row.revenue_mid, row.revenue_high],
+    } satisfies Multiples,
+  ]),
+);
+
+export type SelectedMultipleAssumption = {
+  assumption: MultipleAssumption;
+  multiples: Multiples;
+};
+
+export function ownerDependenceBand(b: BusinessInputs): OwnerDependenceBand {
+  const ownerHours = b.owner_hours_per_week ?? 50;
+  const ownerRoles = [
+    b.owner_in_sales,
+    b.owner_in_operations,
+    b.owner_in_customer_relationships,
+  ].filter(Boolean).length;
+  if (ownerHours >= 55 || ownerRoles >= 3) return "high";
+  if (ownerHours >= 35 || ownerRoles >= 1) return "medium";
+  return "low";
+}
+
+function assumptionMatches(
+  assumption: MultipleAssumption,
+  b: BusinessInputs,
+  category: BusinessCategory,
+  latestRevenue: number,
+  ownerBand: OwnerDependenceBand,
+): boolean {
+  if (assumption.active === false) return false;
+  if (assumption.industry !== (b.industry ?? "Other") && assumption.industry !== "Other")
+    return false;
+  if (
+    assumption.business_category &&
+    assumption.business_category !== "any" &&
+    assumption.business_category !== category
+  ) {
+    return false;
+  }
+  if (assumption.revenue_min != null && latestRevenue < assumption.revenue_min) return false;
+  if (assumption.revenue_max != null && latestRevenue > assumption.revenue_max) return false;
+  if (
+    assumption.owner_dependence &&
+    assumption.owner_dependence !== "any" &&
+    assumption.owner_dependence !== ownerBand
+  ) {
+    return false;
+  }
+  return true;
+}
+
+function assumptionSpecificity(assumption: MultipleAssumption, b: BusinessInputs): number {
+  let score = 0;
+  if (assumption.industry === b.industry) score += 8;
+  if (assumption.business_category && assumption.business_category !== "any") score += 4;
+  if (assumption.revenue_min != null || assumption.revenue_max != null) score += 2;
+  if (assumption.owner_dependence && assumption.owner_dependence !== "any") score += 2;
+  if (assumption.confidence_level === "high") score += 1;
+  if (assumption.confidence_level === "low") score -= 1;
+  return score;
+}
+
+export function selectMultipleAssumption(b: BusinessInputs): SelectedMultipleAssumption {
+  const category =
+    (b.business_category as BusinessCategory) || inferCategory(b.industry, b.sub_industry);
+  const latest = latestFinancials(b);
+  const latestRevenue = latest?.revenue ?? 0;
+  const ownerBand = ownerDependenceBand(b);
+  const candidates = [...(b.multiple_assumptions ?? []), ...DEFAULT_MULTIPLE_ASSUMPTIONS].filter(
+    (row) => assumptionMatches(row, b, category, latestRevenue, ownerBand),
+  );
+  const selected =
+    candidates.sort((a, c) => assumptionSpecificity(c, b) - assumptionSpecificity(a, b))[0] ??
+    DEFAULT_MULTIPLE_ASSUMPTIONS.find((row) => row.industry === "Other")!;
+
+  return {
+    assumption: selected,
+    multiples: {
+      sde: [selected.sde_low, selected.sde_mid, selected.sde_high],
+      ebitda: [selected.ebitda_low, selected.ebitda_mid, selected.ebitda_high],
+      revenue: [selected.revenue_low, selected.revenue_mid, selected.revenue_high],
+    },
+  };
+}
 
 export function getIndustryMultiples(industry?: string | null): Multiples {
   if (!industry) return INDUSTRY_MULTIPLES["Other"];
@@ -280,6 +462,9 @@ export type MethodResult = {
   notes: string;
   formula?: string;
   reasoning?: string;
+  multipleSource?: string;
+  multipleNotes?: string;
+  multipleConfidence?: MultipleConfidenceLevel;
   available: boolean;
   role?: MethodRole;
   warning?: string;
@@ -355,7 +540,9 @@ export function calculateNormalizedEarnings(latest: FinancialYear): NormalizedEa
 
 export function methodSDE(b: BusinessInputs): MethodResult {
   const latest = latestFinancials(b);
-  const m = getIndustryMultiples(b.industry);
+  const selected = selectMultipleAssumption(b);
+  const m = selected.multiples;
+  const assumption = selected.assumption;
   if (!latest) {
     return blankMethod("sde", "SDE Multiple", "Add a year of financials to compute.");
   }
@@ -374,9 +561,12 @@ export function methodSDE(b: BusinessInputs): MethodResult {
     inputLabel: "Seller's Discretionary Earnings",
     confidence: confidenceFromAdj(adj, sde > 0),
     notes:
-      "Most common method for owner-operated SMBs. Earnings reflect total benefit to a working owner.",
+      "Most common method for owner-operated SMBs. Earnings reflect total benefit to a working owner. Multiples are planning assumptions, not market guarantees.",
     formula: `${normalized.ebitdaFormula}\n${normalized.sdeFormula}\nSDE × Industry Multiple\nMultiple range: ${lo.toFixed(2)}× – ${hi.toFixed(2)}× (median ${mid.toFixed(2)}×)`,
-    reasoning: `${normalized.plainEnglish} Industry baseline for ${b.industry ?? "Other"} is ${m.sde[0].toFixed(2)}–${m.sde[2].toFixed(2)}×. Risk adjustment ${adj >= 0 ? "+" : ""}${adj.toFixed(2)} applied based on owner dependence, recurring revenue, customer concentration, documentation, and management depth.`,
+    reasoning: `${normalized.plainEnglish} Industry baseline for ${b.industry ?? "Other"} is ${m.sde[0].toFixed(2)}–${m.sde[2].toFixed(2)}× from ${assumption.source_label}. Risk adjustment ${adj >= 0 ? "+" : ""}${adj.toFixed(2)} applied based on owner dependence, recurring revenue, customer concentration, documentation, and management depth. These multiples are planning assumptions and should be checked against current buyer activity before setting an asking price.`,
+    multipleSource: assumption.source_label,
+    multipleNotes: assumption.source_notes,
+    multipleConfidence: assumption.confidence_level,
     available: sde > 0,
   };
 }
@@ -391,7 +581,9 @@ function fmtMoney(n: number): string {
 
 export function methodEBITDA(b: BusinessInputs): MethodResult {
   const latest = latestFinancials(b);
-  const m = getIndustryMultiples(b.industry);
+  const selected = selectMultipleAssumption(b);
+  const m = selected.multiples;
+  const assumption = selected.assumption;
   if (!latest) return blankMethod("ebitda", "EBITDA Multiple", "Add financials to compute.");
   const normalized = calculateNormalizedEarnings(latest);
   const ebitda = normalized.ebitda;
@@ -407,16 +599,22 @@ export function methodEBITDA(b: BusinessInputs): MethodResult {
     inputUsed: ebitda,
     inputLabel: "EBITDA",
     confidence: confidenceFromAdj(adj, ebitda > 0),
-    notes: "Standard for businesses with a hired-out owner. Used by most strategic and PE buyers.",
+    notes:
+      "Standard for businesses with a hired-out owner. Used by most strategic and PE buyers. Multiples are planning assumptions, not market guarantees.",
     formula: `${normalized.ebitdaFormula}\nEBITDA × Industry Multiple\nMultiple range: ${lo.toFixed(2)}× – ${hi.toFixed(2)}× (median ${mid.toFixed(2)}×)`,
-    reasoning: `${normalized.plainEnglish} Industry baseline for ${b.industry ?? "Other"} is ${m.ebitda[0].toFixed(2)}–${m.ebitda[2].toFixed(2)}×. Risk adjustment ${adj >= 0 ? "+" : ""}${adj.toFixed(2)} reflects operating risk and quality of earnings.`,
+    reasoning: `${normalized.plainEnglish} Industry baseline for ${b.industry ?? "Other"} is ${m.ebitda[0].toFixed(2)}–${m.ebitda[2].toFixed(2)}× from ${assumption.source_label}. Risk adjustment ${adj >= 0 ? "+" : ""}${adj.toFixed(2)} reflects operating risk and quality of earnings. These multiples are planning assumptions and should be checked against current buyer activity before setting an asking price.`,
+    multipleSource: assumption.source_label,
+    multipleNotes: assumption.source_notes,
+    multipleConfidence: assumption.confidence_level,
     available: ebitda > 0,
   };
 }
 
 export function methodRevenue(b: BusinessInputs): MethodResult {
   const latest = latestFinancials(b);
-  const m = getIndustryMultiples(b.industry);
+  const selected = selectMultipleAssumption(b);
+  const m = selected.multiples;
+  const assumption = selected.assumption;
   if (!latest) return blankMethod("revenue", "Revenue Multiple", "Add financials to compute.");
   const revenue = latest.revenue;
   const adj = riskAdjustment(b);
@@ -431,9 +629,13 @@ export function methodRevenue(b: BusinessInputs): MethodResult {
     inputUsed: revenue,
     inputLabel: "Annual Revenue",
     confidence: "low",
-    notes: "Useful sanity check, especially for high-growth or low-margin businesses.",
+    notes:
+      "Useful sanity check, especially for high-growth or low-margin businesses. Revenue multiples are planning assumptions and ignore profitability.",
     formula: `Revenue × Industry Multiple\nRevenue = ${fmtMoney(revenue)}\nMultiple range: ${lo.toFixed(2)}× – ${hi.toFixed(2)}× (median ${mid.toFixed(2)}×)`,
-    reasoning: `Revenue multiples ignore profitability and are a directional check only. Industry baseline ${m.revenue[0].toFixed(2)}–${m.revenue[2].toFixed(2)}× for ${b.industry ?? "Other"}.`,
+    reasoning: `Revenue multiples ignore profitability and are a directional check only. Industry baseline ${m.revenue[0].toFixed(2)}–${m.revenue[2].toFixed(2)}× for ${b.industry ?? "Other"} from ${assumption.source_label}. These multiples are planning assumptions, not market guarantees.`,
+    multipleSource: assumption.source_label,
+    multipleNotes: assumption.source_notes,
+    multipleConfidence: assumption.confidence_level,
     available: revenue > 0,
   };
 }

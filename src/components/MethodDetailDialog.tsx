@@ -95,6 +95,25 @@ export function MethodDetailDialog({
               </div>
             )}
 
+            {method.multipleSource && (
+              <div className="rounded-lg border border-border bg-secondary/40 p-3 text-xs">
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Multiple assumption
+                </div>
+                <div className="mt-1 font-semibold text-foreground">{method.multipleSource}</div>
+                {method.multipleConfidence && (
+                  <div className="mt-0.5 text-muted-foreground">
+                    Confidence: {method.multipleConfidence}
+                  </div>
+                )}
+                {method.multipleNotes && (
+                  <p className="mt-2 leading-relaxed text-muted-foreground">
+                    {method.multipleNotes}
+                  </p>
+                )}
+              </div>
+            )}
+
             {method.formula && (
               <div>
                 <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
