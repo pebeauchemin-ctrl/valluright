@@ -17,6 +17,7 @@ import {
   computeHealthScore,
   valueBusiness,
   type HealthBreakdown,
+  type HealthDriver,
   type BusinessInputs,
 } from "@/lib/valuation";
 import { fmtCurrency } from "@/lib/format";
@@ -342,16 +343,23 @@ function HealthScorePage() {
   };
 
   const { total, breakdown } = result;
-  const entries = (Object.keys(breakdown) as (keyof HealthBreakdown)[]).map((k) => ({
-    key: k,
-    ...CATEGORY_META[k],
-    score: breakdown[k].score,
-    max: breakdown[k].max,
-    pct: (breakdown[k].score / breakdown[k].max) * 100,
-  }));
+  const entries = (Object.keys(breakdown) as (keyof HealthBreakdown)[]).map((k) => {
+    const item = breakdown[k];
+    return {
+      key: k,
+      label: item.label,
+      description: item.detail,
+      tip: CATEGORY_META[k].tip,
+      threshold: item.threshold,
+      driver: item.driver,
+      status: item.status,
+      score: item.score,
+      max: item.max,
+      pct: (item.score / item.max) * 100,
+    };
+  });
 
   const radial = [{ name: "Score", value: total, fill: "var(--accent)" }];
-  const grade = total >= 80 ? "A" : total >= 65 ? "B" : total >= 50 ? "C" : total >= 35 ? "D" : "F";
 
   const chartData = entries.map((e) => ({
     name: e.label,
@@ -373,7 +381,7 @@ function HealthScorePage() {
           Value Health Score
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          A diagnostic across the eight drivers buyers and lenders weight most.
+          An exit-readiness diagnostic across the eight drivers buyers and lenders weight most.
         </p>
       </div>
 
@@ -400,10 +408,11 @@ function HealthScorePage() {
             <div className="absolute inset-x-0 bottom-6 text-center">
               <div className="font-display text-5xl font-semibold text-primary">{total}</div>
               <div className="text-xs text-muted-foreground">
-                out of 100 · grade <span className="font-semibold">{grade}</span>
+                out of 100 · <span className="font-semibold">{result.ratingLabel}</span>
               </div>
             </div>
           </div>
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{result.summary}</p>
           <Link
             to="/app/improve-value"
             className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:underline"
@@ -452,9 +461,36 @@ function HealthScorePage() {
         </div>
       </section>
 
+      <section className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-xl border border-border bg-card p-5">
+          <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+            <TrendingUp className="h-4 w-4 text-accent" /> Strongest drivers
+          </div>
+          <div className="mt-3 space-y-3">
+            {result.strengths.length ? (
+              result.strengths.map((driver) => <DriverRow key={driver.key} driver={driver} />)
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No category is above the strength threshold yet.
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-5">
+          <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+            <AlertTriangle className="h-4 w-4 text-destructive" /> Priority gaps
+          </div>
+          <div className="mt-3 space-y-3">
+            {result.weaknesses.map((driver) => (
+              <DriverRow key={driver.key} driver={driver} />
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="grid md:grid-cols-2 gap-4">
         {entries.map((e) => {
-          const tier = e.pct >= 75 ? "strong" : e.pct >= 40 ? "ok" : "weak";
+          const tier = e.status === "strength" ? "strong" : e.status === "watch" ? "ok" : "weak";
           return (
             <div key={e.key} className="rounded-xl border border-border bg-card p-5">
               <div className="flex items-start justify-between gap-3">
@@ -492,6 +528,12 @@ function HealthScorePage() {
                 />
               </div>
               <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+                <strong>Current driver:</strong> {e.driver}
+              </p>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                <strong>Threshold:</strong> {e.threshold}
+              </p>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
                 <strong>How to improve:</strong> {e.tip}
               </p>
             </div>
@@ -629,6 +671,25 @@ function HealthScorePage() {
       </section>
 
       <ValuationDisclaimer className="mt-4" />
+    </div>
+  );
+}
+
+function DriverRow({ driver }: { driver: HealthDriver }) {
+  return (
+    <div className="rounded-lg border border-border bg-secondary/30 p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-sm font-semibold text-foreground">{driver.label}</div>
+          <div className="mt-1 text-xs leading-relaxed text-muted-foreground">{driver.driver}</div>
+        </div>
+        <div className="shrink-0 text-sm font-semibold tabular-nums text-primary">
+          {driver.score}/{driver.max}
+        </div>
+      </div>
+      <div className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+        {driver.threshold}
+      </div>
     </div>
   );
 }

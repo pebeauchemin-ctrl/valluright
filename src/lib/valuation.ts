@@ -26,24 +26,32 @@ export type FinancialYear = {
 // Business categorization for method selection
 export type BusinessCategory = "real_estate_income" | "standard_operating" | "asset_heavy";
 
-export const BUSINESS_CATEGORY_OPTIONS: { value: BusinessCategory; label: string; description: string; examples: string }[] = [
+export const BUSINESS_CATEGORY_OPTIONS: {
+  value: BusinessCategory;
+  label: string;
+  description: string;
+  examples: string;
+}[] = [
   {
     value: "real_estate_income",
     label: "Income-producing real estate / property operating business",
     description: "Property operating businesses where land, location, and occupancy drive value.",
-    examples: "RV park, campground, mobile home park, self-storage, hotel/motel, marina, multifamily, commercial rental, senior housing",
+    examples:
+      "RV park, campground, mobile home park, self-storage, hotel/motel, marina, multifamily, commercial rental, senior housing",
   },
   {
     value: "standard_operating",
     label: "Standard operating business",
     description: "Service, product, or knowledge businesses valued primarily on earnings.",
-    examples: "Retail, restaurant, service, contractor, agency, medical/dental practice, manufacturing, distribution, e-commerce, SaaS",
+    examples:
+      "Retail, restaurant, service, contractor, agency, medical/dental practice, manufacturing, distribution, e-commerce, SaaS",
   },
   {
     value: "asset_heavy",
     label: "Asset-heavy operating business",
     description: "Earnings matter, but tangible equipment and assets carry meaningful value.",
-    examples: "Trucking, equipment rental, construction with owned equipment, heavy manufacturing, auto repair with real estate, laundromat",
+    examples:
+      "Trucking, equipment rental, construction with owned equipment, heavy manufacturing, auto repair with real estate, laundromat",
   },
 ];
 
@@ -84,9 +92,25 @@ export const BUSINESS_SUBTYPES: Record<BusinessCategory, string[]> = {
 };
 
 // Industry → category default (used as a hint, user can override)
-const REAL_ESTATE_INDUSTRY_KEYWORDS = ["rv park", "campground", "mobile home", "self-storage", "self storage", "hotel", "motel", "marina", "multifamily", "rental property", "senior housing", "assisted living"];
+const REAL_ESTATE_INDUSTRY_KEYWORDS = [
+  "rv park",
+  "campground",
+  "mobile home",
+  "self-storage",
+  "self storage",
+  "hotel",
+  "motel",
+  "marina",
+  "multifamily",
+  "rental property",
+  "senior housing",
+  "assisted living",
+];
 
-export function inferCategory(industry?: string | null, subIndustry?: string | null): BusinessCategory {
+export function inferCategory(
+  industry?: string | null,
+  subIndustry?: string | null,
+): BusinessCategory {
   const blob = `${industry ?? ""} ${subIndustry ?? ""}`.toLowerCase();
   if (REAL_ESTATE_INDUSTRY_KEYWORDS.some((k) => blob.includes(k))) return "real_estate_income";
   if (/trucking|equipment rental|laundromat|heavy manufactur/.test(blob)) return "asset_heavy";
@@ -102,9 +126,9 @@ export type BusinessInputs = {
   industry?: string | null;
   sub_industry?: string | null;
   business_category?: BusinessCategory | null;
-  cap_rate_low?: number | null;       // e.g., 8 means 8%
-  cap_rate_selected?: number | null;  // e.g., 10
-  cap_rate_high?: number | null;      // e.g., 12
+  cap_rate_low?: number | null; // e.g., 8 means 8%
+  cap_rate_selected?: number | null; // e.g., 10
+  cap_rate_high?: number | null; // e.g., 12
   management_fee_pct?: number | null; // e.g., 5 means 5% of revenue
   replacement_reserve_pct?: number | null; // e.g., 3 means 3% of revenue
   years_in_business?: number | null;
@@ -125,21 +149,49 @@ export type BusinessInputs = {
 // Calibrated from public small-business comp data (BizBuySell/IBBA-style ranges).
 // These are intentionally conservative for an estimate, not appraisal.
 // ---------------------------------------------------------------------------
-type Multiples = { sde: [number, number, number]; ebitda: [number, number, number]; revenue: [number, number, number] };
+type Multiples = {
+  sde: [number, number, number];
+  ebitda: [number, number, number];
+  revenue: [number, number, number];
+};
 
 const INDUSTRY_MULTIPLES: Record<string, Multiples> = {
-  "HVAC / Trades":              { sde: [2.4, 3.0, 3.8], ebitda: [3.5, 4.5, 5.5], revenue: [0.45, 0.65, 0.95] },
-  "Professional Services":      { sde: [2.0, 2.6, 3.2], ebitda: [3.0, 4.0, 5.0], revenue: [0.6, 0.9, 1.4] },
-  "Healthcare Practice":        { sde: [2.5, 3.2, 4.0], ebitda: [3.5, 4.8, 6.0], revenue: [0.7, 1.0, 1.5] },
-  "Construction":               { sde: [2.0, 2.5, 3.0], ebitda: [3.0, 3.8, 4.5], revenue: [0.3, 0.5, 0.7] },
-  "Restaurant / Hospitality":   { sde: [1.6, 2.0, 2.5], ebitda: [2.5, 3.2, 4.0], revenue: [0.25, 0.4, 0.6] },
-  "Retail":                     { sde: [1.8, 2.3, 2.8], ebitda: [2.8, 3.5, 4.2], revenue: [0.3, 0.45, 0.6] },
-  "Manufacturing":              { sde: [2.5, 3.2, 4.0], ebitda: [3.5, 4.5, 5.5], revenue: [0.5, 0.8, 1.2] },
-  "E-commerce / Online":        { sde: [2.5, 3.5, 4.5], ebitda: [3.5, 5.0, 6.5], revenue: [0.6, 1.0, 1.6] },
-  "Software / SaaS":            { sde: [3.0, 4.5, 6.0], ebitda: [5.0, 7.0, 10.0], revenue: [1.5, 2.5, 4.0] },
-  "Auto Repair / Service":      { sde: [2.2, 2.8, 3.5], ebitda: [3.0, 4.0, 5.0], revenue: [0.35, 0.55, 0.8] },
-  "Logistics / Transport":      { sde: [2.0, 2.6, 3.2], ebitda: [3.0, 4.0, 5.0], revenue: [0.4, 0.6, 0.9] },
-  "Other":                      { sde: [2.0, 2.7, 3.4], ebitda: [3.0, 4.0, 5.0], revenue: [0.4, 0.6, 0.9] },
+  "HVAC / Trades": { sde: [2.4, 3.0, 3.8], ebitda: [3.5, 4.5, 5.5], revenue: [0.45, 0.65, 0.95] },
+  "Professional Services": {
+    sde: [2.0, 2.6, 3.2],
+    ebitda: [3.0, 4.0, 5.0],
+    revenue: [0.6, 0.9, 1.4],
+  },
+  "Healthcare Practice": {
+    sde: [2.5, 3.2, 4.0],
+    ebitda: [3.5, 4.8, 6.0],
+    revenue: [0.7, 1.0, 1.5],
+  },
+  Construction: { sde: [2.0, 2.5, 3.0], ebitda: [3.0, 3.8, 4.5], revenue: [0.3, 0.5, 0.7] },
+  "Restaurant / Hospitality": {
+    sde: [1.6, 2.0, 2.5],
+    ebitda: [2.5, 3.2, 4.0],
+    revenue: [0.25, 0.4, 0.6],
+  },
+  Retail: { sde: [1.8, 2.3, 2.8], ebitda: [2.8, 3.5, 4.2], revenue: [0.3, 0.45, 0.6] },
+  Manufacturing: { sde: [2.5, 3.2, 4.0], ebitda: [3.5, 4.5, 5.5], revenue: [0.5, 0.8, 1.2] },
+  "E-commerce / Online": {
+    sde: [2.5, 3.5, 4.5],
+    ebitda: [3.5, 5.0, 6.5],
+    revenue: [0.6, 1.0, 1.6],
+  },
+  "Software / SaaS": { sde: [3.0, 4.5, 6.0], ebitda: [5.0, 7.0, 10.0], revenue: [1.5, 2.5, 4.0] },
+  "Auto Repair / Service": {
+    sde: [2.2, 2.8, 3.5],
+    ebitda: [3.0, 4.0, 5.0],
+    revenue: [0.35, 0.55, 0.8],
+  },
+  "Logistics / Transport": {
+    sde: [2.0, 2.6, 3.2],
+    ebitda: [3.0, 4.0, 5.0],
+    revenue: [0.4, 0.6, 0.9],
+  },
+  Other: { sde: [2.0, 2.7, 3.4], ebitda: [3.0, 4.0, 5.0], revenue: [0.4, 0.6, 0.9] },
 };
 
 export function getIndustryMultiples(industry?: string | null): Multiples {
@@ -161,7 +213,11 @@ function riskAdjustment(b: BusinessInputs): number {
   else if (ownerHrs >= 45) adj -= 0.2;
   else if (ownerHrs <= 25) adj += 0.3;
 
-  const ownerRoles = [b.owner_in_sales, b.owner_in_operations, b.owner_in_customer_relationships].filter(Boolean).length;
+  const ownerRoles = [
+    b.owner_in_sales,
+    b.owner_in_operations,
+    b.owner_in_customer_relationships,
+  ].filter(Boolean).length;
   if (ownerRoles >= 3) adj -= 0.3;
   else if (ownerRoles === 2) adj -= 0.15;
   else if (ownerRoles === 0) adj += 0.2;
@@ -292,7 +348,8 @@ export function calculateNormalizedEarnings(latest: FinancialYear): NormalizedEa
       ? `EBITDA = Net Income + Interest + Income Taxes + Depreciation + Amortization\n= ${fmtMoney(netIncome)} + ${fmtMoney(interest)} + ${fmtMoney(incomeTaxes)} + ${fmtMoney(depreciation)} + ${fmtMoney(amortization)} = ${fmtMoney(ebitda)}`
       : `EBITDA = Entered EBITDA = ${fmtMoney(ebitda)}\nNo interest, tax, depreciation, or amortization bridge was provided for this year.`,
     sdeFormula: `SDE = EBITDA + Owner Compensation + One-time Add-backs\n= ${fmtMoney(ebitda)} + ${fmtMoney(ownerCompensation)} + ${fmtMoney(addbacks)} = ${fmtMoney(sde)}`,
-    plainEnglish: "EBITDA adds back interest, income taxes, depreciation, and amortization to net income. SDE then adds one working owner's compensation and buyer-acceptable one-time add-backs. Owner compensation is not included in EBITDA, so it is not double-counted.",
+    plainEnglish:
+      "EBITDA adds back interest, income taxes, depreciation, and amortization to net income. SDE then adds one working owner's compensation and buyer-acceptable one-time add-backs. Owner compensation is not included in EBITDA, so it is not double-counted.",
   };
 }
 
@@ -316,7 +373,8 @@ export function methodSDE(b: BusinessInputs): MethodResult {
     inputUsed: sde,
     inputLabel: "Seller's Discretionary Earnings",
     confidence: confidenceFromAdj(adj, sde > 0),
-    notes: "Most common method for owner-operated SMBs. Earnings reflect total benefit to a working owner.",
+    notes:
+      "Most common method for owner-operated SMBs. Earnings reflect total benefit to a working owner.",
     formula: `${normalized.ebitdaFormula}\n${normalized.sdeFormula}\nSDE × Industry Multiple\nMultiple range: ${lo.toFixed(2)}× – ${hi.toFixed(2)}× (median ${mid.toFixed(2)}×)`,
     reasoning: `${normalized.plainEnglish} Industry baseline for ${b.industry ?? "Other"} is ${m.sde[0].toFixed(2)}–${m.sde[2].toFixed(2)}×. Risk adjustment ${adj >= 0 ? "+" : ""}${adj.toFixed(2)} applied based on owner dependence, recurring revenue, customer concentration, documentation, and management depth.`,
     available: sde > 0,
@@ -324,7 +382,11 @@ export function methodSDE(b: BusinessInputs): MethodResult {
 }
 
 function fmtMoney(n: number): string {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(n);
 }
 
 export function methodEBITDA(b: BusinessInputs): MethodResult {
@@ -379,7 +441,8 @@ export function methodRevenue(b: BusinessInputs): MethodResult {
 export function methodDCF(b: BusinessInputs): MethodResult {
   // 5-year FCF projection, 20% discount, 2.5% terminal Gordon growth.
   const sorted = [...b.financials].sort((a, c) => a.year - c.year);
-  if (!sorted.length) return blankMethod("dcf", "Discounted Cash Flow", "Add financials to compute.");
+  if (!sorted.length)
+    return blankMethod("dcf", "Discounted Cash Flow", "Add financials to compute.");
   const latest = sorted[sorted.length - 1];
   const normalized = calculateNormalizedEarnings(latest);
   const baseFCF = Math.max(0, normalized.ebitda - latest.debt * 0.05); // rough debt service haircut
@@ -396,7 +459,7 @@ export function methodDCF(b: BusinessInputs): MethodResult {
   }
   growth = Math.max(-0.05, Math.min(0.25, growth));
 
-  const discount = 0.20;
+  const discount = 0.2;
   const terminal = 0.025;
 
   let pv = 0;
@@ -424,7 +487,10 @@ export function methodDCF(b: BusinessInputs): MethodResult {
     confidence: sorted.length >= 2 ? "medium" : "low",
     notes: `5-year projection at ${(growth * 100).toFixed(1)}% growth, 20% discount rate, 2.5% terminal growth.`,
     formula: `PV = Σ FCFₜ / (1+r)ᵗ + Terminal / (1+r)⁵\nFCF₀ = ${fmtMoney(baseFCF)}, growth = ${(growth * 100).toFixed(1)}%\nDiscount r = 20%, terminal g = 2.5%`,
-    reasoning: sorted.length >= 2 ? `Growth derived from trailing revenue CAGR across ${sorted.length} years of financials. Discount rate reflects SMB risk premium.` : "Limited history — assumed default growth rate. Add more years for higher confidence.",
+    reasoning:
+      sorted.length >= 2
+        ? `Growth derived from trailing revenue CAGR across ${sorted.length} years of financials. Discount rate reflects SMB risk premium.`
+        : "Limited history — assumed default growth rate. Add more years for higher confidence.",
     available: baseFCF > 0,
   };
 }
@@ -445,7 +511,8 @@ export function methodAsset(b: BusinessInputs): MethodResult {
     confidence: "medium",
     notes: "A floor for asset-heavy businesses. Most going concerns sell well above this.",
     formula: `Net Assets = Total Assets − Total Liabilities\n= ${fmtMoney(latest.assets || 0)} − ${fmtMoney(latest.liabilities || 0)} = ${fmtMoney(netAssets)}\nRange: ±15% for liquidation vs. orderly sale`,
-    reasoning: "Asset-based valuation reflects break-up or liquidation value. Goodwill and earnings power are excluded.",
+    reasoning:
+      "Asset-based valuation reflects break-up or liquidation value. Goodwill and earnings power are excluded.",
     available: value > 0,
   };
 }
@@ -456,7 +523,11 @@ export function methodComparable(b: BusinessInputs): MethodResult {
   const sde = methodSDE(b);
   const ebitda = methodEBITDA(b);
   if (!sde.available && !ebitda.available) {
-    return blankMethod("comparable", "Comparable Sales", "Coming soon — comp database in development.");
+    return blankMethod(
+      "comparable",
+      "Comparable Sales",
+      "Coming soon — comp database in development.",
+    );
   }
   const avg = (sde.value + ebitda.value) / 2;
   return {
@@ -466,9 +537,12 @@ export function methodComparable(b: BusinessInputs): MethodResult {
     low: Math.min(sde.low, ebitda.low) * 0.95,
     high: Math.max(sde.high, ebitda.high) * 0.95,
     confidence: "low",
-    notes: "Placeholder estimate. Live comp matching from BizBuySell / IBBA data is in development.",
-    formula: "Avg(SDE value, EBITDA value) × 0.95\n(placeholder until live comp database is wired in)",
-    reasoning: "Comparable sales typically anchor real-world buyer behavior. This blend approximates a comp-implied range until live BizBuySell / IBBA matching is enabled.",
+    notes:
+      "Placeholder estimate. Live comp matching from BizBuySell / IBBA data is in development.",
+    formula:
+      "Avg(SDE value, EBITDA value) × 0.95\n(placeholder until live comp database is wired in)",
+    reasoning:
+      "Comparable sales typically anchor real-world buyer behavior. This blend approximates a comp-implied range until live BizBuySell / IBBA matching is enabled.",
     available: true,
   };
 }
@@ -478,7 +552,8 @@ export function methodComparable(b: BusinessInputs): MethodResult {
 // ---------------------------------------------------------------------------
 export function methodCapRate(b: BusinessInputs): MethodResult {
   const latest = latestFinancials(b);
-  if (!latest) return blankMethod("cap_rate", "Cap Rate / Income Approach", "Add financials to compute.");
+  if (!latest)
+    return blankMethod("cap_rate", "Cap Rate / Income Approach", "Add financials to compute.");
 
   const revenue = latest.revenue || 0;
   const cogs = latest.cogs || 0;
@@ -508,17 +583,19 @@ export function methodCapRate(b: BusinessInputs): MethodResult {
     noiBeforeAdjust = ebitda + addbacks;
     noiSource = "EBITDA proxy";
   } else if (noiBeforeAdjust === 0 && (grossProfit !== 0 || opex !== 0)) {
-    noiBeforeAdjust = grossProfit - opex + depreciation + amortization + interest + taxes + addbacks;
+    noiBeforeAdjust =
+      grossProfit - opex + depreciation + amortization + interest + taxes + addbacks;
     noiSource = "Gross profit bridge";
   }
   const noi = noiBeforeAdjust - mgmtFee - reserve;
-  const proxyNote = noiSource === "EBITDA proxy"
-    ? "Using EBITDA (+ addbacks − mgmt fee − reserve) as NOI proxy. Review expenses for real estate-specific normalization."
-    : "";
+  const proxyNote =
+    noiSource === "EBITDA proxy"
+      ? "Using EBITDA (+ addbacks − mgmt fee − reserve) as NOI proxy. Review expenses for real estate-specific normalization."
+      : "";
 
-  const capLow = b.cap_rate_low ?? 8;       // % — produces high value
+  const capLow = b.cap_rate_low ?? 8; // % — produces high value
   const capMid = b.cap_rate_selected ?? 10; // % — selected
-  const capHigh = b.cap_rate_high ?? 12;    // % — produces low value
+  const capHigh = b.cap_rate_high ?? 12; // % — produces low value
 
   const safe = (cap: number) => (cap > 0 ? noi / (cap / 100) : 0);
   const value = safe(capMid);
@@ -530,16 +607,19 @@ export function methodCapRate(b: BusinessInputs): MethodResult {
 
   const available = noi !== 0 && capMid > 0;
   const warning = !available
-    ? capMid <= 0 ? "Selected cap rate must be greater than 0." : ""
+    ? capMid <= 0
+      ? "Selected cap rate must be greater than 0."
+      : ""
     : noi < 0
       ? "NOI is negative — cap-rate valuation may not be meaningful without stabilized or normalized NOI."
       : "";
 
-  const noiFormulaLine = noiSource === "EBITDA proxy"
-    ? `NOI = EBITDA + Owner/One-time Addbacks − Mgmt Fee − Replacement Reserve\n    = ${fmtMoney(ebitda)} + ${fmtMoney(addbacks)} − ${fmtMoney(mgmtFee)} − ${fmtMoney(reserve)}`
-    : noiSource === "Gross profit bridge"
-      ? `NOI = Gross Profit − Operating Expenses + Depreciation + Amortization + Interest + Income Taxes + Owner/One-time Addbacks − Mgmt Fee − Replacement Reserve\n    = ${fmtMoney(grossProfit)} − ${fmtMoney(opex)} + ${fmtMoney(depreciation)} + ${fmtMoney(amortization)} + ${fmtMoney(interest)} + ${fmtMoney(taxes)} + ${fmtMoney(addbacks)} − ${fmtMoney(mgmtFee)} − ${fmtMoney(reserve)}`
-      : `NOI = Net Income + Depreciation + Amortization + Interest + Income Taxes + Owner/One-time Addbacks − Mgmt Fee − Replacement Reserve\n    = ${fmtMoney(netIncome)} + ${fmtMoney(depreciation)} + ${fmtMoney(amortization)} + ${fmtMoney(interest)} + ${fmtMoney(taxes)} + ${fmtMoney(addbacks)} − ${fmtMoney(mgmtFee)} − ${fmtMoney(reserve)}`;
+  const noiFormulaLine =
+    noiSource === "EBITDA proxy"
+      ? `NOI = EBITDA + Owner/One-time Addbacks − Mgmt Fee − Replacement Reserve\n    = ${fmtMoney(ebitda)} + ${fmtMoney(addbacks)} − ${fmtMoney(mgmtFee)} − ${fmtMoney(reserve)}`
+      : noiSource === "Gross profit bridge"
+        ? `NOI = Gross Profit − Operating Expenses + Depreciation + Amortization + Interest + Income Taxes + Owner/One-time Addbacks − Mgmt Fee − Replacement Reserve\n    = ${fmtMoney(grossProfit)} − ${fmtMoney(opex)} + ${fmtMoney(depreciation)} + ${fmtMoney(amortization)} + ${fmtMoney(interest)} + ${fmtMoney(taxes)} + ${fmtMoney(addbacks)} − ${fmtMoney(mgmtFee)} − ${fmtMoney(reserve)}`
+        : `NOI = Net Income + Depreciation + Amortization + Interest + Income Taxes + Owner/One-time Addbacks − Mgmt Fee − Replacement Reserve\n    = ${fmtMoney(netIncome)} + ${fmtMoney(depreciation)} + ${fmtMoney(amortization)} + ${fmtMoney(interest)} + ${fmtMoney(taxes)} + ${fmtMoney(addbacks)} − ${fmtMoney(mgmtFee)} − ${fmtMoney(reserve)}`;
 
   const formula = `Value = Stabilized NOI ÷ Cap Rate
 NOI source: ${noiSource}
@@ -549,7 +629,8 @@ ${noiFormulaLine}
 Selected cap: ${capMid.toFixed(2)}% → ${fmtMoney(value)}
 Range: ${capLow.toFixed(2)}% (high value ${fmtMoney(high)}) to ${capHigh.toFixed(2)}% (low value ${fmtMoney(low)})`;
 
-  const reasoning = `Income-producing real estate is typically valued by capitalizing stabilized NOI at a market cap rate. Lower cap rates imply stronger location, occupancy, and lower risk; higher cap rates imply seasonality, deferred maintenance, or weaker location. ${proxyNote}`.trim();
+  const reasoning =
+    `Income-producing real estate is typically valued by capitalizing stabilized NOI at a market cap rate. Lower cap rates imply stronger location, occupancy, and lower risk; higher cap rates imply seasonality, deferred maintenance, or weaker location. ${proxyNote}`.trim();
 
   return {
     method: "cap_rate",
@@ -560,9 +641,10 @@ Range: ${capLow.toFixed(2)}% (high value ${fmtMoney(high)}) to ${capHigh.toFixed
     inputUsed: noi,
     inputLabel: noiSource === "EBITDA proxy" ? "NOI (EBITDA proxy)" : "Stabilized NOI",
     confidence: available && noi > 0 ? "high" : "low",
-    notes: noiSource === "EBITDA proxy"
-      ? proxyNote
-      : "Capitalizes stabilized NOI at a market cap rate. Standard for income-producing real estate.",
+    notes:
+      noiSource === "EBITDA proxy"
+        ? proxyNote
+        : "Capitalizes stabilized NOI at a market cap rate. Standard for income-producing real estate.",
     formula,
     reasoning,
     available,
@@ -591,7 +673,11 @@ function confidenceFromAdj(adj: number, hasInput: boolean): "low" | "medium" | "
 // ---------------------------------------------------------------------------
 // METHOD ROLE ASSIGNMENT BY CATEGORY
 // ---------------------------------------------------------------------------
-function assignRoles(methods: MethodResult[], category: BusinessCategory, isRv: boolean): MethodResult[] {
+function assignRoles(
+  methods: MethodResult[],
+  category: BusinessCategory,
+  isRv: boolean,
+): MethodResult[] {
   return methods.map((m) => {
     let role: MethodRole = "supporting";
     if (category === "real_estate_income") {
@@ -600,9 +686,10 @@ function assignRoles(methods: MethodResult[], category: BusinessCategory, isRv: 
       else if (m.method === "revenue") role = "sanity_check";
       else if (m.method === "sde" || m.method === "ebitda") {
         role = "supporting";
-        m.warning = m.warning ?? "May understate value — does not fully capture land, location, occupancy, or infrastructure.";
-      }
-      else role = "supporting";
+        m.warning =
+          m.warning ??
+          "May understate value — does not fully capture land, location, occupancy, or infrastructure.";
+      } else role = "supporting";
     } else if (category === "asset_heavy") {
       if (m.method === "asset") role = "primary";
       else if (m.method === "sde" || m.method === "ebitda") role = "primary";
@@ -638,7 +725,8 @@ export type Valuation = {
 };
 
 export function valueBusiness(b: BusinessInputs): Valuation {
-  const category = (b.business_category as BusinessCategory) || inferCategory(b.industry, b.sub_industry);
+  const category =
+    (b.business_category as BusinessCategory) || inferCategory(b.industry, b.sub_industry);
   const isRv = isRvOrCampground(b.industry, b.sub_industry);
 
   let methods = [
@@ -665,11 +753,12 @@ export function valueBusiness(b: BusinessInputs): Valuation {
   //  • Real-estate income → cap rate drives value; SDE/EBITDA/Revenue/Asset are reference only.
   //  • Asset-heavy → earnings + asset floor; cap rate and revenue excluded.
   //  • Standard operating → SDE/EBITDA + DCF + comparables; asset floor and revenue excluded.
-  const weights: Record<string, number> = category === "real_estate_income"
-    ? { cap_rate: 0.70, dcf: 0.15, comparable: 0.15 }
-    : category === "asset_heavy"
-      ? { sde: 0.35, ebitda: 0.35, asset: 0.15, comparable: 0.15 }
-      : { sde: 0.35, ebitda: 0.30, dcf: 0.15, comparable: 0.20 };
+  const weights: Record<string, number> =
+    category === "real_estate_income"
+      ? { cap_rate: 0.7, dcf: 0.15, comparable: 0.15 }
+      : category === "asset_heavy"
+        ? { sde: 0.35, ebitda: 0.35, asset: 0.15, comparable: 0.15 }
+        : { sde: 0.35, ebitda: 0.3, dcf: 0.15, comparable: 0.2 };
 
   // Cap-rate fallback: if real-estate cap rate is unavailable (missing NOI or cap rate),
   // fall back to DCF + comparable + EBITDA so the range is still meaningful.
@@ -677,14 +766,16 @@ export function valueBusiness(b: BusinessInputs): Valuation {
     const cap = methods.find((m) => m.method === "cap_rate");
     if (!cap?.available) {
       weights.cap_rate = 0;
-      weights.ebitda = 0.30;
+      weights.ebitda = 0.3;
       weights.dcf = 0.35;
       weights.comparable = 0.35;
     }
   }
 
   let totalWeight = 0;
-  let mid = 0, lo = 0, hi = 0;
+  let mid = 0,
+    lo = 0,
+    hi = 0;
   for (const m of methods) {
     if (!m.available) continue;
     const w = weights[m.method] ?? 0;
@@ -694,41 +785,159 @@ export function valueBusiness(b: BusinessInputs): Valuation {
     hi += m.high * w;
     totalWeight += w;
   }
-  if (totalWeight > 0) { mid /= totalWeight; lo /= totalWeight; hi /= totalWeight; }
+  if (totalWeight > 0) {
+    mid /= totalWeight;
+    lo /= totalWeight;
+    hi /= totalWeight;
+  }
 
   const latest = latestFinancials(b);
   const debt = latest?.debt || 0;
   const enterpriseValue = mid;
   const equityValue = enterpriseValue - debt;
 
-  return { methods, rangeLow: lo, rangeMid: mid, rangeHigh: hi, weights, category, isRvOrCampground: isRv, enterpriseValue, debt, equityValue };
+  return {
+    methods,
+    rangeLow: lo,
+    rangeMid: mid,
+    rangeHigh: hi,
+    weights,
+    category,
+    isRvOrCampground: isRv,
+    enterpriseValue,
+    debt,
+    equityValue,
+  };
 }
 
 // ---------------------------------------------------------------------------
 // HEALTH SCORE — out of 100
 // ---------------------------------------------------------------------------
 export type HealthBreakdown = {
-  financial_performance: { score: number; max: number };
-  revenue_quality: { score: number; max: number };
-  owner_independence: { score: number; max: number };
-  customer_concentration: { score: number; max: number };
-  growth_trend: { score: number; max: number };
-  documentation: { score: number; max: number };
-  management_team: { score: number; max: number };
-  data_quality: { score: number; max: number };
+  financial_performance: HealthBreakdownItem;
+  revenue_quality: HealthBreakdownItem;
+  owner_independence: HealthBreakdownItem;
+  customer_concentration: HealthBreakdownItem;
+  growth_trend: HealthBreakdownItem;
+  documentation: HealthBreakdownItem;
+  management_team: HealthBreakdownItem;
+  data_quality: HealthBreakdownItem;
 };
 
-export function computeHealthScore(b: BusinessInputs): { total: number; breakdown: HealthBreakdown } {
+export type HealthCategoryKey = keyof HealthBreakdown;
+export type HealthCategoryStatus = "strength" | "watch" | "weakness";
+
+export type HealthBreakdownItem = {
+  score: number;
+  max: number;
+  label: string;
+  threshold: string;
+  driver: string;
+  status: HealthCategoryStatus;
+  detail: string;
+};
+
+export type HealthDriver = {
+  key: HealthCategoryKey;
+  label: string;
+  score: number;
+  max: number;
+  status: HealthCategoryStatus;
+  driver: string;
+  threshold: string;
+};
+
+export type HealthScoreResult = {
+  total: number;
+  max: 100;
+  rating: "strong" | "developing" | "needs_preparation" | "not_ready";
+  ratingLabel: string;
+  summary: string;
+  breakdown: HealthBreakdown;
+  strengths: HealthDriver[];
+  weaknesses: HealthDriver[];
+  drivers: HealthDriver[];
+};
+
+const HEALTH_SCORE_WEIGHTS: Record<HealthCategoryKey, number> = {
+  financial_performance: 20,
+  revenue_quality: 15,
+  owner_independence: 20,
+  customer_concentration: 10,
+  growth_trend: 10,
+  documentation: 10,
+  management_team: 10,
+  data_quality: 5,
+};
+
+const HEALTH_SCORE_MAX = Object.values(HEALTH_SCORE_WEIGHTS).reduce((sum, value) => sum + value, 0);
+
+function healthItem(
+  key: HealthCategoryKey,
+  label: string,
+  score: number,
+  threshold: string,
+  driver: string,
+  detail: string,
+): HealthBreakdownItem {
+  const max = HEALTH_SCORE_WEIGHTS[key];
+  const bounded = Math.max(0, Math.min(max, score));
+  const pct = max > 0 ? bounded / max : 0;
+  const status: HealthCategoryStatus = pct >= 0.75 ? "strength" : pct >= 0.4 ? "watch" : "weakness";
+
+  return {
+    score: bounded,
+    max,
+    label,
+    threshold,
+    driver,
+    status,
+    detail,
+  };
+}
+
+function pctLabel(value: number | null | undefined): string {
+  if (value == null || !Number.isFinite(Number(value))) return "Unknown";
+  return `${Number(value).toFixed(0)}%`;
+}
+
+function moneyDriver(value: number | null | undefined): string {
+  if (value == null || !Number.isFinite(Number(value))) return "Unknown";
+  return fmtMoney(Number(value));
+}
+
+function healthRating(total: number): HealthScoreResult["rating"] {
+  if (total >= 80) return "strong";
+  if (total >= 65) return "developing";
+  if (total >= 50) return "needs_preparation";
+  return "not_ready";
+}
+
+function healthRatingLabel(rating: HealthScoreResult["rating"]): string {
+  if (rating === "strong") return "Strong exit readiness";
+  if (rating === "developing") return "Developing exit readiness";
+  if (rating === "needs_preparation") return "Needs preparation";
+  return "Not buyer-ready yet";
+}
+
+export function computeHealthScore(b: BusinessInputs): HealthScoreResult {
+  if (HEALTH_SCORE_MAX !== 100) {
+    throw new Error(`Health score weights must total 100. Current total: ${HEALTH_SCORE_MAX}`);
+  }
+
   const sorted = [...b.financials].sort((a, c) => a.year - c.year);
   const latest = sorted[sorted.length - 1];
 
   // Financial performance (20)
   let fin = 0;
+  let margin: number | null = null;
+  let ebitda = 0;
   if (latest) {
-    const margin = latest.revenue > 0 ? latest.ebitda / latest.revenue : 0;
-    if (margin >= 0.20) fin = 20;
+    ebitda = calculateNormalizedEarnings(latest).ebitda;
+    margin = latest.revenue > 0 ? ebitda / latest.revenue : 0;
+    if (margin >= 0.2) fin = 20;
     else if (margin >= 0.15) fin = 16;
-    else if (margin >= 0.10) fin = 12;
+    else if (margin >= 0.1) fin = 12;
     else if (margin >= 0.05) fin = 8;
     else if (margin > 0) fin = 4;
   }
@@ -744,7 +953,9 @@ export function computeHealthScore(b: BusinessInputs): { total: number; breakdow
 
   // Owner independence (20)
   const hrs = b.owner_hours_per_week ?? 50;
-  const roles = [b.owner_in_sales, b.owner_in_operations, b.owner_in_customer_relationships].filter(Boolean).length;
+  const roles = [b.owner_in_sales, b.owner_in_operations, b.owner_in_customer_relationships].filter(
+    Boolean,
+  ).length;
   let oi = 20;
   if (hrs >= 60) oi -= 8;
   else if (hrs >= 45) oi -= 4;
@@ -760,15 +971,16 @@ export function computeHealthScore(b: BusinessInputs): { total: number; breakdow
 
   // Growth trend (10)
   let gt = 5;
+  let growth: number | null = null;
   if (sorted.length >= 2) {
     const first = sorted[0].revenue;
     const last = latest.revenue;
     if (first > 0) {
-      const g = (last / first) - 1;
-      if (g >= 0.30) gt = 10;
-      else if (g >= 0.15) gt = 8;
-      else if (g >= 0.05) gt = 6;
-      else if (g >= 0) gt = 4;
+      growth = last / first - 1;
+      if (growth >= 0.3) gt = 10;
+      else if (growth >= 0.15) gt = 8;
+      else if (growth >= 0.05) gt = 6;
+      else if (growth >= 0) gt = 4;
       else gt = 2;
     }
   }
@@ -785,24 +997,107 @@ export function computeHealthScore(b: BusinessInputs): { total: number; breakdow
 
   // Data quality (5) — based on how many fields are populated
   let dq = 0;
-  if (latest && latest.revenue > 0 && latest.ebitda !== 0) dq += 2;
+  if (latest && latest.revenue > 0 && ebitda !== 0) dq += 2;
   if (sorted.length >= 2) dq += 1;
   if (sorted.length >= 3) dq += 1;
   if (latest && latest.assets > 0 && latest.liabilities >= 0) dq += 1;
 
   const breakdown: HealthBreakdown = {
-    financial_performance: { score: fin, max: 20 },
-    revenue_quality: { score: revq, max: 15 },
-    owner_independence: { score: oi, max: 20 },
-    customer_concentration: { score: cc, max: 10 },
-    growth_trend: { score: gt, max: 10 },
-    documentation: { score: doc, max: 10 },
-    management_team: { score: mgmt, max: 10 },
-    data_quality: { score: dq, max: 5 },
+    financial_performance: healthItem(
+      "financial_performance",
+      "Financial performance",
+      fin,
+      "20+% EBITDA margin earns full credit; 15%+ is strong; below 5% is weak.",
+      latest
+        ? `${pctLabel((margin ?? 0) * 100)} EBITDA margin from ${moneyDriver(ebitda)} normalized EBITDA on ${moneyDriver(latest.revenue)} revenue`
+        : "No financial year on file",
+      "Measures earnings power using normalized EBITDA so interest, tax, depreciation, and amortization are handled consistently.",
+    ),
+    revenue_quality: healthItem(
+      "revenue_quality",
+      "Revenue quality",
+      revq,
+      "60%+ recurring revenue earns full credit; 40%+ is strong; below 10% is weak.",
+      `${pctLabel(rec)} recurring or contracted revenue`,
+      "Rewards predictable revenue that a buyer can underwrite after close.",
+    ),
+    owner_independence: healthItem(
+      "owner_independence",
+      "Owner independence",
+      oi,
+      "Full credit requires under 45 owner hours/week and no owner-held core roles.",
+      `${hrs} owner hours/week; owner directly holds ${roles} of 3 core roles`,
+      "Reflects whether the buyer is acquiring a transferable business or a job that depends on the seller.",
+    ),
+    customer_concentration: healthItem(
+      "customer_concentration",
+      "Customer concentration",
+      cc,
+      "Full credit requires top customer below 15% of revenue; 25%+ is a diligence concern.",
+      `${pctLabel(conc)} of revenue from the top customer`,
+      "Measures downside risk if a single customer leaves after a transaction.",
+    ),
+    growth_trend: healthItem(
+      "growth_trend",
+      "Growth trend",
+      gt,
+      "30%+ trailing growth earns full credit; 5%+ is positive; decline is weak.",
+      sorted.length >= 2
+        ? `${pctLabel((growth ?? 0) * 100)} revenue change from first to latest year`
+        : "Only one year on file; default neutral score used",
+      "Uses the financial years on file to show whether revenue is expanding, flat, or declining.",
+    ),
+    documentation: healthItem(
+      "documentation",
+      "Documentation / SOPs",
+      doc,
+      "Complete SOPs earn full credit; partial documentation receives half credit.",
+      `${b.sop_status ?? "unknown"} SOP status`,
+      "Buyers pay more for operations that can transfer without undocumented owner knowledge.",
+    ),
+    management_team: healthItem(
+      "management_team",
+      "Management team",
+      mgmt,
+      "A strong management bench earns full credit; partial bench receives half credit.",
+      `${b.manager_team_depth ?? "unknown"} management depth`,
+      "Measures whether day-to-day execution can continue without the owner.",
+    ),
+    data_quality: healthItem(
+      "data_quality",
+      "Data quality",
+      dq,
+      "Full credit requires 3 years, usable revenue and normalized EBITDA, plus balance-sheet data.",
+      `${sorted.length} financial year${sorted.length === 1 ? "" : "s"}; ${latest?.assets ? "balance sheet present" : "balance sheet incomplete"}`,
+      "Reduces confidence when the estimate is based on thin history or incomplete books.",
+    ),
   };
 
   const total = Object.values(breakdown).reduce((s, v) => s + v.score, 0);
-  return { total, breakdown };
+  const drivers: HealthDriver[] = (
+    Object.entries(breakdown) as [HealthCategoryKey, HealthBreakdownItem][]
+  )
+    .map(([key, item]) => ({ key, ...item }))
+    .sort((a, c) => a.score / a.max - c.score / c.max);
+  const weaknesses = drivers.filter((driver) => driver.status !== "strength").slice(0, 3);
+  const strengths = [...drivers]
+    .reverse()
+    .filter((driver) => driver.status === "strength")
+    .slice(0, 3);
+  const rating = healthRating(total);
+
+  return {
+    total,
+    max: 100,
+    rating,
+    ratingLabel: healthRatingLabel(rating),
+    summary:
+      "This is an exit-readiness diagnostic based on transferability, financial quality, revenue risk, and data completeness. It is not a formal credit rating or appraisal.",
+    breakdown,
+    strengths,
+    weaknesses,
+    drivers,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -834,23 +1129,44 @@ export const SAMPLE_HVAC_BUSINESS = {
 export const SAMPLE_HVAC_FINANCIALS: FinancialYear[] = [
   {
     year: new Date().getFullYear() - 2,
-    revenue: 920_000, cogs: 415_000, gross_profit: 505_000,
-    operating_expenses: 290_000, owner_salary: 110_000, addbacks: 18_000,
-    ebitda: 215_000, net_income: 95_000,
-    assets: 380_000, liabilities: 145_000, debt: 95_000,
+    revenue: 920_000,
+    cogs: 415_000,
+    gross_profit: 505_000,
+    operating_expenses: 290_000,
+    owner_salary: 110_000,
+    addbacks: 18_000,
+    ebitda: 215_000,
+    net_income: 95_000,
+    assets: 380_000,
+    liabilities: 145_000,
+    debt: 95_000,
   },
   {
     year: new Date().getFullYear() - 1,
-    revenue: 1_005_000, cogs: 442_000, gross_profit: 563_000,
-    operating_expenses: 305_000, owner_salary: 115_000, addbacks: 20_000,
-    ebitda: 240_000, net_income: 110_000,
-    assets: 410_000, liabilities: 138_000, debt: 88_000,
+    revenue: 1_005_000,
+    cogs: 442_000,
+    gross_profit: 563_000,
+    operating_expenses: 305_000,
+    owner_salary: 115_000,
+    addbacks: 20_000,
+    ebitda: 240_000,
+    net_income: 110_000,
+    assets: 410_000,
+    liabilities: 138_000,
+    debt: 88_000,
   },
   {
     year: new Date().getFullYear(),
-    revenue: 1_100_000, cogs: 462_000, gross_profit: 638_000,
-    operating_expenses: 320_000, owner_salary: 120_000, addbacks: 26_000,
-    ebitda: 264_000, net_income: 124_000,
-    assets: 445_000, liabilities: 132_000, debt: 80_000,
+    revenue: 1_100_000,
+    cogs: 462_000,
+    gross_profit: 638_000,
+    operating_expenses: 320_000,
+    owner_salary: 120_000,
+    addbacks: 26_000,
+    ebitda: 264_000,
+    net_income: 124_000,
+    assets: 445_000,
+    liabilities: 132_000,
+    debt: 80_000,
   },
 ];
