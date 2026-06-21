@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, useCallback, type React
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import type { Database } from "@/integrations/supabase/types";
+import type { MultipleAssumption } from "@/lib/valuation";
 
 export type Business = Database["public"]["Tables"]["businesses"]["Row"];
 export type FinancialYearRow = Database["public"]["Tables"]["financial_years"]["Row"];
@@ -64,16 +65,25 @@ export function useBusiness() {
 }
 
 // Convert a Business row + financials into BusinessInputs for the valuation engine
-export function toBusinessInputs(b: Business, financials: FinancialYearRow[]) {
+export function toBusinessInputs(
+  b: Business,
+  financials: FinancialYearRow[],
+  multipleAssumptions?: MultipleAssumption[],
+) {
   return {
     industry: b.industry,
     sub_industry: b.sub_industry,
     business_category: (b as any).business_category ?? null,
     cap_rate_low: (b as any).cap_rate_low != null ? Number((b as any).cap_rate_low) : null,
-    cap_rate_selected: (b as any).cap_rate_selected != null ? Number((b as any).cap_rate_selected) : null,
+    cap_rate_selected:
+      (b as any).cap_rate_selected != null ? Number((b as any).cap_rate_selected) : null,
     cap_rate_high: (b as any).cap_rate_high != null ? Number((b as any).cap_rate_high) : null,
-    management_fee_pct: (b as any).management_fee_pct != null ? Number((b as any).management_fee_pct) : null,
-    replacement_reserve_pct: (b as any).replacement_reserve_pct != null ? Number((b as any).replacement_reserve_pct) : null,
+    management_fee_pct:
+      (b as any).management_fee_pct != null ? Number((b as any).management_fee_pct) : null,
+    replacement_reserve_pct:
+      (b as any).replacement_reserve_pct != null
+        ? Number((b as any).replacement_reserve_pct)
+        : null,
     years_in_business: b.years_in_business,
     employees: b.employees,
     owner_hours_per_week: b.owner_hours_per_week,
@@ -86,6 +96,7 @@ export function toBusinessInputs(b: Business, financials: FinancialYearRow[]) {
       : null,
     sop_status: b.sop_status,
     manager_team_depth: b.manager_team_depth,
+    multiple_assumptions: multipleAssumptions,
     financials: financials.map((f) => ({
       year: f.year,
       revenue: Number(f.revenue ?? 0),

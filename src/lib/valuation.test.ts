@@ -9,9 +9,11 @@ import {
   methodEBITDA,
   methodRevenue,
   methodSDE,
+  selectMultipleAssumption,
   valueBusiness,
   type BusinessInputs,
   type FinancialYear,
+  type MultipleAssumption,
 } from "./valuation";
 
 type TestCase = {
@@ -348,6 +350,54 @@ test("health score responds to financial and profile input changes", () => {
   assert(
     strong.breakdown.financial_performance.score > weak.breakdown.financial_performance.score,
     "financial performance should improve with stronger normalized earnings",
+  );
+});
+
+test("industry multiple assumptions can vary by revenue size and owner dependence", () => {
+  const customAssumptions: MultipleAssumption[] = [
+    {
+      slug: "hvac-large-low-owner-test",
+      industry: "HVAC / Trades",
+      business_category: "standard_operating",
+      revenue_min: 1_000_000,
+      revenue_max: null,
+      owner_dependence: "low",
+      confidence_level: "high",
+      sde_low: 3.2,
+      sde_mid: 4.0,
+      sde_high: 4.8,
+      ebitda_low: 5.0,
+      ebitda_mid: 6.0,
+      ebitda_high: 7.0,
+      revenue_low: 0.8,
+      revenue_mid: 1.0,
+      revenue_high: 1.2,
+      source_label: "Broker-reviewed HVAC comp set",
+      source_notes: "Test assumption for larger, lower owner-dependence HVAC businesses.",
+      active: true,
+    },
+  ];
+  const inputs: BusinessInputs = {
+    ...hvacFixture,
+    owner_hours_per_week: 15,
+    owner_in_sales: false,
+    owner_in_operations: false,
+    owner_in_customer_relationships: false,
+    multiple_assumptions: customAssumptions,
+    financials: [latestFixture({ revenue: 1_250_000, ebitda: 300_000, net_income: 300_000 })],
+  };
+  const selected = selectMultipleAssumption(inputs);
+  const sde = methodSDE(inputs);
+
+  assertEqual(
+    selected.assumption.slug,
+    "hvac-large-low-owner-test",
+    "specific assumption selected",
+  );
+  assertEqual(sde.multipleSource, "Broker-reviewed HVAC comp set", "method includes source label");
+  assert(
+    sde.reasoning?.includes("planning assumptions") === true,
+    "method explains multiples are planning assumptions",
   );
 });
 
