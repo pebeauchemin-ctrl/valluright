@@ -1,6 +1,4 @@
 import {
-  SAMPLE_HVAC_BUSINESS,
-  SAMPLE_HVAC_FINANCIALS,
   calculateNormalizedEarnings,
   computeHealthScore,
   methodAsset,
@@ -15,6 +13,7 @@ import {
   type FinancialYear,
   type MultipleAssumption,
 } from "./valuation";
+import { VALUATION_BENCHMARK_CASES, getBenchmarkCase } from "./valuation-benchmarks";
 
 type TestCase = {
   name: string;
@@ -65,150 +64,11 @@ function latestFixture(overrides: Partial<FinancialYear> = {}): FinancialYear {
   };
 }
 
-const hvacFixture: BusinessInputs = {
-  ...SAMPLE_HVAC_BUSINESS,
-  financials: SAMPLE_HVAC_FINANCIALS,
-};
-
-const restaurantFixture: BusinessInputs = {
-  industry: "Restaurant / Hospitality",
-  business_category: "standard_operating",
-  years_in_business: 8,
-  employees: 12,
-  owner_hours_per_week: 65,
-  owner_in_sales: true,
-  owner_in_operations: true,
-  owner_in_customer_relationships: true,
-  recurring_revenue_pct: 5,
-  top_customer_concentration_pct: 6,
-  sop_status: "none",
-  manager_team_depth: "none",
-  financials: [
-    {
-      year: 2025,
-      revenue: 267_960,
-      cogs: 2_054,
-      gross_profit: 265_906,
-      operating_expenses: 279_084,
-      owner_salary: 0,
-      addbacks: 0,
-      ebitda: 0,
-      net_income: -13_178,
-      assets: 1_418_221,
-      liabilities: 1_086_743,
-      debt: 1_077_824,
-      depreciation: 64_121,
-      amortization: 21_811,
-      interest: 58_420,
-      income_taxes: 0,
-    },
-  ],
-};
-
-const campgroundFixture: BusinessInputs = {
-  industry: "Restaurant / Hospitality",
-  sub_industry: "RV park",
-  business_category: "real_estate_income",
-  years_in_business: 20,
-  employees: 6,
-  owner_hours_per_week: 20,
-  owner_in_sales: false,
-  owner_in_operations: false,
-  owner_in_customer_relationships: false,
-  recurring_revenue_pct: 70,
-  top_customer_concentration_pct: 4,
-  sop_status: "complete",
-  manager_team_depth: "strong",
-  cap_rate_low: 8,
-  cap_rate_selected: 10,
-  cap_rate_high: 12,
-  management_fee_pct: 5,
-  replacement_reserve_pct: 3,
-  financials: [
-    latestFixture({
-      year: 2023,
-      revenue: 780_000,
-      cogs: 0,
-      gross_profit: 780_000,
-      operating_expenses: 410_000,
-      owner_salary: 90_000,
-      addbacks: 15_000,
-      net_income: 180_000,
-      assets: 2_400_000,
-      liabilities: 700_000,
-      debt: 620_000,
-      depreciation: 85_000,
-      amortization: 0,
-      interest: 35_000,
-      income_taxes: 0,
-    }),
-    latestFixture({
-      year: 2024,
-      revenue: 825_000,
-      cogs: 0,
-      gross_profit: 825_000,
-      operating_expenses: 430_000,
-      owner_salary: 95_000,
-      addbacks: 18_000,
-      net_income: 205_000,
-      assets: 2_500_000,
-      liabilities: 680_000,
-      debt: 600_000,
-      depreciation: 87_000,
-      amortization: 0,
-      interest: 34_000,
-      income_taxes: 0,
-    }),
-    latestFixture({
-      revenue: 880_000,
-      cogs: 0,
-      gross_profit: 880_000,
-      operating_expenses: 455_000,
-      owner_salary: 100_000,
-      addbacks: 22_000,
-      net_income: 230_000,
-      assets: 2_600_000,
-      liabilities: 650_000,
-      debt: 575_000,
-      depreciation: 90_000,
-      amortization: 0,
-      interest: 32_000,
-      income_taxes: 0,
-    }),
-  ],
-};
-
-const distressedFixture: BusinessInputs = {
-  industry: "Professional Services",
-  business_category: "standard_operating",
-  owner_hours_per_week: 70,
-  owner_in_sales: true,
-  owner_in_operations: true,
-  owner_in_customer_relationships: true,
-  recurring_revenue_pct: 0,
-  top_customer_concentration_pct: 45,
-  sop_status: "none",
-  manager_team_depth: "none",
-  financials: [
-    latestFixture({
-      revenue: 100_000,
-      cogs: 40_000,
-      gross_profit: 60_000,
-      operating_expenses: 120_000,
-      owner_salary: 0,
-      addbacks: 0,
-      ebitda: -50_000,
-      net_income: -70_000,
-      assets: 50_000,
-      liabilities: 75_000,
-      debt: 200_000,
-      depreciation: 0,
-      amortization: 0,
-      interest: 0,
-      income_taxes: 0,
-    }),
-  ],
-};
+const hvacFixture = getBenchmarkCase("hvac-service-trade").inputs;
+const restaurantFixture = getBenchmarkCase("restaurant-hospitality").inputs;
+const campgroundFixture = getBenchmarkCase("campground-rv-park").inputs;
+const professionalServicesFixture = getBenchmarkCase("professional-services").inputs;
+const distressedFixture = getBenchmarkCase("distressed-low-profit").inputs;
 
 test("normalizes EBITDA and SDE from net income bridge without double-counting owner compensation", () => {
   const normalized = calculateNormalizedEarnings(latestFixture());
@@ -267,16 +127,48 @@ test("sample HVAC fixture locks SDE, EBITDA, revenue, DCF, asset, comparable, an
   assertApprox(valuation.rangeHigh, 1_531_147.1, "HVAC blended high");
 });
 
+test("benchmark cases cover the required business categories with 3-year financial history", () => {
+  assertEqual(VALUATION_BENCHMARK_CASES.length, 5, "benchmark case count");
+  for (const benchmark of VALUATION_BENCHMARK_CASES) {
+    assertEqual(benchmark.inputs.financials.length, 3, `${benchmark.id} financial year count`);
+    assert(benchmark.summary.length > 0, `${benchmark.id} summary`);
+    assert(
+      benchmark.expectedRiskFactors.length > 0,
+      `${benchmark.id} expected risk factors are defined`,
+    );
+    assert(
+      benchmark.review.reviewer.includes("SMB valuation") ||
+        benchmark.review.reviewer.includes("broker"),
+      `${benchmark.id} review audience`,
+    );
+  }
+});
+
+test("benchmark cases lock expected valuation ranges for QA", () => {
+  for (const benchmark of VALUATION_BENCHMARK_CASES) {
+    const valuation = valueBusiness(benchmark.inputs);
+    const { expectedValuationRange: expected } = benchmark;
+    const toleranceLow = Math.max(1, expected.low * expected.tolerancePct);
+    const toleranceMid = Math.max(1, expected.mid * expected.tolerancePct);
+    const toleranceHigh = Math.max(1, expected.high * expected.tolerancePct);
+
+    assertApprox(valuation.rangeLow, expected.low, `${benchmark.id} low`, toleranceLow);
+    assertApprox(valuation.rangeMid, expected.mid, `${benchmark.id} mid`, toleranceMid);
+    assertApprox(valuation.rangeHigh, expected.high, `${benchmark.id} high`, toleranceHigh);
+  }
+});
+
 test("negative net income can still normalize to positive EBITDA while high debt reduces equity value", () => {
-  const normalized = calculateNormalizedEarnings(restaurantFixture.financials[0]);
+  const latest = [...restaurantFixture.financials].sort((a, c) => c.year - a.year)[0];
+  const normalized = calculateNormalizedEarnings(latest);
   const valuation = valueBusiness(restaurantFixture);
   const dcf = methodDCF(restaurantFixture);
 
   assertApprox(normalized.ebitda, 131_174, "restaurant normalized EBITDA");
   assertApprox(normalized.sde, 131_174, "restaurant normalized SDE");
-  assertApprox(valuation.rangeMid, 297_281.89, "restaurant blended mid");
+  assertApprox(valuation.rangeMid, 294_391.11, "restaurant blended mid");
   assert((valuation.equityValue ?? 0) < 0, "high debt should reduce equity below zero");
-  assertEqual(dcf.confidence, "low", "incomplete single-year DCF confidence");
+  assertEqual(dcf.confidence, "medium", "three-year DCF confidence");
 });
 
 test("real estate income fixture uses cap rate as the primary valuation driver", () => {
@@ -350,6 +242,20 @@ test("health score responds to financial and profile input changes", () => {
   assert(
     strong.breakdown.financial_performance.score > weak.breakdown.financial_performance.score,
     "financial performance should improve with stronger normalized earnings",
+  );
+});
+
+test("professional services benchmark captures concentration and transferability risk", () => {
+  const health = computeHealthScore(professionalServicesFixture);
+  const benchmark = getBenchmarkCase("professional-services");
+
+  assert(
+    health.weaknesses.some((driver) => driver.key === "customer_concentration"),
+    "professional services benchmark flags customer concentration",
+  );
+  assert(
+    benchmark.expectedRiskFactors.includes("owner_dependence"),
+    "professional services benchmark documents owner dependence risk",
   );
 });
 
