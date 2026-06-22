@@ -2041,7 +2041,7 @@ async function inflateZipEntry(entry: ZipEntry & { bytes: Uint8Array }) {
   const buffer = bytes.buffer.slice(
     bytes.byteOffset,
     bytes.byteOffset + bytes.byteLength,
-  );
+  ) as ArrayBuffer;
   const stream = new Blob([buffer])
     .stream()
     .pipeThrough(new DecompressionStream("deflate-raw"));
