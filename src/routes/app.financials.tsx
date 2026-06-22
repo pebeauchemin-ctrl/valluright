@@ -37,8 +37,11 @@ import {
   type SourceSystem,
 } from "@/lib/account-mapping";
 import {
+  accountingBasisLabel,
   dataQualityAcknowledgementKey,
+  normalizeAccountingBasis,
   reviewFinancialData,
+  type AccountingBasis,
   type DataQualityReview,
 } from "@/lib/data-quality";
 import { valueBusiness } from "@/lib/valuation";
@@ -120,8 +123,26 @@ const ADD_BACK_CATEGORIES = [
   "Other normalization",
 ] as const;
 
+const ACCOUNTING_BASIS_OPTIONS: { value: AccountingBasis; label: string; description: string }[] = [
+  {
+    value: "accrual",
+    label: "Accrual",
+    description: "Revenue and expenses are matched to when they were earned or incurred.",
+  },
+  {
+    value: "cash",
+    label: "Cash",
+    description: "Revenue and expenses are recorded when cash is received or paid.",
+  },
+  {
+    value: "unknown",
+    label: "Unknown",
+    description: "Use this when you are not sure; ValuRight will flag the limitation.",
+  },
+];
+
 function Financials() {
-  const { current } = useBusiness();
+  const { current, refresh } = useBusiness();
   const search = Route.useSearch();
   const [years, setYears] = useState<FinancialYearRow[]>([]);
   const [addBacks, setAddBacks] = useState<FinancialAddBackRow[]>([]);
@@ -134,6 +155,7 @@ function Financials() {
   const [importWarnings, setImportWarnings] = useState<string[]>([]);
   const [xeroImportSummary, setXeroImportSummary] = useState<XeroImportSummary | null>(null);
   const [importDraft, setImportDraft] = useState<FinancialImportDraft | null>(null);
+  const [accountingBasis, setAccountingBasis] = useState<AccountingBasis>("unknown");
 
   const startXero = useServerFn(startXeroConnect);
   const importXero = useServerFn(importXeroFinancials);
@@ -161,6 +183,7 @@ function Financials() {
 
   useEffect(() => {
     if (!current) return;
+    setAccountingBasis(normalizeAccountingBasis(current.accounting_basis));
     Promise.all([
       supabase
         .from("financial_years")
@@ -776,6 +799,11 @@ function Financials() {
       }
 
       await writeAddBackEvents(auditEvents);
+      const { error: basisError } = await supabase
+        .from("businesses")
+        .update({ accounting_basis: accountingBasis })
+        .eq("id", current.id);
+      if (basisError) throw basisError;
 
       toast.success("Financials saved");
       const [financialsResult, addBacksResult] = await Promise.all([
@@ -796,6 +824,7 @@ function Financials() {
       setAddBacks(loadedAddBacks);
       setDeletedAddBacks([]);
       setOriginalAddBacks(Object.fromEntries(loadedAddBacks.map((row) => [row.id, row])));
+      await refresh();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to save");
     } finally {
@@ -836,8 +865,8 @@ function Financials() {
 
   const unmappedCount = countUnmappedAccounts(mappingReview);
   const dataQuality = useMemo(
-    () => reviewFinancialData(years, { unmappedAccountCount: unmappedCount }),
-    [years, unmappedCount],
+    () => reviewFinancialData(years, { accountingBasis, unmappedAccountCount: unmappedCount }),
+    [years, accountingBasis, unmappedCount],
   );
   const importValidation = useMemo(
     () => (importDraft ? validateImportDraft(importDraft) : null),
@@ -913,6 +942,33 @@ function Financials() {
             )}
           </button>
         </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="text-sm font-semibold text-foreground">Accounting basis</h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Mark how these financials were prepared so valuation confidence and report limitation
+              notes are accurate.
+            </p>
+          </div>
+          <select
+            value={accountingBasis}
+            onChange={(event) => setAccountingBasis(normalizeAccountingBasis(event.target.value))}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm sm:w-52"
+          >
+            {ACCOUNTING_BASIS_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          {accountingBasisLabel(accountingBasis)}:{" "}
+          {ACCOUNTING_BASIS_OPTIONS.find((option) => option.value === accountingBasis)?.description}
+        </p>
       </div>
 
       {/* Import options */}
