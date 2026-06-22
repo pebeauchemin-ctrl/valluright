@@ -2037,7 +2037,12 @@ async function readZipText(files: Map<string, ZipEntry & { bytes: Uint8Array }>,
 async function inflateZipEntry(entry: ZipEntry & { bytes: Uint8Array }) {
   if (entry.compression === 0) return entry.bytes;
   if (entry.compression !== 8) throw new Error("Unsupported XLSX compression");
-  const stream = new Blob([entry.bytes])
+  const bytes = entry.bytes;
+  const buffer = bytes.buffer.slice(
+    bytes.byteOffset,
+    bytes.byteOffset + bytes.byteLength,
+  );
+  const stream = new Blob([buffer])
     .stream()
     .pipeThrough(new DecompressionStream("deflate-raw"));
   return new Uint8Array(await new Response(stream).arrayBuffer());
