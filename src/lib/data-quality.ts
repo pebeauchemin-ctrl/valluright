@@ -1,6 +1,7 @@
 import type { FinancialYearRow } from "@/lib/business";
 
 export type DataQualitySeverity = "critical" | "warning";
+export type AccountingBasis = "cash" | "accrual" | "unknown";
 
 export type DataQualityIssue = {
   severity: DataQualitySeverity;
@@ -43,6 +44,7 @@ type FinancialLike = Partial<FinancialYearRow> & {
 };
 
 type ReviewOptions = {
+  accountingBasis?: AccountingBasis | string | null;
   unmappedAccountCount?: number;
 };
 
@@ -59,6 +61,23 @@ export function reviewFinancialData(
   const issues: DataQualityIssue[] = [];
   const years = rows.map((row) => Number(row.year));
   const latest = rows[rows.length - 1] ?? null;
+  const accountingBasis = normalizeAccountingBasis(options.accountingBasis);
+
+  if (accountingBasis === "unknown") {
+    issues.push({
+      severity: "warning",
+      title: "Accounting basis is unknown",
+      detail:
+        "Mark whether these financials are cash-basis or accrual-basis so readers understand timing limitations.",
+    });
+  } else if (accountingBasis === "cash") {
+    issues.push({
+      severity: "warning",
+      title: "Cash-basis financials need timing review",
+      detail:
+        "Cash-basis books can shift revenue and expenses between periods. Review accrual adjustments before relying on valuation outputs.",
+    });
+  }
 
   if (rows.length < 3) {
     issues.push({
@@ -276,4 +295,24 @@ function getMissingYears(years: number[]) {
     if (!present.has(year)) missing.push(year);
   }
   return missing;
+}
+
+export function normalizeAccountingBasis(value: string | null | undefined): AccountingBasis {
+  return value === "cash" || value === "accrual" || value === "unknown" ? value : "unknown";
+}
+
+export function accountingBasisLabel(value: string | null | undefined) {
+  const basis = normalizeAccountingBasis(value);
+  if (basis === "cash") return "Cash basis";
+  if (basis === "accrual") return "Accrual basis";
+  return "Unknown basis";
+}
+
+export function adjustConfidenceForDataQuality(
+  baseConfidence: "Low" | "Medium" | "High",
+  review: DataQualityReview,
+) {
+  if (review.status === "weak") return "Low";
+  if (review.status === "needs_review" && baseConfidence === "High") return "Medium";
+  return baseConfidence;
 }

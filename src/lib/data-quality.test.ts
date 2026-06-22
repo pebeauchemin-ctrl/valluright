@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
-import { reviewFinancialData } from "./data-quality";
+import {
+  accountingBasisLabel,
+  adjustConfidenceForDataQuality,
+  reviewFinancialData,
+} from "./data-quality";
 
 const completeYears = [
   {
@@ -58,8 +62,23 @@ const completeYears = [
   },
 ];
 
-assert.equal(reviewFinancialData(completeYears).status, "ready");
-assert.equal(reviewFinancialData(completeYears).requiredAcknowledgement, false);
+assert.equal(reviewFinancialData(completeYears, { accountingBasis: "accrual" }).status, "ready");
+assert.equal(
+  reviewFinancialData(completeYears, { accountingBasis: "accrual" }).requiredAcknowledgement,
+  false,
+);
+
+const unknownBasis = reviewFinancialData(completeYears, { accountingBasis: "unknown" });
+assert.equal(unknownBasis.status, "needs_review");
+assert.ok(unknownBasis.issues.some((issue) => issue.title === "Accounting basis is unknown"));
+assert.equal(adjustConfidenceForDataQuality("High", unknownBasis), "Medium");
+
+const cashBasis = reviewFinancialData(completeYears, { accountingBasis: "cash" });
+assert.equal(cashBasis.status, "needs_review");
+assert.ok(
+  cashBasis.issues.some((issue) => issue.title === "Cash-basis financials need timing review"),
+);
+assert.equal(accountingBasisLabel("cash"), "Cash basis");
 
 const weak = reviewFinancialData([
   {
@@ -87,12 +106,16 @@ assert.ok(weak.issues.some((issue) => issue.title === "Revenue is missing or zer
 
 const zeroOwnerComp = reviewFinancialData(
   completeYears.map((row) => ({ ...row, owner_salary: 0, addbacks: 0 })),
+  { accountingBasis: "accrual" },
 );
 
 assert.equal(zeroOwnerComp.status, "ready");
 assert.equal(zeroOwnerComp.requiredAcknowledgement, false);
 
-const unmapped = reviewFinancialData(completeYears, { unmappedAccountCount: 2 });
+const unmapped = reviewFinancialData(completeYears, {
+  accountingBasis: "accrual",
+  unmappedAccountCount: 2,
+});
 assert.equal(unmapped.status, "weak");
 assert.ok(unmapped.issues.some((issue) => issue.title === "Imported accounts are unmapped"));
 

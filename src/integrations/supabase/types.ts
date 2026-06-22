@@ -189,6 +189,7 @@ export type Database = {
       }
       businesses: {
         Row: {
+          accounting_basis: string
           anonymous_description: string | null
           asking_price_high: number | null
           asking_price_low: number | null
@@ -223,6 +224,7 @@ export type Database = {
           years_in_business: number | null
         }
         Insert: {
+          accounting_basis?: string
           anonymous_description?: string | null
           asking_price_high?: number | null
           asking_price_low?: number | null
@@ -257,6 +259,7 @@ export type Database = {
           years_in_business?: number | null
         }
         Update: {
+          accounting_basis?: string
           anonymous_description?: string | null
           asking_price_high?: number | null
           asking_price_low?: number | null

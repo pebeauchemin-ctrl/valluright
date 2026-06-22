@@ -9,6 +9,13 @@ import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 import type { Database } from "@/integrations/supabase/types";
 import { useServerFn } from "@tanstack/react-start";
 import { recordProductEvent } from "@/lib/observability.functions";
+import {
+  accountingBasisLabel,
+  adjustConfidenceForDataQuality,
+  normalizeAccountingBasis,
+  reviewFinancialData,
+  type DataQualityReview,
+} from "@/lib/data-quality";
 
 export const Route = createFileRoute("/app/reports")({
   head: () => ({ meta: [{ title: "Reports — ValuRight.ai" }] }),
@@ -225,8 +232,11 @@ function ReportPreview({
   const { business, financials, valuation, scenarios, recommendations, buyerSettings } = bundle;
   const latest = financials[0];
   const risks = buildKeyRisks(business, financials);
-  const dataNotes = buildDataQualityNotes(financials, valuation);
-  const confidence = confidenceLabel(financials, valuation);
+  const dataReview = reviewFinancialData(financials, {
+    accountingBasis: normalizeAccountingBasis(business.accounting_basis),
+  });
+  const dataNotes = buildDataQualityNotes(business, financials, valuation, dataReview);
+  const confidence = confidenceLabel(financials, valuation, dataReview);
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-stretch justify-center overflow-y-auto print:bg-white print:static print:overflow-visible">
@@ -292,8 +302,8 @@ function ReportPreview({
                     </div>
                     <div className="mt-1 font-display text-2xl font-semibold">{confidence}</div>
                     <p className="mt-2 text-xs leading-relaxed text-neutral-600">
-                      Based on saved financial history, balance-sheet detail, and the latest saved
-                      valuation snapshot.
+                      Based on saved financial history, accounting basis, balance-sheet detail, data
+                      quality review, and the latest saved valuation snapshot.
                     </p>
                     <p className="mt-3 text-[11px] text-neutral-500">
                       Saved valuation:{" "}
@@ -311,7 +321,7 @@ function ReportPreview({
                 <FinancialsTable rows={financials} />
               </Section>
               <Section title="Valuation method breakdown">
-                <Methods v={valuation} financials={financials} />
+                <Methods v={valuation} financials={financials} dataReview={dataReview} />
               </Section>
               <Section title="Key assumptions">
                 <Assumptions b={business} />
@@ -410,7 +420,7 @@ function ReportPreview({
                 <Assumptions b={business} />
               </Section>
               <Section title="Valuation methods">
-                <Methods v={valuation} financials={financials} />
+                <Methods v={valuation} financials={financials} dataReview={dataReview} />
                 <BigRange
                   low={valuation?.range_low}
                   mid={valuation?.range_mid}
@@ -532,14 +542,36 @@ function BigRange({
     </div>
   );
 }
-function Methods({ v, financials }: { v: ValuationRow | null; financials: FinancialYearRow[] }) {
+function Methods({
+  v,
+  financials,
+  dataReview,
+}: {
+  v: ValuationRow | null;
+  financials: FinancialYearRow[];
+  dataReview: DataQualityReview;
+}) {
   if (!v) return <div className="text-sm text-neutral-500">No valuation computed yet.</div>;
   const rows = [
-    methodRow("SDE multiple", v.sde_value, v.sde_low, v.sde_high, financials),
-    methodRow("EBITDA multiple", v.ebitda_value, v.ebitda_low, v.ebitda_high, financials),
-    methodRow("Revenue multiple", v.revenue_value, v.revenue_low, v.revenue_high, financials),
-    methodRow("Discounted cash flow", v.dcf_value, v.dcf_low, v.dcf_high, financials),
-    methodRow("Asset-based", v.asset_value, v.asset_low, v.asset_high, financials),
+    methodRow("SDE multiple", v.sde_value, v.sde_low, v.sde_high, financials, dataReview),
+    methodRow(
+      "EBITDA multiple",
+      v.ebitda_value,
+      v.ebitda_low,
+      v.ebitda_high,
+      financials,
+      dataReview,
+    ),
+    methodRow(
+      "Revenue multiple",
+      v.revenue_value,
+      v.revenue_low,
+      v.revenue_high,
+      financials,
+      dataReview,
+    ),
+    methodRow("Discounted cash flow", v.dcf_value, v.dcf_low, v.dcf_high, financials, dataReview),
+    methodRow("Asset-based", v.asset_value, v.asset_low, v.asset_high, financials, dataReview),
   ].filter((row) => Number(row.low) > 0 || Number(row.high) > 0);
   return (
     <table className="w-full text-sm">
@@ -613,6 +645,7 @@ function Assumptions({ b }: { b: BusinessRow }) {
   return (
     <div className="grid grid-cols-2 gap-3 text-sm">
       <KV k="Owner hours/wk" v={b.owner_hours_per_week} />
+      <KV k="Accounting basis" v={accountingBasisLabel(b.accounting_basis)} />
       <KV
         k="Recurring revenue"
         v={b.recurring_revenue_pct != null ? fmtPct(Number(b.recurring_revenue_pct)) : "—"}
@@ -759,24 +792,37 @@ function methodRow(
   low: number | null | undefined,
   high: number | null | undefined,
   financials: FinancialYearRow[],
+  dataReview: DataQualityReview,
 ) {
   const hasValue = Number(value ?? 0) > 0 || Number(low ?? 0) > 0 || Number(high ?? 0) > 0;
   const hasThreeYears = financials.length >= 3;
-  let confidence = "Low";
+  let confidence: "Low" | "Medium" | "High" = "Low";
   if (hasValue && hasThreeYears && /SDE|EBITDA|Asset/.test(name)) confidence = "High";
   else if (hasValue && (hasThreeYears || /Discounted|Asset/.test(name))) confidence = "Medium";
-  return { name, value, low, high, confidence };
+  return {
+    name,
+    value,
+    low,
+    high,
+    confidence: adjustConfidenceForDataQuality(confidence, dataReview),
+  };
 }
 
-function confidenceLabel(financials: FinancialYearRow[], valuation: ValuationRow | null) {
+function confidenceLabel(
+  financials: FinancialYearRow[],
+  valuation: ValuationRow | null,
+  dataReview: DataQualityReview,
+) {
   if (!valuation) return "No saved valuation";
   const latest = financials[0];
   const hasBalanceSheet = Number(latest?.assets ?? 0) > 0 || Number(latest?.liabilities ?? 0) > 0;
+  let confidence: "Low" | "Medium" | "High" = "Low";
   if (financials.length >= 3 && hasBalanceSheet && Number(valuation.health_score ?? 0) >= 70) {
-    return "High";
+    confidence = "High";
+  } else if (financials.length >= 2 && Number(valuation.range_mid ?? 0) > 0) {
+    confidence = "Medium";
   }
-  if (financials.length >= 2 && Number(valuation.range_mid ?? 0) > 0) return "Medium";
-  return "Low";
+  return adjustConfidenceForDataQuality(confidence, dataReview);
 }
 
 function buildKeyRisks(business: BusinessRow, financials: FinancialYearRow[]) {
@@ -813,7 +859,12 @@ function buildKeyRisks(business: BusinessRow, financials: FinancialYearRow[]) {
   return risks;
 }
 
-function buildDataQualityNotes(financials: FinancialYearRow[], valuation: ValuationRow | null) {
+function buildDataQualityNotes(
+  business: BusinessRow,
+  financials: FinancialYearRow[],
+  valuation: ValuationRow | null,
+  dataReview: DataQualityReview,
+) {
   const latest = financials[0];
   const notes: string[] = [];
   if (valuation?.computed_at) {
@@ -830,11 +881,17 @@ function buildDataQualityNotes(financials: FinancialYearRow[], valuation: Valuat
       ? "Three years of financial history are included."
       : `${financials.length} year(s) of financial history are included; add three years for stronger confidence.`,
   );
+  notes.push(`Accounting basis: ${accountingBasisLabel(business.accounting_basis)}.`);
   if (latest && (Number(latest.assets ?? 0) > 0 || Number(latest.liabilities ?? 0) > 0)) {
     notes.push("Balance-sheet data is present for the latest year.");
   } else {
     notes.push(
       "Balance-sheet data is missing or incomplete; asset and debt views may be less reliable.",
+    );
+  }
+  for (const issue of dataReview.issues.slice(0, 4)) {
+    notes.push(
+      `${issue.title}: ${issue.detail}${issue.years?.length ? ` Years: ${issue.years.join(", ")}.` : ""}`,
     );
   }
   notes.push("Owner salary and add-backs should be reviewed for buyer-acceptable normalization.");
