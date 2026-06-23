@@ -58,56 +58,6 @@ export type Database = {
           },
         ]
       }
-      app_observability_events: {
-        Row: {
-          actor_user_id: string | null
-          alert_required: boolean
-          area: string
-          business_id: string | null
-          created_at: string
-          event_name: string
-          id: string
-          metadata: Json
-          severity: string
-          target_id: string | null
-          target_type: string | null
-        }
-        Insert: {
-          actor_user_id?: string | null
-          alert_required?: boolean
-          area: string
-          business_id?: string | null
-          created_at?: string
-          event_name: string
-          id?: string
-          metadata?: Json
-          severity?: string
-          target_id?: string | null
-          target_type?: string | null
-        }
-        Update: {
-          actor_user_id?: string | null
-          alert_required?: boolean
-          area?: string
-          business_id?: string | null
-          created_at?: string
-          event_name?: string
-          id?: string
-          metadata?: Json
-          severity?: string
-          target_id?: string | null
-          target_type?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "app_observability_events_business_id_fkey"
-            columns: ["business_id"]
-            isOneToOne: false
-            referencedRelation: "businesses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       advisor_comments: {
         Row: {
           author_id: string
@@ -189,6 +139,7 @@ export type Database = {
       }
       businesses: {
         Row: {
+          accounting_basis: string
           anonymous_description: string | null
           asking_price_high: number | null
           asking_price_low: number | null
@@ -223,6 +174,7 @@ export type Database = {
           years_in_business: number | null
         }
         Insert: {
+          accounting_basis?: string
           anonymous_description?: string | null
           asking_price_high?: number | null
           asking_price_low?: number | null
@@ -257,6 +209,7 @@ export type Database = {
           years_in_business?: number | null
         }
         Update: {
+          accounting_basis?: string
           anonymous_description?: string | null
           asking_price_high?: number | null
           asking_price_low?: number | null

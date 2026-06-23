@@ -27,6 +27,7 @@ import { MethodDetailDialog, MethodRangeBar } from "@/components/MethodDetailDia
 import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 import {
   dataQualityAcknowledgementKey,
+  normalizeAccountingBasis,
   reviewFinancialData,
   type DataQualityReview,
 } from "@/lib/data-quality";
@@ -120,7 +121,13 @@ function Dashboard() {
     [inputs],
   );
   const health = useMemo(() => (inputs ? computeHealthScore(inputs) : null), [inputs]);
-  const dataQuality = useMemo(() => reviewFinancialData(financials), [financials]);
+  const dataQuality = useMemo(
+    () =>
+      reviewFinancialData(financials, {
+        accountingBasis: normalizeAccountingBasis(current?.accounting_basis),
+      }),
+    [current?.accounting_basis, financials],
+  );
   const dataQualityAckKey = useMemo(
     () => dataQualityAcknowledgementKey(current?.id, dataQuality),
     [current?.id, dataQuality],
