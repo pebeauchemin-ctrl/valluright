@@ -18,6 +18,10 @@ import { decryptToken, encryptToken, isEncryptedToken } from "./token-crypto.ser
 import { recordSecurityAuditEvent } from "./security-audit.server";
 import { recordObservabilityEvent } from "./observability.server";
 
+function safeErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message.slice(0, 300) : "Xero import failed";
+}
+
 function getOrigin() {
   const req = getRequest();
   const fwdProto = req?.headers.get("x-forwarded-proto");
@@ -124,6 +128,7 @@ export const importXeroFinancials = createServerFn({ method: "POST" })
     }> => {
       let connectionId: string | null = null;
       let businessId: string | null = null;
+      let importLogId: string | null = null;
       try {
         const { data: conn, error } = await supabaseAdmin
           .from("xero_connections")
@@ -139,6 +144,22 @@ export const importXeroFinancials = createServerFn({ method: "POST" })
 
         connectionId = conn.id;
         businessId = conn.business_id ?? null;
+        if (businessId) {
+          const { data: log } = await supabaseAdmin
+            .from("import_sync_logs")
+            .insert({
+              business_id: businessId,
+              source_system: "xero",
+              status: "started",
+              report_names: ["Profit and Loss", "Balance Sheet"],
+              retry_action: "xero_import",
+              created_by: context.userId,
+              metadata: { tenant_id: data.tenantId, years_requested: data.years.length },
+            })
+            .select("id")
+            .maybeSingle();
+          importLogId = log?.id ?? null;
+        }
         await recordObservabilityEvent({
           actorUserId: context.userId,
           businessId,
@@ -170,6 +191,26 @@ export const importXeroFinancials = createServerFn({ method: "POST" })
           ),
         ).sort((a, b) => a.localeCompare(b));
         const warnings = Array.from(new Set(out.flatMap((year) => year.warnings ?? [])));
+        const sortedYears = out.map((year) => Number(year.year)).sort((a, b) => a - b);
+        if (importLogId) {
+          await supabaseAdmin
+            .from("import_sync_logs")
+            .update({
+              status: "success",
+              completed_at: lastSyncedAt,
+              date_range_start: sortedYears[0] ?? null,
+              date_range_end: sortedYears[sortedYears.length - 1] ?? null,
+              imported_year_count: out.length,
+              imported_account_count: accounts.length,
+              warning_count: warnings.length,
+              warnings,
+              metadata: {
+                tenant_id: data.tenantId,
+                unmapped_accounts_count: unmappedAccounts.length,
+              },
+            })
+            .eq("id", importLogId);
+        }
         await recordSecurityAuditEvent({
           actorUserId: context.userId,
           businessId: conn.business_id,
@@ -209,6 +250,17 @@ export const importXeroFinancials = createServerFn({ method: "POST" })
           },
         };
       } catch (error) {
+        if (importLogId) {
+          await supabaseAdmin
+            .from("import_sync_logs")
+            .update({
+              status: "failed",
+              completed_at: new Date().toISOString(),
+              error_message: safeErrorMessage(error),
+              warning_count: 0,
+            })
+            .eq("id", importLogId);
+        }
         await recordObservabilityEvent({
           actorUserId: context.userId,
           businessId,

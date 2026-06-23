@@ -10,6 +10,8 @@ import {
   AlertTriangle,
   Save as SaveIcon,
   Download,
+  History,
+  RefreshCw,
 } from "lucide-react";
 import { toBusinessInputs, useBusiness, type FinancialYearRow } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,6 +43,14 @@ import {
   reviewFinancialData,
   type DataQualityReview,
 } from "@/lib/data-quality";
+import {
+  importDateRange,
+  importSourceLabel,
+  importStatusLabel,
+  safeImportError,
+  type ImportSyncLogRow,
+  type ImportSyncSource,
+} from "@/lib/import-sync-log";
 import { valueBusiness } from "@/lib/valuation";
 
 export const Route = createFileRoute("/app/financials")({
@@ -120,6 +130,10 @@ const ADD_BACK_CATEGORIES = [
   "Other normalization",
 ] as const;
 
+function importSourceFromFileName(fileName: string): ImportSyncSource {
+  return fileName.toLowerCase().endsWith(".xlsx") ? "xlsx" : "csv";
+}
+
 function Financials() {
   const { current } = useBusiness();
   const search = Route.useSearch();
@@ -132,6 +146,7 @@ function Financials() {
   const [mappingReview, setMappingReview] = useState<MappedAccount[]>([]);
   const [savingMappings, setSavingMappings] = useState(false);
   const [importWarnings, setImportWarnings] = useState<string[]>([]);
+  const [importLogs, setImportLogs] = useState<ImportSyncLogRow[]>([]);
   const [xeroImportSummary, setXeroImportSummary] = useState<XeroImportSummary | null>(null);
   const [importDraft, setImportDraft] = useState<FinancialImportDraft | null>(null);
 
@@ -178,13 +193,20 @@ function Financials() {
         .select("*")
         .eq("business_id", current.id)
         .order("source_account_name", { ascending: true }),
-    ]).then(([financialsResult, addBacksResult, mappingsResult]) => {
+      supabase
+        .from("import_sync_logs")
+        .select("*")
+        .eq("business_id", current.id)
+        .order("started_at", { ascending: false })
+        .limit(10),
+    ]).then(([financialsResult, addBacksResult, mappingsResult, importLogsResult]) => {
       setYears(financialsResult.data ?? []);
       const loadedAddBacks = (addBacksResult.data ?? []) as FinancialAddBackRow[];
       setAddBacks(loadedAddBacks);
       setDeletedAddBacks([]);
       setOriginalAddBacks(Object.fromEntries(loadedAddBacks.map((row) => [row.id, row])));
       setAccountMappings((mappingsResult.data ?? []) as AccountMappingRow[]);
+      setImportLogs((importLogsResult.data ?? []) as ImportSyncLogRow[]);
       setMappingReview([]);
       setImportWarnings([]);
     });
@@ -229,6 +251,69 @@ function Financials() {
   const loadQuickBooksConnections = async () => {
     const { connections } = await fetchQuickBooksConnections({});
     setQuickBooksConnections(connections);
+  };
+
+  const loadImportLogs = async () => {
+    if (!current) return;
+    const { data } = await supabase
+      .from("import_sync_logs")
+      .select("*")
+      .eq("business_id", current.id)
+      .order("started_at", { ascending: false })
+      .limit(10);
+    setImportLogs((data ?? []) as ImportSyncLogRow[]);
+  };
+
+  const createFileImportLog = async (sourceSystem: ImportSyncSource, fileName: string) => {
+    if (!current) return null;
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const { data, error } = await supabase
+      .from("import_sync_logs")
+      .insert({
+        business_id: current.id,
+        source_system: sourceSystem,
+        status: "started",
+        report_names: ["Uploaded financial file"],
+        retry_action: "file_upload",
+        created_by: user?.id ?? null,
+        metadata: { file_name: fileName },
+      })
+      .select("id")
+      .maybeSingle();
+    if (error) throw error;
+    void loadImportLogs();
+    return data?.id ?? null;
+  };
+
+  const finishFileImportLog = async (
+    logId: string | null,
+    status: "success" | "failed",
+    options: {
+      importedYears?: Array<{ year: number }>;
+      importedAccountCount?: number;
+      warnings?: string[];
+      errorMessage?: string;
+    },
+  ) => {
+    if (!logId) return;
+    const dateRange = importDateRange(options.importedYears ?? []);
+    await supabase
+      .from("import_sync_logs")
+      .update({
+        status,
+        completed_at: new Date().toISOString(),
+        date_range_start: dateRange.start,
+        date_range_end: dateRange.end,
+        imported_year_count: options.importedYears?.length ?? 0,
+        imported_account_count: options.importedAccountCount ?? 0,
+        warning_count: options.warnings?.length ?? 0,
+        warnings: options.warnings ?? [],
+        error_message: options.errorMessage ?? null,
+      })
+      .eq("id", logId);
+    void loadImportLogs();
   };
 
   const update = (i: number, key: string, val: number) => {
@@ -499,8 +584,10 @@ function Financials() {
           ),
         )
         .catch(() => {});
+      void loadImportLogs();
       toast.success(`Imported ${imported.length} year(s) from Xero. Review and click Save.`);
     } catch (e) {
+      void loadImportLogs();
       toast.error(e instanceof Error ? e.message : "Xero import failed");
     } finally {
       setXeroLoading(false);
@@ -547,36 +634,70 @@ function Financials() {
     );
   };
 
-  const applyImportDraft = () => {
+  const applyImportDraft = async () => {
     if (!importDraft) return;
-    const validation = validateImportDraft(importDraft);
-    if (validation.errors.length) {
-      toast.error("Fix the import mapping errors before applying the file.");
-      return;
-    }
-    const accountRows = buildAccountRowsFromDraft(importDraft);
-    if (accountRows.length) {
-      const mapped = applySavedMappings(accountRows, accountMappings);
-      setMappingReview(mapped);
-      applyMappedImport(mapped);
-      setImportWarnings([...validation.warnings, ...buildMappingWarnings(mapped)]);
-      setImportDraft(null);
-      toast.success(
-        `Imported ${accountRows.length} account row(s). Review mappings and click Save.`,
+    let logId: string | null = null;
+    try {
+      logId = await createFileImportLog(
+        importSourceFromFileName(importDraft.fileName),
+        importDraft.fileName,
       );
-      return;
-    }
+      const validation = validateImportDraft(importDraft);
+      if (validation.errors.length) {
+        await finishFileImportLog(logId, "failed", {
+          warnings: validation.warnings,
+          errorMessage: validation.errors[0],
+        });
+        toast.error("Fix the import mapping errors before applying the file.");
+        return;
+      }
+      const accountRows = buildAccountRowsFromDraft(importDraft);
+      if (accountRows.length) {
+        const mapped = applySavedMappings(accountRows, accountMappings);
+        const warnings = [...validation.warnings, ...buildMappingWarnings(mapped)];
+        const importedYears = Array.from(new Set(mapped.map((account) => account.year)))
+          .filter(Boolean)
+          .map((year) => ({ year: Number(year) }));
+        setMappingReview(mapped);
+        applyMappedImport(mapped);
+        setImportWarnings(warnings);
+        setImportDraft(null);
+        await finishFileImportLog(logId, "success", {
+          importedYears,
+          importedAccountCount: accountRows.length,
+          warnings,
+        });
+        toast.success(
+          `Imported ${accountRows.length} account row(s). Review mappings and click Save.`,
+        );
+        return;
+      }
 
-    const imported = buildDirectRowsFromDraft(importDraft);
-    if (!imported.length) {
-      toast.error("No valid financial rows found in the mapped file.");
-      return;
+      const imported = buildDirectRowsFromDraft(importDraft);
+      if (!imported.length) {
+        await finishFileImportLog(logId, "failed", {
+          warnings: validation.warnings,
+          errorMessage: "No valid financial rows found in the mapped file.",
+        });
+        toast.error("No valid financial rows found in the mapped file.");
+        return;
+      }
+      mergeImported(imported);
+      setMappingReview([]);
+      setImportWarnings(validation.warnings);
+      setImportDraft(null);
+      await finishFileImportLog(logId, "success", {
+        importedYears: imported,
+        importedAccountCount: 0,
+        warnings: validation.warnings,
+      });
+      toast.success(`Imported ${imported.length} year(s). Review and click Save.`);
+    } catch (e) {
+      await finishFileImportLog(logId, "failed", {
+        errorMessage: safeImportError(e),
+      });
+      toast.error(e instanceof Error ? e.message : "Financial import failed");
     }
-    mergeImported(imported);
-    setMappingReview([]);
-    setImportWarnings(validation.warnings);
-    setImportDraft(null);
-    toast.success(`Imported ${imported.length} year(s). Review and click Save.`);
   };
 
   const downloadSampleTemplate = () => {
@@ -659,8 +780,10 @@ function Financials() {
       setQuickBooksLoading(true);
       await refreshQuickBooks({ data: { connectionId } });
       await loadQuickBooksConnections();
+      void loadImportLogs();
       toast.success("QuickBooks connection refreshed");
     } catch (e) {
+      void loadImportLogs();
       toast.error(e instanceof Error ? e.message : "Could not refresh QuickBooks connection");
     } finally {
       setQuickBooksLoading(false);
@@ -678,6 +801,27 @@ function Financials() {
     } finally {
       setQuickBooksLoading(false);
     }
+  };
+
+  const retryImportLog = (log: ImportSyncLogRow) => {
+    if (log.retry_action === "xero_import") {
+      if (!selectedTenant) {
+        toast.error("Connect Xero before retrying this import.");
+        return;
+      }
+      void runXeroImport();
+      return;
+    }
+    if (log.retry_action === "quickbooks_refresh") {
+      const connection = quickBooksConnections[0];
+      if (!connection) {
+        toast.error("Connect QuickBooks before retrying this refresh.");
+        return;
+      }
+      void handleRefreshQuickBooks(connection.id);
+      return;
+    }
+    fileRef.current?.click();
   };
 
   const save = async () => {
@@ -1074,6 +1218,97 @@ function Financials() {
                 </button>
               </div>
             </div>
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <History className="h-4 w-4" /> Import history
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Recent connector and file import attempts. This keeps safe troubleshooting metadata
+              only, not uploaded financial values.
+            </p>
+          </div>
+          <button
+            onClick={() => void loadImportLogs()}
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-2 text-xs font-medium hover:bg-secondary"
+          >
+            <RefreshCw className="h-3.5 w-3.5" /> Refresh
+          </button>
+        </div>
+
+        {importLogs.length === 0 ? (
+          <p className="mt-4 text-sm text-muted-foreground">No imports logged yet.</p>
+        ) : (
+          <div className="mt-4 overflow-x-auto rounded-lg border border-border">
+            <table className="w-full min-w-[780px] text-xs">
+              <thead>
+                <tr className="border-b border-border bg-secondary/30 text-left text-muted-foreground">
+                  <th className="px-3 py-2 font-medium">Source</th>
+                  <th className="px-3 py-2 font-medium">Status</th>
+                  <th className="px-3 py-2 font-medium">Time</th>
+                  <th className="px-3 py-2 font-medium">Years</th>
+                  <th className="px-3 py-2 font-medium">Reports</th>
+                  <th className="px-3 py-2 font-medium">Warnings</th>
+                  <th className="px-3 py-2 font-medium">Troubleshooting</th>
+                  <th className="px-3 py-2 font-medium"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {importLogs.map((log) => (
+                  <tr key={log.id} className="border-b border-border/60 last:border-0">
+                    <td className="px-3 py-3 font-medium text-foreground">
+                      {importSourceLabel(log.source_system)}
+                    </td>
+                    <td className="px-3 py-3">
+                      <span
+                        className={`inline-flex rounded-full px-2 py-0.5 font-semibold ${
+                          log.status === "success"
+                            ? "bg-emerald-100 text-emerald-800"
+                            : log.status === "failed"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-amber-100 text-amber-800"
+                        }`}
+                      >
+                        {importStatusLabel(log.status)}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 text-muted-foreground">
+                      {new Date(log.started_at).toLocaleString()}
+                    </td>
+                    <td className="px-3 py-3 text-muted-foreground">
+                      {log.date_range_start && log.date_range_end
+                        ? log.date_range_start === log.date_range_end
+                          ? log.date_range_start
+                          : `${log.date_range_start}-${log.date_range_end}`
+                        : "-"}
+                    </td>
+                    <td className="px-3 py-3 text-muted-foreground">
+                      {log.report_names.length ? log.report_names.join(", ") : "-"}
+                    </td>
+                    <td className="px-3 py-3 text-muted-foreground">{log.warning_count}</td>
+                    <td className="px-3 py-3 text-muted-foreground">
+                      {log.error_message ??
+                        `${log.imported_year_count} year(s), ${log.imported_account_count} account row(s)`}
+                    </td>
+                    <td className="px-3 py-3 text-right">
+                      {log.status === "failed" && (
+                        <button
+                          onClick={() => retryImportLog(log)}
+                          className="rounded-md border border-border bg-background px-2.5 py-1.5 font-medium text-foreground hover:bg-secondary"
+                        >
+                          {log.retry_action === "file_upload" ? "Upload again" : "Retry"}
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
