@@ -12,6 +12,10 @@ import {
   refreshQuickBooksAccessToken,
 } from "./quickbooks.server";
 
+function safeQuickBooksError(error: unknown) {
+  return error instanceof Error ? error.message.slice(0, 300) : "QuickBooks refresh failed";
+}
+
 function getOrigin() {
   const req = getRequest();
   const fwdProto = req?.headers.get("x-forwarded-proto");
@@ -99,6 +103,7 @@ export const refreshQuickBooksConnection = createServerFn({ method: "POST" })
   .middleware([withSupabaseAuth, requireSupabaseAuth])
   .inputValidator(z.object({ connectionId: z.string().uuid() }))
   .handler(async ({ data, context }) => {
+    let importLogId: string | null = null;
     const { data: conn, error } = await supabaseAdmin
       .from("quickbooks_connections")
       .select("id, business_id, realm_id, access_token, refresh_token, expires_at")
@@ -108,31 +113,75 @@ export const refreshQuickBooksConnection = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     if (!conn) throw new Error("QuickBooks connection not found");
 
-    const accessToken = await ensureFreshQuickBooksToken(conn);
-    const company = await fetchQuickBooksCompanyInfo({
-      accessToken,
-      realmId: conn.realm_id,
-    });
-    const lastSyncedAt = new Date().toISOString();
-    const { error: updateErr } = await supabaseAdmin
-      .from("quickbooks_connections")
-      .update({
-        company_name: company.companyName,
-        last_synced_at: lastSyncedAt,
-      })
-      .eq("id", conn.id);
-    if (updateErr) throw new Error(updateErr.message);
+    if (conn.business_id) {
+      const { data: log } = await supabaseAdmin
+        .from("import_sync_logs")
+        .insert({
+          business_id: conn.business_id,
+          source_system: "quickbooks",
+          status: "started",
+          report_names: ["Company info"],
+          retry_action: "quickbooks_refresh",
+          created_by: context.userId,
+          metadata: { connection_id: conn.id },
+        })
+        .select("id")
+        .maybeSingle();
+      importLogId = log?.id ?? null;
+    }
 
-    await recordSecurityAuditEvent({
-      actorUserId: context.userId,
-      businessId: conn.business_id,
-      action: "quickbooks_connection_refreshed",
-      targetType: "quickbooks_connection",
-      targetId: conn.id,
-      metadata: { realm_id: conn.realm_id },
-    });
+    try {
+      const accessToken = await ensureFreshQuickBooksToken(conn);
+      const company = await fetchQuickBooksCompanyInfo({
+        accessToken,
+        realmId: conn.realm_id,
+      });
+      const lastSyncedAt = new Date().toISOString();
+      const { error: updateErr } = await supabaseAdmin
+        .from("quickbooks_connections")
+        .update({
+          company_name: company.companyName,
+          last_synced_at: lastSyncedAt,
+        })
+        .eq("id", conn.id);
+      if (updateErr) throw new Error(updateErr.message);
 
-    return { companyName: company.companyName, lastSyncedAt };
+      if (importLogId) {
+        await supabaseAdmin
+          .from("import_sync_logs")
+          .update({
+            status: "success",
+            completed_at: lastSyncedAt,
+            imported_year_count: 0,
+            imported_account_count: 0,
+            warning_count: 0,
+          })
+          .eq("id", importLogId);
+      }
+
+      await recordSecurityAuditEvent({
+        actorUserId: context.userId,
+        businessId: conn.business_id,
+        action: "quickbooks_connection_refreshed",
+        targetType: "quickbooks_connection",
+        targetId: conn.id,
+        metadata: { realm_id: conn.realm_id },
+      });
+
+      return { companyName: company.companyName, lastSyncedAt };
+    } catch (refreshError) {
+      if (importLogId) {
+        await supabaseAdmin
+          .from("import_sync_logs")
+          .update({
+            status: "failed",
+            completed_at: new Date().toISOString(),
+            error_message: safeQuickBooksError(refreshError),
+          })
+          .eq("id", importLogId);
+      }
+      throw refreshError;
+    }
   });
 
 export const disconnectQuickBooksConnection = createServerFn({ method: "POST" })
