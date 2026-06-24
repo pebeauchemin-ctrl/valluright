@@ -22,6 +22,7 @@ import {
 } from "@/lib/valuation";
 import { fmtCurrency } from "@/lib/format";
 import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
+import { AccessibleChart } from "@/components/AccessibleChart";
 import { toast } from "sonner";
 import {
   ResponsiveContainer,
@@ -367,6 +368,8 @@ function HealthScorePage() {
     remainder: e.max - e.score,
     pct: Math.round(e.pct),
   }));
+  const radialSummary = `Overall Value Health Score is ${total} out of 100, rated ${result.ratingLabel}. ${result.summary}`;
+  const contributionSummary = `Category contribution chart across ${chartData.length} value drivers. Strongest score is ${result.strengths[0]?.label ?? "not available"}; weakest score is ${result.weaknesses[0]?.label ?? "not available"}.`;
 
   return (
     <div className="space-y-8 p-4 sm:p-6 lg:p-10">
@@ -390,7 +393,11 @@ function HealthScorePage() {
           <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Overall Score
           </div>
-          <div className="h-56 -mt-2 relative">
+          <AccessibleChart
+            title="Overall Value Health Score"
+            summary={radialSummary}
+            className="h-56 -mt-2 relative"
+          >
             <ResponsiveContainer width="100%" height="100%">
               <RadialBarChart
                 cx="50%"
@@ -405,13 +412,13 @@ function HealthScorePage() {
                 <RadialBar background dataKey="value" cornerRadius={8} />
               </RadialBarChart>
             </ResponsiveContainer>
-            <div className="absolute inset-x-0 bottom-6 text-center">
+            <div aria-hidden="true" className="absolute inset-x-0 bottom-6 text-center">
               <div className="font-display text-5xl font-semibold text-primary">{total}</div>
               <div className="text-xs text-muted-foreground">
                 out of 100 · <span className="font-semibold">{result.ratingLabel}</span>
               </div>
             </div>
-          </div>
+          </AccessibleChart>
           <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{result.summary}</p>
           <Link
             to="/app/improve-value"
@@ -423,41 +430,48 @@ function HealthScorePage() {
 
         <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-6 shadow-sm">
           <div className="text-sm font-semibold text-primary mb-3">Category contribution</div>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={chartData} layout="vertical" margin={{ left: 30 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-              <XAxis
-                type="number"
-                domain={[0, 20]}
-                tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
-              />
-              <YAxis
-                type="category"
-                dataKey="name"
-                width={150}
-                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-              />
-              <Tooltip
-                contentStyle={{ borderRadius: 8, border: "1px solid var(--border)" }}
-                formatter={(v: number) => [`${v}`, "Score"]}
-              />
-              <Bar dataKey="score" radius={[0, 4, 4, 0]} stackId="s">
-                {chartData.map((d, i) => (
-                  <Cell
-                    key={i}
-                    fill={
-                      d.pct >= 75
-                        ? "var(--accent)"
-                        : d.pct >= 40
-                          ? "var(--chart-2)"
-                          : "var(--destructive)"
-                    }
-                  />
-                ))}
-              </Bar>
-              <Bar dataKey="remainder" stackId="s" fill="var(--secondary)" radius={[0, 4, 4, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <AccessibleChart title="Category contribution" summary={contributionSummary}>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={chartData} layout="vertical" margin={{ left: 30 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis
+                  type="number"
+                  domain={[0, 20]}
+                  tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+                />
+                <YAxis
+                  type="category"
+                  dataKey="name"
+                  width={150}
+                  tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                />
+                <Tooltip
+                  contentStyle={{ borderRadius: 8, border: "1px solid var(--border)" }}
+                  formatter={(v: number) => [`${v}`, "Score"]}
+                />
+                <Bar dataKey="score" radius={[0, 4, 4, 0]} stackId="s">
+                  {chartData.map((d, i) => (
+                    <Cell
+                      key={i}
+                      fill={
+                        d.pct >= 75
+                          ? "var(--accent)"
+                          : d.pct >= 40
+                            ? "var(--chart-2)"
+                            : "var(--destructive)"
+                      }
+                    />
+                  ))}
+                </Bar>
+                <Bar
+                  dataKey="remainder"
+                  stackId="s"
+                  fill="var(--secondary)"
+                  radius={[0, 4, 4, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </AccessibleChart>
         </div>
       </section>
 

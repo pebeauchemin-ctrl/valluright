@@ -82,6 +82,9 @@ function AppLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-secondary/40 lg:flex-row">
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       {/* Sidebar */}
       <aside className="w-full shrink-0 bg-sidebar text-sidebar-foreground flex flex-col lg:w-64">
         <Link
@@ -95,7 +98,11 @@ function AppLayout() {
         <div className="px-3 py-3 border-b border-sidebar-border">
           {businesses.length > 0 && current ? (
             <div className="relative group">
-              <button className="w-full flex items-center justify-between gap-2 rounded-md bg-sidebar-accent px-3 py-2 text-sm text-left hover:bg-sidebar-accent/80 transition">
+              <button
+                type="button"
+                aria-label={`Current business: ${current.name}. Switch business`}
+                className="w-full flex items-center justify-between gap-2 rounded-md bg-sidebar-accent px-3 py-2 text-sm text-left hover:bg-sidebar-accent/80 transition"
+              >
                 <div className="min-w-0 flex-1">
                   <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">
                     Business
@@ -117,6 +124,7 @@ function AppLayout() {
                     {businesses.map((b) => (
                       <button
                         key={b.id}
+                        type="button"
                         onClick={() => setCurrent(b)}
                         className={`w-full text-left px-3 py-2 text-sm hover:bg-sidebar/40 ${b.id === current.id ? "bg-sidebar/30" : ""}`}
                       >
@@ -138,7 +146,10 @@ function AppLayout() {
         </div>
 
         {/* Nav */}
-        <nav className="flex gap-1 overflow-x-auto px-3 py-3 lg:flex-1 lg:flex-col lg:space-y-0.5 lg:overflow-visible">
+        <nav
+          aria-label="Application sections"
+          className="flex gap-1 overflow-x-auto px-3 py-3 lg:flex-1 lg:flex-col lg:space-y-0.5 lg:overflow-visible"
+        >
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = item.exact
@@ -148,6 +159,7 @@ function AppLayout() {
               <Link
                 key={item.to}
                 to={item.to}
+                aria-current={active ? "page" : undefined}
                 className={`flex shrink-0 items-center gap-3 rounded-md px-3 py-2 text-sm transition lg:shrink ${
                   active
                     ? "bg-sidebar-accent text-sidebar-foreground font-semibold"
@@ -164,6 +176,7 @@ function AppLayout() {
         <div className="px-3 py-3 border-t border-sidebar-border lg:block">
           <div className="text-xs text-sidebar-foreground/60 px-3 mb-2 truncate">{user.email}</div>
           <button
+            type="button"
             onClick={async () => {
               await signOut();
               navigate({ to: "/" });
@@ -176,7 +189,7 @@ function AppLayout() {
       </aside>
 
       {/* Main */}
-      <main className="flex-1 min-w-0 overflow-x-hidden">
+      <main id="main-content" className="flex-1 min-w-0 overflow-x-hidden" tabIndex={-1}>
         <Outlet />
       </main>
     </div>

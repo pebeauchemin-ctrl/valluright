@@ -25,6 +25,7 @@ import { buildValuationInsert } from "@/lib/valuation-persistence";
 import { fmtCurrency, fmtPct } from "@/lib/format";
 import { MethodDetailDialog, MethodRangeBar } from "@/components/MethodDetailDialog";
 import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
+import { AccessibleChart } from "@/components/AccessibleChart";
 import {
   dataQualityAcknowledgementKey,
   reviewFinancialData,
@@ -284,6 +285,9 @@ function Dashboard() {
     }));
 
   const healthData = [{ name: "Score", value: health.total, fill: "var(--accent)" }];
+  const revenueChartSummary = `Revenue and EBITDA trend for ${financials.length} financial year${financials.length === 1 ? "" : "s"}. Latest year ${latest?.year ?? "unknown"} shows revenue ${fmtCurrency(Number(latest?.revenue ?? 0))} and EBITDA ${fmtCurrency(Number(latest?.ebitda ?? 0))}.`;
+  const methodChartSummary = `Valuation by method. Median value range is ${fmtCurrency(valuation.rangeLow)} to ${fmtCurrency(valuation.rangeHigh)}, with midpoint ${fmtCurrency(valuation.rangeMid)}.`;
+  const healthChartSummary = `Value Health Score is ${health.total} out of 100, rated ${health.ratingLabel}.`;
 
   // Top concerns
   const concerns: { title: string; desc: string }[] = [];
@@ -480,7 +484,11 @@ function Dashboard() {
           <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Value Health Score
           </div>
-          <div className="h-48 -mt-2">
+          <AccessibleChart
+            title="Value Health Score"
+            summary={healthChartSummary}
+            className="h-48 -mt-2"
+          >
             <ResponsiveContainer width="100%" height="100%">
               <RadialBarChart
                 cx="50%"
@@ -495,11 +503,11 @@ function Dashboard() {
                 <RadialBar background dataKey="value" cornerRadius={8} />
               </RadialBarChart>
             </ResponsiveContainer>
-            <div className="-mt-24 text-center">
+            <div aria-hidden="true" className="-mt-24 text-center">
               <div className="font-display text-4xl font-semibold text-primary">{health.total}</div>
               <div className="text-xs text-muted-foreground">out of 100 · {health.ratingLabel}</div>
             </div>
-          </div>
+          </AccessibleChart>
           <div className="mt-4 rounded-lg bg-secondary/40 p-3">
             <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               Main score driver
@@ -665,7 +673,7 @@ function Dashboard() {
 
       {/* Chart row */}
       <section className="grid lg:grid-cols-2 gap-6">
-        <ChartCard title="Revenue & EBITDA trend">
+        <ChartCard title="Revenue & EBITDA trend" summary={revenueChartSummary}>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={revenueChartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -683,7 +691,7 @@ function Dashboard() {
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
-        <ChartCard title="Valuation by method">
+        <ChartCard title="Valuation by method" summary={methodChartSummary}>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={methodChartData} layout="vertical" margin={{ left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -1006,11 +1014,21 @@ function KPI({ label, value }: { label: string; value: string }) {
   );
 }
 
-function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
+function ChartCard({
+  title,
+  summary,
+  children,
+}: {
+  title: string;
+  summary: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
       <div className="text-sm font-semibold text-primary mb-3">{title}</div>
-      {children}
+      <AccessibleChart title={title} summary={summary}>
+        {children}
+      </AccessibleChart>
     </div>
   );
 }
