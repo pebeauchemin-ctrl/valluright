@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import {
   TrendingUp,
   AlertTriangle,
@@ -26,6 +27,7 @@ import { fmtCurrency, fmtPct } from "@/lib/format";
 import { MethodDetailDialog, MethodRangeBar } from "@/components/MethodDetailDialog";
 import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 import { AccessibleChart } from "@/components/AccessibleChart";
+import { recordProductEvent } from "@/lib/observability.functions";
 import {
   dataQualityAcknowledgementKey,
   reviewFinancialData,
@@ -52,6 +54,7 @@ export const Route = createFileRoute("/app/")({
 
 function Dashboard() {
   const { current, loading: bizLoading } = useBusiness();
+  const recordEvent = useServerFn(recordProductEvent);
   const [financials, setFinancials] = useState<FinancialYearRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeMethod, setActiveMethod] = useState<MethodResult | null>(null);
@@ -164,6 +167,20 @@ function Dashboard() {
         .from("valuations")
         .insert(buildValuationInsert(current.id, inputs, valuation, health));
       if (error) throw error;
+      await recordEvent({
+        data: {
+          eventName: "valuation_generated",
+          area: "valuation",
+          businessId: current.id,
+          targetType: "business",
+          targetId: current.id,
+          metadata: {
+            source: "dashboard",
+            method_count: valuation.methods.length,
+            health_band: health.ratingLabel,
+          },
+        },
+      }).catch(() => undefined);
       setHasSavedValuation(true);
       setLastValuationAt(new Date().toISOString());
       setReviewOpen(false);

@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Save, Trash2 } from "lucide-react";
+import { Activity, CheckCircle2, Circle, Save, Trash2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useBusiness } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { PRODUCT_ANALYTICS_PRIVACY_NOTE, productFunnelProgress } from "@/lib/product-analytics";
 import {
   INDUSTRY_OPTIONS,
   BUSINESS_CATEGORY_OPTIONS,
@@ -73,6 +74,13 @@ const US_STATES = [
   "PR",
 ];
 
+type AnalyticsEvent = {
+  event_name: string;
+  created_at: string;
+  area: string;
+  severity: string;
+};
+
 function Settings() {
   const { user } = useAuth();
   const { current, refresh } = useBusiness();
@@ -109,6 +117,7 @@ function Settings() {
   const [exitTimeline, setExitTimeline] = useState<
     "lt_1y" | "1_2y" | "2_5y" | "5_plus_y" | "exploring"
   >("2_5y");
+  const [analyticsEvents, setAnalyticsEvents] = useState<AnalyticsEvent[]>([]);
 
   // Hydrate from current business
   useEffect(() => {
@@ -149,6 +158,19 @@ function Settings() {
     setSopStatus(c.sop_status ?? "partial");
     setManagerDepth(c.manager_team_depth ?? "partial");
     setExitTimeline((c.exit_timeline as never) ?? "2_5y");
+  }, [current]);
+
+  useEffect(() => {
+    if (!current) {
+      setAnalyticsEvents([]);
+      return;
+    }
+    supabase
+      .from("app_observability_events")
+      .select("event_name, created_at, area, severity")
+      .eq("business_id", current.id)
+      .order("created_at", { ascending: true })
+      .then(({ data }) => setAnalyticsEvents((data ?? []) as AnalyticsEvent[]));
   }, [current]);
 
   if (!user) return null;
@@ -204,9 +226,12 @@ function Settings() {
   };
 
   const subtypes = BUSINESS_SUBTYPES[businessCategory] ?? [];
+  const funnelProgress = productFunnelProgress(analyticsEvents);
+  const completedFunnelSteps = funnelProgress.filter((step) => step.completed).length;
+  const lastAnalyticsEvent = analyticsEvents[analyticsEvents.length - 1] ?? null;
 
   return (
-    <div className="space-y-6 p-4 sm:p-6 lg:p-10 max-w-3xl">
+    <div className="space-y-6 p-4 sm:p-6 lg:p-10 max-w-5xl">
       <div>
         <h1 className="font-display text-3xl font-semibold text-primary">Settings</h1>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -240,6 +265,64 @@ function Settings() {
           </Link>
         </div>
       </div>
+
+      {current && (
+        <section className="rounded-xl border border-border bg-card p-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="font-display font-semibold text-primary">Activation funnel</h2>
+              <p className="mt-1 max-w-2xl text-xs leading-relaxed text-muted-foreground">
+                {PRODUCT_ANALYTICS_PRIVACY_NOTE}
+              </p>
+            </div>
+            <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-muted-foreground">
+              <Activity className="h-3.5 w-3.5" />
+              {completedFunnelSteps} of {funnelProgress.length} complete
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-3 md:grid-cols-2">
+            {funnelProgress.map((step) => (
+              <div
+                key={step.eventName}
+                className={`rounded-lg border p-4 ${
+                  step.completed
+                    ? "border-accent/40 bg-accent-soft/60"
+                    : "border-border bg-secondary/30"
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  {step.completed ? (
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                  ) : (
+                    <Circle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                  )}
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-foreground">{step.label}</div>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      {step.description}
+                    </p>
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      {step.completed
+                        ? `${step.count} event${step.count === 1 ? "" : "s"} · Last ${formatAnalyticsDate(step.lastSeenAt)}`
+                        : "Not recorded yet"}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-4 rounded-lg border border-border bg-secondary/30 px-4 py-3 text-xs text-muted-foreground">
+            Last recorded event:{" "}
+            <span className="font-semibold text-foreground">
+              {lastAnalyticsEvent
+                ? `${lastAnalyticsEvent.event_name} on ${formatAnalyticsDate(lastAnalyticsEvent.created_at)}`
+                : "No product analytics events for this business yet"}
+            </span>
+          </div>
+        </section>
+      )}
 
       {current && (
         <>
@@ -520,6 +603,16 @@ function Settings() {
       )}
     </div>
   );
+}
+
+function formatAnalyticsDate(value: string | null) {
+  if (!value) return "unknown";
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(value));
 }
 
 function Field({

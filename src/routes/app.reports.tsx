@@ -185,7 +185,7 @@ function Reports() {
                     setPrintOnOpen(true);
                     recordEvent({
                       data: {
-                        eventName: "report_generated",
+                        eventName: "report_exported",
                         area: "report",
                         businessId: current.id,
                         targetType: "report",

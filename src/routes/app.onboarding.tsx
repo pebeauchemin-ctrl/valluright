@@ -504,6 +504,19 @@ function Onboarding() {
       .single();
     if (error || !data) throw error ?? new Error("Failed to create business");
     setBusinessId(data.id);
+    await recordEvent({
+      data: {
+        eventName: "company_created",
+        area: "activation",
+        businessId: data.id,
+        targetType: "business",
+        targetId: data.id,
+        metadata: {
+          source: "onboarding",
+          is_sample: usingSampleData,
+        },
+      },
+    }).catch(() => undefined);
     return data.id;
   };
 
@@ -517,6 +530,19 @@ function Onboarding() {
     if (yearsToInsert.length) {
       const { error } = await supabase.from("financial_years").insert(yearsToInsert);
       if (error) throw error;
+      await recordEvent({
+        data: {
+          eventName: "financial_data_added",
+          area: "activation",
+          businessId: bizId,
+          targetType: "business",
+          targetId: bizId,
+          metadata: {
+            source: "onboarding",
+            year_count: yearsToInsert.length,
+          },
+        },
+      }).catch(() => undefined);
     }
   };
 

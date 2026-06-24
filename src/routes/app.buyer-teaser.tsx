@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { CheckCircle2, Copy, ExternalLink, EyeOff, LockKeyhole, Save, Shield } from "lucide-react";
 import { useBusiness, type FinancialYearRow } from "@/lib/business";
@@ -6,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 import { fmtCurrency } from "@/lib/format";
+import { recordProductEvent } from "@/lib/observability.functions";
 
 export const Route = createFileRoute("/app/buyer-teaser")({
   head: () => ({ meta: [{ title: "Buyer Teaser — ValuRight.ai" }] }),
@@ -28,6 +30,7 @@ type BuyerSettingsState = {
 
 function BuyerTeaser() {
   const { current } = useBusiness();
+  const recordEvent = useServerFn(recordProductEvent);
   const [settings, setSettings] = useState<BuyerSettingsState>({
     is_published: false,
     show_revenue_chart: true,
@@ -122,6 +125,30 @@ function BuyerTeaser() {
         .from("buyer_view_settings")
         .upsert(payload, { onConflict: "business_id" });
       if (error) throw error;
+      const visibleFieldsCount = [
+        settings.show_revenue_chart,
+        settings.show_employee_count,
+        settings.show_exact_revenue,
+        settings.show_profit_margin,
+        settings.show_sde,
+        settings.show_valuation_breakdown,
+        settings.show_scenarios,
+        settings.show_customer_concentration,
+        settings.show_photos,
+      ].filter(Boolean).length;
+      await recordEvent({
+        data: {
+          eventName: "buyer_teaser_generated",
+          area: "activation",
+          businessId: current.id,
+          targetType: "buyer_teaser",
+          targetId: current.public_id,
+          metadata: {
+            published: settings.is_published,
+            visible_fields_count: visibleFieldsCount,
+          },
+        },
+      }).catch(() => undefined);
       setSavedPublished(settings.is_published);
       toast.success(settings.is_published ? "Published — share your link." : "Saved as draft.");
     } catch (e) {
