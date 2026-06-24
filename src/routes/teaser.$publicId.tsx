@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { fmtCurrency } from "@/lib/format";
 import { toast } from "sonner";
 import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
+import { AccessibleChart } from "@/components/AccessibleChart";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
 type PublicBusiness = {
@@ -146,6 +147,9 @@ function Teaser() {
 
   const latest = financials[financials.length - 1];
   const revBand = latest?.revenue_band ?? null;
+  const revenueChartSummary = settings.show_exact_revenue
+    ? `Revenue trend across ${financials.length} year${financials.length === 1 ? "" : "s"}. Latest disclosed revenue is ${fmtCurrency(Number(latest?.revenue ?? 0), { compact: true })}.`
+    : `Indexed revenue trend across ${financials.length} year${financials.length === 1 ? "" : "s"}. Exact revenue is not disclosed before owner approval.`;
 
   return (
     <div className="min-h-screen bg-secondary/30">
@@ -218,22 +222,29 @@ function Teaser() {
           {settings.show_revenue_chart && financials.length > 0 && (
             <div className="mt-8">
               <h3 className="text-sm font-semibold text-primary mb-3">Revenue trend (indexed)</h3>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart
-                  data={financials.map((f: PublicFinancial) => ({
-                    year: String(f.year),
-                    value: settings.show_exact_revenue
-                      ? Number(f.revenue ?? 0)
-                      : Number(f.revenue_index ?? 0),
-                  }))}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis dataKey="year" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} />
-                  <YAxis tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} />
-                  <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid var(--border)" }} />
-                  <Bar dataKey="value" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <AccessibleChart title="Buyer teaser revenue trend" summary={revenueChartSummary}>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart
+                    data={financials.map((f: PublicFinancial) => ({
+                      year: String(f.year),
+                      value: settings.show_exact_revenue
+                        ? Number(f.revenue ?? 0)
+                        : Number(f.revenue_index ?? 0),
+                    }))}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis
+                      dataKey="year"
+                      tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+                    />
+                    <YAxis tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} />
+                    <Tooltip
+                      contentStyle={{ borderRadius: 8, border: "1px solid var(--border)" }}
+                    />
+                    <Bar dataKey="value" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </AccessibleChart>
             </div>
           )}
 
