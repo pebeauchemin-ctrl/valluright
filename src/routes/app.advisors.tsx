@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import {
   AlertTriangle,
@@ -18,6 +19,7 @@ import { toast } from "sonner";
 import { fmtCurrency } from "@/lib/format";
 import type { Database } from "@/integrations/supabase/types";
 import { COUNSEL_REVIEW_TEXT, VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
+import { recordProductEvent } from "@/lib/observability.functions";
 
 export const Route = createFileRoute("/app/advisors")({
   head: () => ({ meta: [{ title: "Advisors — ValuRight.ai" }] }),
@@ -75,6 +77,7 @@ type AdvisorCommentInsert = Database["public"]["Tables"]["advisor_comments"]["In
 function Advisors() {
   const { user } = useAuth();
   const { current } = useBusiness();
+  const recordEvent = useServerFn(recordProductEvent);
   const [invites, setInvites] = useState<Invite[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
   const [financials, setFinancials] = useState<FinancialYearRow[]>([]);
@@ -166,8 +169,25 @@ function Advisors() {
         advisor_role: role,
         permission_level: perm,
       };
-      const { error } = await supabase.from("advisor_invites").insert(payload);
+      const { data, error } = await supabase
+        .from("advisor_invites")
+        .insert(payload)
+        .select("id")
+        .single();
       if (error) throw error;
+      await recordEvent({
+        data: {
+          eventName: "advisor_invited",
+          area: "activation",
+          businessId: current.id,
+          targetType: "advisor_invite",
+          targetId: data.id,
+          metadata: {
+            advisor_role: role,
+            permission_level: perm,
+          },
+        },
+      }).catch(() => undefined);
       setEmail("");
       await refresh();
       toast.success(`Advisor invite record created for ${email}`);

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { Sliders, Save, Trash2, Lightbulb, AlertTriangle } from "lucide-react";
 import { useBusiness, toBusinessInputs, type FinancialYearRow } from "@/lib/business";
@@ -7,6 +8,7 @@ import { valueBusiness, computeHealthScore, type Valuation } from "@/lib/valuati
 import { fmtCurrency } from "@/lib/format";
 import { toast } from "sonner";
 import { COUNSEL_REVIEW_TEXT, VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
+import { recordProductEvent } from "@/lib/observability.functions";
 
 type ScenarioRow = {
   id: string;
@@ -62,6 +64,7 @@ function sopScoreToStatus(s: number) {
 
 function Scenarios() {
   const { current } = useBusiness();
+  const recordEvent = useServerFn(recordProductEvent);
   const [financials, setFinancials] = useState<FinancialYearRow[]>([]);
   const [saved, setSaved] = useState<ScenarioRow[]>([]);
   const [name, setName] = useState("");
@@ -210,6 +213,20 @@ function Scenarios() {
       toast.error(error.message);
       return;
     }
+    await recordEvent({
+      data: {
+        eventName: "scenario_saved",
+        area: "activation",
+        businessId: current.id,
+        targetType: "scenario",
+        targetId: data.id,
+        metadata: {
+          include_in_report: includeInReport,
+          roadmap_phase: phase,
+          timeline_months: k.timelineMonths,
+        },
+      },
+    }).catch(() => undefined);
     setSaved((prev) => [data as ScenarioRow, ...prev]);
     setName("");
     setDescription("");

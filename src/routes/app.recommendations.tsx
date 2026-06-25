@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Sparkles, Loader2, AlertTriangle, ArrowRight } from "lucide-react";
 import { useBusiness, toBusinessInputs, type FinancialYearRow } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +8,7 @@ import { valueBusiness, computeHealthScore } from "@/lib/valuation";
 import { fmtCurrency } from "@/lib/format";
 import { toast } from "sonner";
 import { COUNSEL_REVIEW_TEXT, VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
+import { recordProductEvent } from "@/lib/observability.functions";
 
 export const Route = createFileRoute("/app/recommendations")({
   head: () => ({ meta: [{ title: "Recommendations — ValuRight.ai" }] }),
@@ -28,6 +30,7 @@ type Rec = {
 
 function Recs() {
   const { current } = useBusiness();
+  const recordEvent = useServerFn(recordProductEvent);
   const [financials, setFinancials] = useState<FinancialYearRow[]>([]);
   const [recs, setRecs] = useState<Rec[]>([]);
   const [loading, setLoading] = useState(false);
@@ -39,7 +42,17 @@ function Recs() {
       .select("*")
       .eq("business_id", current.id)
       .then(({ data }) => setFinancials(data ?? []));
-  }, [current]);
+    recordEvent({
+      data: {
+        eventName: "recommendation_viewed",
+        area: "activation",
+        businessId: current.id,
+        targetType: "business",
+        targetId: current.id,
+        metadata: { source: "page" },
+      },
+    }).catch(() => undefined);
+  }, [current, recordEvent]);
 
   const generate = async () => {
     if (!current) return;
@@ -54,6 +67,19 @@ function Recs() {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setRecs(data?.recommendations ?? []);
+      await recordEvent({
+        data: {
+          eventName: "recommendation_viewed",
+          area: "activation",
+          businessId: current.id,
+          targetType: "business",
+          targetId: current.id,
+          metadata: {
+            source: "generated",
+            recommendation_count: data?.recommendations?.length ?? 0,
+          },
+        },
+      }).catch(() => undefined);
       toast.success(`Generated ${data?.recommendations?.length ?? 0} recommendations`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to generate");

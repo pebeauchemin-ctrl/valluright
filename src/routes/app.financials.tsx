@@ -26,6 +26,7 @@ import {
   refreshQuickBooksConnection,
   startQuickBooksConnect,
 } from "@/lib/quickbooks.functions";
+import { recordProductEvent } from "@/lib/observability.functions";
 import {
   NORMALIZED_ACCOUNT_FIELDS,
   accountMappingKey,
@@ -179,6 +180,7 @@ function Financials() {
   const fetchQuickBooksConnections = useServerFn(listQuickBooksConnections);
   const refreshQuickBooks = useServerFn(refreshQuickBooksConnection);
   const disconnectQuickBooks = useServerFn(disconnectQuickBooksConnection);
+  const recordEvent = useServerFn(recordProductEvent);
   const [xeroLoading, setXeroLoading] = useState(false);
   const [quickBooksLoading, setQuickBooksLoading] = useState(false);
   const [xeroTenants, setXeroTenants] = useState<
@@ -948,6 +950,22 @@ function Financials() {
         .update({ accounting_basis: accountingBasis })
         .eq("id", current.id);
       if (basisError) throw basisError;
+
+      await recordEvent({
+        data: {
+          eventName: "financial_data_added",
+          area: "activation",
+          businessId: current.id,
+          targetType: "business",
+          targetId: current.id,
+          metadata: {
+            source: mappingReview.length ? "mapped_import" : "manual_or_import",
+            year_count: yearsWithReviewedAddBacks.length,
+            accounting_basis: accountingBasis,
+            addback_row_count: addBacks.length,
+          },
+        },
+      }).catch(() => undefined);
 
       toast.success("Financials saved");
       const [financialsResult, addBacksResult] = await Promise.all([
