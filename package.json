@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit --pretty false",
     "ci": "npm run typecheck && npm run lint:ci && npm test && npm run build",
-    "test": "npm run test:valuation && npm run test:access-hardening && npm run test:account-mapping && npm run test:quickbooks-oauth && npm run test:xero-import && npm run test:accessibility-baseline && npm run test:product-analytics",
+    "test": "npm run test:valuation && npm run test:access-hardening && npm run test:account-mapping && npm run test:quickbooks-oauth && npm run test:xero-import && npm run test:accessibility-baseline && npm run test:product-analytics && npm run test:support-admin",
     "test:valuation": "rm -rf .tmp-tests && mkdir -p .tmp-tests && esbuild src/lib/valuation.test.ts --bundle --platform=node --format=esm --outfile=.tmp-tests/valuation.test.mjs --log-level=warning && node .tmp-tests/valuation.test.mjs",
     "test:access-hardening": "rm -rf .tmp-tests && mkdir -p .tmp-tests && esbuild src/lib/access-hardening.test.ts --bundle --platform=node --format=esm --outfile=.tmp-tests/access-hardening.test.mjs --log-level=warning && node .tmp-tests/access-hardening.test.mjs",
     "test:account-mapping": "rm -rf .tmp-tests && mkdir -p .tmp-tests && esbuild src/lib/account-mapping.test.ts --bundle --platform=node --format=esm --outfile=.tmp-tests/account-mapping.test.mjs --log-level=warning && node .tmp-tests/account-mapping.test.mjs",
@@ -20,7 +20,8 @@
     "test:product-analytics": "rm -rf .tmp-tests && mkdir -p .tmp-tests && esbuild src/lib/product-analytics.test.ts --bundle --platform=node --format=esm --outfile=.tmp-tests/product-analytics.test.mjs --log-level=warning && node .tmp-tests/product-analytics.test.mjs",
     "lint": "eslint .",
     "lint:ci": "eslint . --rule 'prettier/prettier: off' --max-warnings=20",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test:support-admin": "rm -rf .tmp-tests && mkdir -p .tmp-tests && esbuild src/lib/support-admin.test.ts --bundle --platform=node --format=esm --outfile=.tmp-tests/support-admin.test.mjs --log-level=warning && node .tmp-tests/support-admin.test.mjs"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",
