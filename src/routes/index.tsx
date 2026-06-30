@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, ShieldCheck, TrendingUp, Users, FileCheck, Sparkles } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
+import { COMMERCIAL_PLANS, FREE_TRIAL_LIMITS } from "@/lib/commercial-model";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -192,59 +193,14 @@ function Landing() {
               Plans for every stage
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Start free. Upgrade when you're ready to prepare for sale.
+              Start with a {FREE_TRIAL_LIMITS.durationDays}-day preview. Upgrade when you're ready
+              to prepare for sale or share buyer-facing materials.
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Plan
-              name="Essentials"
-              price="$99"
-              sub="/month"
-              who="Owner-operator"
-              features={[
-                "Ongoing value dashboard",
-                "All six valuation methods",
-                "Health Score & recommendations",
-                "What-if scenarios",
-              ]}
-            />
-            <Plan
-              name="Exit Ready"
-              price="$249"
-              sub="/month"
-              who="Preparing to sell"
-              features={[
-                "Everything in Essentials",
-                "Buyer-safe teaser page",
-                "Data room (5 GB)",
-                "Printable report previews",
-              ]}
-              highlighted
-            />
-            <Plan
-              name="Advisor Pro"
-              price="$349"
-              sub="/seat / month"
-              who="CPAs & brokers"
-              features={[
-                "Portfolio dashboard planned",
-                "White-label reports planned",
-                "Advisor review workflow",
-                "Multiple client businesses planned",
-              ]}
-            />
-            <Plan
-              name="One-time Report"
-              price="$799"
-              sub="one-time"
-              who="Just curious"
-              features={[
-                "Single valuation report",
-                "Recommendations included",
-                "Printable report preview",
-                "No subscription",
-              ]}
-            />
+            {COMMERCIAL_PLANS.map((plan) => (
+              <Plan key={plan.name} {...plan} />
+            ))}
           </div>
         </div>
       </section>
