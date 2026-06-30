@@ -1,11 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { Activity, CheckCircle2, Circle, Save, Trash2 } from "lucide-react";
+import { Activity, CheckCircle2, Circle, Search, ShieldCheck, Save, Trash2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useBusiness } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PRODUCT_ANALYTICS_PRIVACY_NOTE, productFunnelProgress } from "@/lib/product-analytics";
+import {
+  getSupportAdminAccess,
+  searchSupportAccounts,
+} from "@/lib/support-admin.functions";
+import {
+  SUPPORT_ACTIONS,
+  SUPPORT_ADMIN_NOTICE,
+  type SupportAccountSummary,
+} from "@/lib/support-admin";
 import {
   INDUSTRY_OPTIONS,
   BUSINESS_CATEGORY_OPTIONS,
@@ -118,6 +128,14 @@ function Settings() {
     "lt_1y" | "1_2y" | "2_5y" | "5_plus_y" | "exploring"
   >("2_5y");
   const [analyticsEvents, setAnalyticsEvents] = useState<AnalyticsEvent[]>([]);
+  const checkSupportAdminAccess = useServerFn(getSupportAdminAccess);
+  const searchSupportAdminAccounts = useServerFn(searchSupportAccounts);
+  const [isSupportAdmin, setIsSupportAdmin] = useState(false);
+  const [supportQuery, setSupportQuery] = useState("");
+  const [supportSearching, setSupportSearching] = useState(false);
+  const [supportResults, setSupportResults] = useState<SupportAccountSummary[]>([]);
+  const [selectedSupportAccount, setSelectedSupportAccount] =
+    useState<SupportAccountSummary | null>(null);
 
   // Hydrate from current business
   useEffect(() => {
@@ -173,6 +191,20 @@ function Settings() {
       .then(({ data }) => setAnalyticsEvents((data ?? []) as AnalyticsEvent[]));
   }, [current]);
 
+  useEffect(() => {
+    let cancelled = false;
+    checkSupportAdminAccess()
+      .then((result) => {
+        if (!cancelled) setIsSupportAdmin(result.isAdmin);
+      })
+      .catch(() => {
+        if (!cancelled) setIsSupportAdmin(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [checkSupportAdminAccess]);
+
   if (!user) return null;
 
   const saveBasics = async () => {
@@ -223,6 +255,24 @@ function Settings() {
     await supabase.from("businesses").delete().eq("id", current.id);
     await refresh();
     toast.success("Business deleted");
+  };
+
+  const runSupportSearch = async () => {
+    if (supportQuery.trim().length < 2) {
+      toast.error("Enter at least 2 characters.");
+      return;
+    }
+    setSupportSearching(true);
+    try {
+      const result = await searchSupportAdminAccounts({ data: { query: supportQuery } });
+      setSupportResults(result.results);
+      setSelectedSupportAccount(result.results[0] ?? null);
+      if (result.results.length === 0) toast.info("No matching account found.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Support search failed");
+    } finally {
+      setSupportSearching(false);
+    }
   };
 
   const subtypes = BUSINESS_SUBTYPES[businessCategory] ?? [];
@@ -322,6 +372,18 @@ function Settings() {
             </span>
           </div>
         </section>
+      )}
+
+      {isSupportAdmin && (
+        <SupportAdminPanel
+          query={supportQuery}
+          setQuery={setSupportQuery}
+          searching={supportSearching}
+          results={supportResults}
+          selected={selectedSupportAccount}
+          setSelected={setSelectedSupportAccount}
+          onSearch={runSupportSearch}
+        />
       )}
 
       {current && (
@@ -603,6 +665,216 @@ function Settings() {
       )}
     </div>
   );
+}
+
+function SupportAdminPanel({
+  query,
+  setQuery,
+  searching,
+  results,
+  selected,
+  setSelected,
+  onSearch,
+}: {
+  query: string;
+  setQuery: (value: string) => void;
+  searching: boolean;
+  results: SupportAccountSummary[];
+  selected: SupportAccountSummary | null;
+  setSelected: (account: SupportAccountSummary | null) => void;
+  onSearch: () => void;
+}) {
+  return (
+    <section className="rounded-xl border border-accent/30 bg-card p-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="h-4 w-4 text-accent" />
+            <h2 className="font-display font-semibold text-primary">Support admin</h2>
+          </div>
+          <p className="mt-1 max-w-2xl text-xs leading-relaxed text-muted-foreground">
+            Look up early users by email or company name. {SUPPORT_ADMIN_NOTICE}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") onSearch();
+          }}
+          placeholder="Search by user email or company name"
+          className="min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+        <button
+          onClick={onSearch}
+          disabled={searching}
+          className="inline-flex items-center justify-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90 disabled:opacity-60"
+        >
+          <Search className="h-4 w-4" /> {searching ? "Searching..." : "Search"}
+        </button>
+      </div>
+
+      {results.length > 0 && (
+        <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+          <div className="space-y-2">
+            {results.map((account) => (
+              <button
+                key={`${account.userId}-${account.businessId ?? "no-business"}`}
+                onClick={() => setSelected(account)}
+                className={`w-full rounded-lg border p-3 text-left transition ${
+                  selected?.userId === account.userId && selected?.businessId === account.businessId
+                    ? "border-accent bg-accent-soft"
+                    : "border-border bg-secondary/30 hover:border-accent/50"
+                }`}
+              >
+                <div className="text-sm font-semibold text-foreground">
+                  {account.businessName ?? account.company ?? account.email ?? "Unknown account"}
+                </div>
+                <div className="mt-1 text-xs text-muted-foreground">{account.email}</div>
+                <div className="mt-2 flex flex-wrap gap-1.5 text-[11px]">
+                  <StatusPill ok={account.onboarding.hasBusinessProfile} label="Profile" />
+                  <StatusPill ok={account.onboarding.hasValuation} label="Valuation" />
+                  <StatusPill ok={account.importStatus?.status === "success"} label="Import" />
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {selected && <SupportAccountDetails account={selected} />}
+        </div>
+      )}
+
+      <div className="mt-5 grid gap-3 md:grid-cols-2">
+        {SUPPORT_ACTIONS.map((action) => (
+          <div key={action.title} className="rounded-lg border border-border bg-secondary/30 p-4">
+            <div className="text-sm font-semibold text-foreground">{action.title}</div>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{action.body}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function SupportAccountDetails({ account }: { account: SupportAccountSummary }) {
+  const importStatus = account.importStatus;
+  return (
+    <div className="rounded-lg border border-border bg-secondary/20 p-4">
+      <div>
+        <div className="text-sm font-semibold text-primary">
+          {account.businessName ?? account.company ?? "Account details"}
+        </div>
+        <div className="mt-1 text-xs text-muted-foreground">
+          {account.fullName ?? "No profile name"} · {account.email ?? "No email available"}
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-2 sm:grid-cols-2">
+        <SupportMetric
+          label="Onboarding"
+          value={`${account.onboarding.financialYearCount} financial year${account.onboarding.financialYearCount === 1 ? "" : "s"}`}
+        />
+        <SupportMetric
+          label="Last valuation"
+          value={formatSupportDate(account.lastValuationRunAt)}
+        />
+        <SupportMetric
+          label="Buyer teaser"
+          value={account.onboarding.buyerTeaserPublished ? "Published" : "Not published"}
+        />
+        <SupportMetric
+          label="Connections"
+          value={`Xero ${account.connections.xeroCount} · QB ${account.connections.quickBooksCount}`}
+        />
+      </div>
+
+      <div className="mt-4 rounded-lg border border-border bg-card p-3">
+        <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Import status
+        </div>
+        {importStatus ? (
+          <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+            <div>
+              <span className="font-semibold text-foreground">{importStatus.source}</span> ·{" "}
+              {importStatus.status} · {formatSupportDate(importStatus.startedAt)}
+            </div>
+            <div>Reports: {importStatus.reportNames.join(", ") || "None recorded"}</div>
+            <div>Warnings: {importStatus.warningCount}</div>
+            {importStatus.errorMessage && (
+              <div className="rounded-md bg-destructive/10 px-2 py-1 text-destructive">
+                {importStatus.errorMessage}
+              </div>
+            )}
+            {Object.keys(importStatus.metadata).length > 0 && (
+              <pre className="mt-2 max-h-28 overflow-auto rounded-md bg-background p-2 text-[11px] text-foreground">
+                {JSON.stringify(importStatus.metadata, null, 2)}
+              </pre>
+            )}
+          </div>
+        ) : (
+          <div className="mt-2 text-xs text-muted-foreground">No import attempts recorded.</div>
+        )}
+      </div>
+
+      <div className="mt-4 rounded-lg border border-border bg-card p-3">
+        <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Recent safe events
+        </div>
+        <div className="mt-2 space-y-2">
+          {account.recentEvents.length > 0 ? (
+            account.recentEvents.map((event) => (
+              <div key={`${event.eventName}-${event.createdAt}`} className="text-xs">
+                <div className="font-semibold text-foreground">
+                  {event.eventName} · {event.severity}
+                </div>
+                <div className="text-muted-foreground">
+                  {event.area} · {formatSupportDate(event.createdAt)}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-xs text-muted-foreground">No recent support events.</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SupportMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-border bg-card px-3 py-2">
+      <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+        {label}
+      </div>
+      <div className="mt-1 text-sm font-semibold text-foreground">{value}</div>
+    </div>
+  );
+}
+
+function StatusPill({ ok, label }: { ok: boolean; label: string }) {
+  return (
+    <span
+      className={`rounded-full px-2 py-0.5 font-semibold ${
+        ok ? "bg-accent-soft text-accent" : "bg-muted text-muted-foreground"
+      }`}
+    >
+      {label}
+    </span>
+  );
+}
+
+function formatSupportDate(value: string | null) {
+  if (!value) return "Not recorded";
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(value));
 }
 
 function formatAnalyticsDate(value: string | null) {
