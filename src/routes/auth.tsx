@@ -3,21 +3,29 @@ import { useEffect, useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { commercialPlanBySlug } from "@/lib/commercial-model";
 import { useServerFn } from "@tanstack/react-start";
 import { recordPublicClientEvent } from "@/lib/observability.functions";
 
+type Mode = "signin" | "signup" | "forgot";
+type AuthSearch = { mode?: Mode; plan?: string };
+
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — ValuRight.ai" }] }),
+  validateSearch: (search: Record<string, unknown>): AuthSearch => ({
+    mode: search.mode === "signup" || search.mode === "forgot" ? search.mode : undefined,
+    plan: typeof search.plan === "string" ? search.plan : undefined,
+  }),
   component: AuthPage,
 });
-
-type Mode = "signin" | "signup" | "forgot";
 
 function AuthPage() {
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
+  const search = Route.useSearch();
+  const selectedPlan = commercialPlanBySlug(search.plan);
   const recordEvent = useServerFn(recordPublicClientEvent);
-  const [mode, setMode] = useState<Mode>("signin");
+  const [mode, setMode] = useState<Mode>(search.mode ?? (selectedPlan ? "signup" : "signin"));
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,6 +36,10 @@ function AuthPage() {
   useEffect(() => {
     if (user) navigate({ to: "/app" });
   }, [user, navigate]);
+
+  useEffect(() => {
+    if (search.mode === "signup" || (selectedPlan && mode === "signin")) setMode("signup");
+  }, [search.mode, selectedPlan, mode]);
 
   const switchMode = (m: Mode) => {
     setMode(m);
@@ -67,7 +79,7 @@ function AuthPage() {
             eventName: "signup_completed",
             severity: "info",
             area: "auth",
-            metadata: { method: "email" },
+            metadata: { method: "email", selected_plan: selectedPlan?.slug ?? null },
           },
         }).catch(() => undefined);
       }
@@ -85,7 +97,9 @@ function AuthPage() {
     mode === "signin"
       ? "Sign in to your dashboard."
       : mode === "signup"
-        ? "Start your first valuation in minutes."
+        ? selectedPlan
+          ? `Create your account to start the ${selectedPlan.name} flow. Billing is not charged yet.`
+          : "Start your first valuation in minutes."
         : "Enter your email and we'll send you a link to choose a new password.";
   const cta =
     mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link";
@@ -119,6 +133,15 @@ function AuthPage() {
 
           <h1 className="font-display text-3xl font-semibold text-primary">{heading}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{subheading}</p>
+          {selectedPlan && mode === "signup" && (
+            <div className="mt-4 rounded-lg border border-accent/30 bg-accent-soft px-4 py-3 text-sm">
+              <div className="font-semibold text-primary">{selectedPlan.name}</div>
+              <div className="mt-1 text-muted-foreground">
+                {selectedPlan.price}
+                <span className="text-xs"> {selectedPlan.sub}</span> · {selectedPlan.who}
+              </div>
+            </div>
+          )}
 
           <form onSubmit={submit} className="mt-8 space-y-4">
             {mode === "signup" && (
