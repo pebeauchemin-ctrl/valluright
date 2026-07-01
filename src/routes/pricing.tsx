@@ -62,6 +62,17 @@ function PricingPage() {
             <div className="mt-5 rounded-lg border border-border bg-secondary/40 px-3 py-2 text-xs font-semibold text-muted-foreground">
               Buyer teaser: {buyerTeaserPolicy(plan)}
             </div>
+            <Link
+              to="/auth"
+              search={{ mode: "signup", plan: plan.slug }}
+              className={`mt-5 inline-flex w-full items-center justify-center gap-1.5 rounded-md px-4 py-2.5 text-sm font-semibold transition ${
+                plan.highlighted
+                  ? "bg-accent text-accent-foreground hover:bg-accent/90"
+                  : "border border-border bg-card text-foreground hover:border-accent hover:text-accent"
+              }`}
+            >
+              {plan.cta} <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         ))}
       </div>

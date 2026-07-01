@@ -1,8 +1,10 @@
 export type CommercialPlan = {
+  slug: string;
   name: string;
   price: string;
   sub: string;
   who: string;
+  cta: string;
   highlighted?: boolean;
   features: string[];
   limits: string[];
@@ -43,10 +45,12 @@ export const FREE_TRIAL_LIMITS = {
 
 export const COMMERCIAL_PLANS: CommercialPlan[] = [
   {
+    slug: "essentials",
     name: "Essentials",
     price: "$99",
     sub: "/month",
     who: "Owner-operator",
+    cta: "Start Essentials preview",
     features: [
       "Ongoing value dashboard",
       "All six valuation methods",
@@ -57,10 +61,12 @@ export const COMMERCIAL_PLANS: CommercialPlan[] = [
     buyerTeaser: "preview_only",
   },
   {
+    slug: "exit-ready",
     name: "Exit Ready",
     price: "$249",
     sub: "/month",
     who: "Preparing to sell",
+    cta: "Start Exit Ready preview",
     highlighted: true,
     features: [
       "Everything in Essentials",
@@ -73,10 +79,12 @@ export const COMMERCIAL_PLANS: CommercialPlan[] = [
     buyerTeaser: "public_sharing",
   },
   {
+    slug: "advisor-partner",
     name: "Advisor Partner",
     price: "$349",
     sub: "/seat / month",
     who: "CPAs, brokers, and exit advisors",
+    cta: "Start Advisor Partner preview",
     features: [
       "Client workspace management",
       "Advisor review workflow",
@@ -87,10 +95,12 @@ export const COMMERCIAL_PLANS: CommercialPlan[] = [
     buyerTeaser: "client_sharing",
   },
   {
+    slug: "one-time-report",
     name: "One-time Report",
     price: "$799",
     sub: "one-time",
     who: "Single planning report",
+    cta: "Start one-time report",
     features: [
       "One business valuation snapshot",
       "Recommendations included",
@@ -117,4 +127,9 @@ export function buyerTeaserPolicy(plan: CommercialPlan) {
   if (plan.buyerTeaser === "public_sharing") return "Public teaser sharing included";
   if (plan.buyerTeaser === "client_sharing") return "Client teaser sharing included";
   return "Draft preview only";
+}
+
+export function commercialPlanBySlug(slug: string | null | undefined) {
+  if (!slug) return null;
+  return COMMERCIAL_PLANS.find((plan) => plan.slug === slug) ?? null;
 }

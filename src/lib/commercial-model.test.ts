@@ -5,6 +5,7 @@ import {
   FREE_TRIAL_LIMITS,
   TARGET_CUSTOMER_SEGMENTS,
   buyerTeaserPolicy,
+  commercialPlanBySlug,
 } from "./commercial-model";
 
 assert.equal(TARGET_CUSTOMER_SEGMENTS[0].name, "Owner self-serve");
@@ -16,16 +17,22 @@ assert.match(FREE_TRIAL_LIMITS.buyerTeaser, /draft preview only/);
 
 const exitReady = COMMERCIAL_PLANS.find((plan) => plan.name === "Exit Ready");
 assert.ok(exitReady);
+assert.equal(exitReady.slug, "exit-ready");
+assert.equal(exitReady.cta, "Start Exit Ready preview");
 assert.equal(exitReady.buyerTeaser, "public_sharing");
 assert.equal(buyerTeaserPolicy(exitReady), "Public teaser sharing included");
+assert.equal(commercialPlanBySlug("exit-ready")?.name, "Exit Ready");
+assert.equal(commercialPlanBySlug("missing"), null);
 
 const advisorPartner = COMMERCIAL_PLANS.find((plan) => plan.name === "Advisor Partner");
 assert.ok(advisorPartner);
+assert.equal(advisorPartner.slug, "advisor-partner");
 assert.equal(advisorPartner.buyerTeaser, "client_sharing");
 assert.ok(advisorPartner.features.some((feature) => feature.includes("10 active client")));
 
 const essentials = COMMERCIAL_PLANS.find((plan) => plan.name === "Essentials");
 assert.ok(essentials);
+assert.equal(essentials.slug, "essentials");
 assert.equal(essentials.buyerTeaser, "preview_only");
 
 assert.deepEqual(BILLING_EVENTS, [

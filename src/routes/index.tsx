@@ -291,17 +291,21 @@ function Feature({ icon, title, desc }: { icon: React.ReactNode; title: string; 
 }
 
 function Plan({
+  slug,
   name,
   price,
   sub,
   who,
+  cta,
   features,
   highlighted,
 }: {
+  slug: string;
   name: string;
   price: string;
   sub: string;
   who: string;
+  cta: string;
   features: string[];
   highlighted?: boolean;
 }) {
@@ -328,6 +332,17 @@ function Plan({
           </li>
         ))}
       </ul>
+      <Link
+        to="/auth"
+        search={{ mode: "signup", plan: slug }}
+        className={`mt-5 inline-flex w-full items-center justify-center gap-1.5 rounded-md px-4 py-2.5 text-sm font-semibold transition ${
+          highlighted
+            ? "bg-accent text-accent-foreground hover:bg-accent/90"
+            : "border border-border bg-card text-foreground hover:border-accent hover:text-accent"
+        }`}
+      >
+        {cta} <ArrowRight className="h-4 w-4" />
+      </Link>
     </div>
   );
 }
