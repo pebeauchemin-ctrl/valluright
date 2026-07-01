@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Check } from "lucide-react";
 import { PublicPageShell } from "@/components/PublicPageShell";
+import { COMMERCIAL_PLANS, FREE_TRIAL_LIMITS, buyerTeaserPolicy } from "@/lib/commercial-model";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -16,67 +17,15 @@ export const Route = createFileRoute("/pricing")({
   component: PricingPage,
 });
 
-const PLANS = [
-  {
-    name: "Essentials",
-    price: "$99",
-    sub: "/month",
-    who: "Owner-operator",
-    features: [
-      "Ongoing value dashboard",
-      "All six valuation methods",
-      "Health Score and recommendations",
-      "What-if scenarios",
-    ],
-  },
-  {
-    name: "Exit Ready",
-    price: "$249",
-    sub: "/month",
-    who: "Preparing to sell",
-    highlighted: true,
-    features: [
-      "Everything in Essentials",
-      "Buyer-safe teaser page",
-      "Data room",
-      "PDF report exports",
-    ],
-  },
-  {
-    name: "Advisor Pro",
-    price: "$349",
-    sub: "/seat / month",
-    who: "CPAs and brokers",
-    features: [
-      "Portfolio dashboard",
-      "White-label reports",
-      "Advisor review workflow",
-      "Multiple client businesses",
-    ],
-  },
-  {
-    name: "One-time Report",
-    price: "$799",
-    sub: "one-time",
-    who: "Just curious",
-    features: [
-      "Single valuation report",
-      "Recommendations included",
-      "PDF export",
-      "No subscription",
-    ],
-  },
-];
-
 function PricingPage() {
   return (
     <PublicPageShell
       eyebrow="Pricing"
-      title="Plans for every stage"
-      description="The homepage pricing anchor now has a dedicated public URL for sharing, search, and QA."
+      title="Start with a free preview, upgrade when sharing matters"
+      description="ValuRight is launching with a hybrid model: owner self-serve first, advisor-led workflows for CPAs, brokers, and exit planners, and clear buyer teaser gates before billing is added."
     >
       <div className="grid gap-6 md:grid-cols-2">
-        {PLANS.map((plan) => (
+        {COMMERCIAL_PLANS.map((plan) => (
           <div
             key={plan.name}
             className={`rounded-xl border p-6 ${
@@ -103,18 +52,28 @@ function PricingPage() {
                   <span>{feature}</span>
                 </li>
               ))}
+              {plan.limits.map((limit) => (
+                <li key={limit} className="flex gap-2 text-muted-foreground">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                  <span>{limit}</span>
+                </li>
+              ))}
             </ul>
+            <div className="mt-5 rounded-lg border border-border bg-secondary/40 px-3 py-2 text-xs font-semibold text-muted-foreground">
+              Buyer teaser: {buyerTeaserPolicy(plan)}
+            </div>
           </div>
         ))}
       </div>
 
       <div className="mt-10 rounded-xl border border-border bg-secondary/40 p-6">
         <h2 className="font-display text-xl font-semibold text-primary">
-          Start with the owner workflow
+          Free preview limits
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Create an account, enter business details and financials, then review the estimated value
-          range before deciding whether a paid plan fits.
+          {FREE_TRIAL_LIMITS.durationDays} days, {FREE_TRIAL_LIMITS.businesses} business,{" "}
+          {FREE_TRIAL_LIMITS.scenarios} scenarios, {FREE_TRIAL_LIMITS.reports}. Buyer teaser is{" "}
+          {FREE_TRIAL_LIMITS.buyerTeaser}.
         </p>
         <Link
           to="/auth"
