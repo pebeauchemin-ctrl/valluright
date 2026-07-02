@@ -2,6 +2,7 @@ import {
   calculateNormalizedEarnings,
   computeHealthScore,
   methodAsset,
+  methodCapRate,
   methodComparable,
   methodDCF,
   methodEBITDA,
@@ -181,6 +182,35 @@ test("real estate income fixture uses cap rate as the primary valuation driver",
   assertApprox(capRate.value, 3_036_000, "cap-rate value");
   assertApprox(valuation.rangeMid, 2_634_896.65, "campground blended mid");
   assertApprox(valuation.weights.cap_rate, 0.7, "cap-rate weight");
+});
+
+test("cap rate uses entered EBITDA for NOI even when add-backs make the net-income bridge non-zero", () => {
+  // RV park enters EBITDA directly (net income 0, no bridge fields) with add-backs.
+  // The old `=== 0` gate discarded the entered EBITDA and used the add-backs alone.
+  const rvPark: BusinessInputs = {
+    industry: "RV Park",
+    business_category: "real_estate_income",
+    cap_rate_selected: 10,
+    financials: [
+      latestFixture({
+        net_income: 0,
+        ebitda: 200_000,
+        addbacks: 30_000,
+        revenue: 500_000,
+        depreciation: 0,
+        amortization: 0,
+        interest: 0,
+        income_taxes: 0,
+      }),
+    ],
+  };
+
+  const capRate = methodCapRate(rvPark);
+
+  assert(capRate.available === true, "cap-rate method should be available");
+  assertApprox(capRate.inputUsed ?? 0, 230_000, "NOI uses entered EBITDA + add-backs");
+  assertApprox(capRate.value, 2_300_000, "cap-rate value from entered EBITDA");
+  assertEqual(capRate.inputLabel, "NOI (EBITDA proxy)", "NOI source is the entered EBITDA proxy");
 });
 
 test("distressed or missing earnings do not create false precision from unavailable methods", () => {
