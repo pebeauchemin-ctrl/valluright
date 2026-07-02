@@ -106,7 +106,7 @@ function BuyerTeaser() {
     if (!current) return;
     setSaving(true);
     try {
-      await supabase
+      const { error: businessError } = await supabase
         .from("businesses")
         .update({
           anonymous_description: anonymous,
@@ -115,6 +115,7 @@ function BuyerTeaser() {
           asking_price_high: askHigh,
         })
         .eq("id", current.id);
+      if (businessError) throw businessError;
       const payload = {
         business_id: current.id,
         ...settings,

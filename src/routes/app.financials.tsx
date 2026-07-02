@@ -875,9 +875,13 @@ function Financials() {
           debt: Number(y.debt ?? 0),
         };
         if (typeof y.id === "string" && y.id.startsWith("tmp-")) {
-          await supabase.from("financial_years").insert({ ...payload, business_id: current.id });
+          const { error } = await supabase
+            .from("financial_years")
+            .insert({ ...payload, business_id: current.id });
+          if (error) throw error;
         } else {
-          await supabase.from("financial_years").update(payload).eq("id", y.id);
+          const { error } = await supabase.from("financial_years").update(payload).eq("id", y.id);
+          if (error) throw error;
         }
       }
 
@@ -967,7 +971,6 @@ function Financials() {
         },
       }).catch(() => undefined);
 
-      toast.success("Financials saved");
       const [financialsResult, addBacksResult] = await Promise.all([
         supabase
           .from("financial_years")
@@ -981,12 +984,15 @@ function Financials() {
           .order("year", { ascending: true })
           .order("created_at", { ascending: true }),
       ]);
+      if (financialsResult.error) throw financialsResult.error;
+      if (addBacksResult.error) throw addBacksResult.error;
       setYears(financialsResult.data ?? []);
       const loadedAddBacks = (addBacksResult.data ?? []) as FinancialAddBackRow[];
       setAddBacks(loadedAddBacks);
       setDeletedAddBacks([]);
       setOriginalAddBacks(Object.fromEntries(loadedAddBacks.map((row) => [row.id, row])));
       await refresh();
+      toast.success("Financials saved");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to save");
     } finally {
@@ -996,33 +1002,42 @@ function Financials() {
 
   const removeYear = async (i: number) => {
     const y = years[i];
-    const removedYearAddBacks = addBackRowsForYear(y.year);
-    const persistedRemovedAddBacks = removedYearAddBacks.filter(
-      (row) => !row.id.startsWith("tmp-addback-"),
-    );
-    if (current && persistedRemovedAddBacks.length > 0) {
-      await writeAddBackEvents(
-        persistedRemovedAddBacks.map((row) => ({
-          action: "deleted",
-          addback_id: row.id,
-          business_id: current.id,
-          year: Number(row.year),
-          before_value: addBackSnapshot(row),
-        })),
+    setSaving(true);
+    try {
+      const removedYearAddBacks = addBackRowsForYear(y.year);
+      const persistedRemovedAddBacks = removedYearAddBacks.filter(
+        (row) => !row.id.startsWith("tmp-addback-"),
       );
-      await supabase
-        .from("financial_addbacks")
-        .delete()
-        .in(
-          "id",
-          persistedRemovedAddBacks.map((row) => row.id),
+      if (current && persistedRemovedAddBacks.length > 0) {
+        const { error } = await supabase
+          .from("financial_addbacks")
+          .delete()
+          .in(
+            "id",
+            persistedRemovedAddBacks.map((row) => row.id),
+          );
+        if (error) throw error;
+        await writeAddBackEvents(
+          persistedRemovedAddBacks.map((row) => ({
+            action: "deleted",
+            addback_id: row.id,
+            business_id: current.id,
+            year: Number(row.year),
+            before_value: addBackSnapshot(row),
+          })),
         );
+      }
+      if (typeof y.id === "string" && !y.id.startsWith("tmp-")) {
+        const { error } = await supabase.from("financial_years").delete().eq("id", y.id);
+        if (error) throw error;
+      }
+      setAddBacks((prev) => prev.filter((row) => Number(row.year) !== Number(y.year)));
+      setYears((prev) => prev.filter((_, idx) => idx !== i));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to remove year");
+    } finally {
+      setSaving(false);
     }
-    setAddBacks((prev) => prev.filter((row) => Number(row.year) !== Number(y.year)));
-    if (typeof y.id === "string" && !y.id.startsWith("tmp-")) {
-      await supabase.from("financial_years").delete().eq("id", y.id);
-    }
-    setYears((prev) => prev.filter((_, idx) => idx !== i));
   };
 
   const unmappedCount = countUnmappedAccounts(mappingReview);

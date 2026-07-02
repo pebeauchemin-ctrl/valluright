@@ -526,7 +526,11 @@ function Onboarding() {
       .filter((y) => y.revenue > 0)
       .map((y) => ({ ...y, business_id: bizId }));
     // Wipe and re-insert so re-clicking Next stays idempotent.
-    await supabase.from("financial_years").delete().eq("business_id", bizId);
+    const { error: deleteError } = await supabase
+      .from("financial_years")
+      .delete()
+      .eq("business_id", bizId);
+    if (deleteError) throw deleteError;
     if (yearsToInsert.length) {
       const { error } = await supabase.from("financial_years").insert(yearsToInsert);
       if (error) throw error;
@@ -575,14 +579,20 @@ function Onboarding() {
       savedBusinessId = bizId;
       await persistFinancials(bizId);
 
-      const { data: biz } = await supabase.from("businesses").select("*").eq("id", bizId).single();
-      const { data: yearsRows } = await supabase
+      const { data: biz, error: businessReadError } = await supabase
+        .from("businesses")
+        .select("*")
+        .eq("id", bizId)
+        .single();
+      if (businessReadError || !biz) throw businessReadError ?? new Error("Failed to load business");
+      const { data: yearsRows, error: yearsReadError } = await supabase
         .from("financial_years")
         .select("*")
         .eq("business_id", bizId);
+      if (yearsReadError) throw yearsReadError;
 
       // Compute and store first valuation
-      const inputs = toBusinessInputs(biz!, (yearsRows ?? []) as never);
+      const inputs = toBusinessInputs(biz, (yearsRows ?? []) as never);
       const v = valueBusiness(inputs);
       const h = computeHealthScore(inputs);
       const { error: valuationError } = await supabase
@@ -602,7 +612,7 @@ function Onboarding() {
             is_sample: Boolean(biz?.is_sample),
           },
         },
-      });
+      }).catch(() => undefined);
       await recordEvent({
         data: {
           eventName: "valuation_generated",
@@ -615,7 +625,7 @@ function Onboarding() {
             years_count: (yearsRows ?? []).length,
           },
         },
-      });
+      }).catch(() => undefined);
       await refresh();
       if (biz) setCurrent(biz);
       toast.success("Your business is saved. Welcome to your dashboard.");
