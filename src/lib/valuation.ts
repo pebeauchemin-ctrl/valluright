@@ -779,15 +779,23 @@ export function methodCapRate(b: BusinessInputs): MethodResult {
   // Use the earnings bridge first because it correctly includes COGS and all operating
   // expenses before adding back excluded/non-operating items. Do not calculate NOI as
   // revenue − operating expenses because that can ignore COGS or double-count imports.
-  let noiBeforeAdjust = netIncome + depreciation + amortization + interest + taxes + addbacks;
-  let noiSource = "Net income bridge";
-  if (noiBeforeAdjust === 0 && ebitda !== 0) {
+  // Select the NOI source explicitly rather than gating on `=== 0`: entered EBITDA
+  // must not be discarded just because add-backs make the net-income bridge non-zero.
+  let noiBeforeAdjust: number;
+  let noiSource: string;
+  if (netIncome !== 0) {
+    noiBeforeAdjust = netIncome + depreciation + amortization + interest + taxes + addbacks;
+    noiSource = "Net income bridge";
+  } else if (ebitda !== 0) {
     noiBeforeAdjust = ebitda + addbacks;
-    noiSource = "EBITDA proxy";
-  } else if (noiBeforeAdjust === 0 && (grossProfit !== 0 || opex !== 0)) {
+    noiSource = normalized.usedEnteredEbitda ? "EBITDA proxy" : "Net income bridge";
+  } else if (grossProfit !== 0 || opex !== 0) {
     noiBeforeAdjust =
       grossProfit - opex + depreciation + amortization + interest + taxes + addbacks;
     noiSource = "Gross profit bridge";
+  } else {
+    noiBeforeAdjust = 0;
+    noiSource = "Net income bridge";
   }
   const noi = noiBeforeAdjust - mgmtFee - reserve;
   const proxyNote =
