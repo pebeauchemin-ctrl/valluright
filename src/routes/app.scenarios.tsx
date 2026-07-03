@@ -5,6 +5,15 @@ import { Sliders, Save, Trash2, Lightbulb, AlertTriangle } from "lucide-react";
 import { useBusiness, toBusinessInputs, type FinancialYearRow } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
 import { valueBusiness, computeHealthScore, type Valuation } from "@/lib/valuation";
+import {
+  applyScenarioSearchToKnobs,
+  businessKnobs,
+  pctToHrs,
+  scenarioInputs,
+  sopScoreToStatus,
+  validateScenarioSearch,
+  type ScenarioKnobs,
+} from "@/lib/scenario-search";
 import { fmtCurrency } from "@/lib/format";
 import { toast } from "sonner";
 import { COUNSEL_REVIEW_TEXT, VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
@@ -31,39 +40,48 @@ type ScenarioRow = {
   roadmap_phase: string | null;
 };
 
-type Knobs = {
-  ownerInvolvement: number; // %
-  recurring: number; // %
-  profitMargin: number; // %  (uplift in pts vs current)
-  revenueGrowth: number; // %
-  customerConc: number; // %
-  sopScore: number; // 0-100
-  managerHired: boolean;
-  timelineMonths: number;
-};
-
 const PHASES = ["Now", "Next 90 Days", "Next 6 Months", "Before Sale"] as const;
 
 export const Route = createFileRoute("/app/scenarios")({
   head: () => ({ meta: [{ title: "What-If Scenarios — ValuRight.ai" }] }),
+  validateSearch: validateScenarioSearch,
   component: Scenarios,
 });
 
-function pctToHrs(pct: number) {
-  // 100% involvement = 70hrs, 0% = 0hrs
-  return Math.round((pct / 100) * 70);
-}
-function hrsToPct(hrs: number) {
-  return Math.round((hrs / 70) * 100);
-}
-function sopScoreToStatus(s: number) {
-  if (s >= 75) return "complete";
-  if (s >= 35) return "partial";
-  return "none";
-}
-
 function Scenarios() {
   const { current } = useBusiness();
+  const {
+    hireManager: scenarioHireManager,
+    marginUplift: scenarioMarginUplift,
+    ownerHrs: scenarioOwnerHrs,
+    recurring: scenarioRecurring,
+    revenueGrowth: scenarioRevenueGrowth,
+    sopComplete: scenarioSopComplete,
+    timelineMonths: scenarioTimelineMonths,
+    topCust: scenarioTopCust,
+  } = Route.useSearch();
+  const scenarioSearch = useMemo(
+    () => ({
+      hireManager: scenarioHireManager,
+      marginUplift: scenarioMarginUplift,
+      ownerHrs: scenarioOwnerHrs,
+      recurring: scenarioRecurring,
+      revenueGrowth: scenarioRevenueGrowth,
+      sopComplete: scenarioSopComplete,
+      timelineMonths: scenarioTimelineMonths,
+      topCust: scenarioTopCust,
+    }),
+    [
+      scenarioHireManager,
+      scenarioMarginUplift,
+      scenarioOwnerHrs,
+      scenarioRecurring,
+      scenarioRevenueGrowth,
+      scenarioSopComplete,
+      scenarioTimelineMonths,
+      scenarioTopCust,
+    ],
+  );
   const recordEvent = useServerFn(recordProductEvent);
   const [financials, setFinancials] = useState<FinancialYearRow[]>([]);
   const [saved, setSaved] = useState<ScenarioRow[]>([]);
@@ -73,7 +91,7 @@ function Scenarios() {
   const [includeInReport, setIncludeInReport] = useState(false);
   const [phase, setPhase] = useState<(typeof PHASES)[number]>("Next 90 Days");
 
-  const [k, setK] = useState<Knobs>({
+  const [k, setK] = useState<ScenarioKnobs>({
     ownerInvolvement: 70,
     recurring: 20,
     profitMargin: 0,
@@ -98,15 +116,13 @@ function Scenarios() {
       .eq("business_id", current.id)
       .order("created_at", { ascending: false })
       .then(({ data }) => setSaved((data ?? []) as ScenarioRow[]));
-    setK((prev) => ({
-      ...prev,
-      ownerInvolvement: hrsToPct(current.owner_hours_per_week ?? 50),
-      recurring: Number(current.recurring_revenue_pct ?? 20),
-      customerConc: Number(current.top_customer_concentration_pct ?? 20),
-      sopScore: current.sop_status === "complete" ? 90 : current.sop_status === "partial" ? 50 : 15,
-      managerHired: current.manager_team_depth === "strong",
-    }));
-  }, [current]);
+    setK((prev) =>
+      applyScenarioSearchToKnobs(
+        { ...prev, ...businessKnobs(current), timelineMonths: prev.timelineMonths },
+        scenarioSearch,
+      ),
+    );
+  }, [current, scenarioSearch]);
 
   const baseline = useMemo<Valuation | null>(() => {
     if (!current) return null;
@@ -122,28 +138,7 @@ function Scenarios() {
     if (!current) return null;
     const base = toBusinessInputs(current, financials);
 
-    // Project financials: revenue growth + margin uplift
-    // Manager hire: subtract a manager salary from EBITDA (paradox: earnings ↓, multiple ↑)
-    const MANAGER_COST = 95_000;
-    const newFin = base.financials.map((y, i, arr) => {
-      if (i !== arr.length - 1) return y;
-      const newRev = y.revenue * (1 + k.revenueGrowth / 100);
-      const currentMarginPct = y.revenue > 0 ? (y.ebitda / y.revenue) * 100 : 0;
-      const targetMarginPct = currentMarginPct + k.profitMargin;
-      let newEbitda = newRev * (targetMarginPct / 100);
-      if (k.managerHired) newEbitda -= MANAGER_COST;
-      return { ...y, revenue: newRev, ebitda: newEbitda };
-    });
-
-    const inputs = {
-      ...base,
-      financials: newFin,
-      recurring_revenue_pct: k.recurring,
-      owner_hours_per_week: pctToHrs(k.ownerInvolvement),
-      top_customer_concentration_pct: k.customerConc,
-      sop_status: sopScoreToStatus(k.sopScore),
-      manager_team_depth: k.managerHired ? "strong" : base.manager_team_depth,
-    };
+    const inputs = scenarioInputs(base, k);
     const v = valueBusiness(inputs);
     const h = computeHealthScore(inputs).total;
     return { v, health: h, inputs };
