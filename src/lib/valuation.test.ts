@@ -231,6 +231,85 @@ test("distressed or missing earnings do not create false precision from unavaila
   assertApprox(valuation.rangeHigh, 0, "distressed blended high");
 });
 
+test("negative EBITDA is unavailable and does not produce negative or inverted method ranges", () => {
+  const lossMaker: BusinessInputs = {
+    industry: "Professional Services",
+    business_category: "standard_operating",
+    financials: [
+      latestFixture({
+        revenue: 500_000,
+        net_income: -100_000,
+        depreciation: 0,
+        amortization: 0,
+        interest: 0,
+        income_taxes: 0,
+        owner_salary: 0,
+        addbacks: 0,
+        assets: 0,
+        liabilities: 0,
+        debt: 0,
+      }),
+    ],
+  };
+
+  const ebitda = methodEBITDA(lossMaker);
+  const comparable = methodComparable(lossMaker);
+  const valuation = valueBusiness(lossMaker);
+
+  assertEqual(ebitda.available, false, "negative EBITDA method unavailable");
+  assertApprox(ebitda.value, 0, "negative EBITDA method median floored");
+  assertApprox(ebitda.low, 0, "negative EBITDA method low floored");
+  assertApprox(ebitda.high, 0, "negative EBITDA method high floored");
+  assert(ebitda.low <= ebitda.high, "negative EBITDA method range remains ordered");
+  assert(comparable.available === false, "comparable is unavailable without positive earnings");
+  assertApprox(valuation.rangeLow, 0, "negative EBITDA blended low floored");
+  assertApprox(valuation.rangeMid, 0, "negative EBITDA blended mid floored");
+  assertApprox(valuation.rangeHigh, 0, "negative EBITDA blended high floored");
+  assert(valuation.rangeLow <= valuation.rangeHigh, "negative EBITDA blended range remains ordered");
+});
+
+test("negative NOI makes cap-rate unavailable and cannot drag real-estate range below zero", () => {
+  const negativeNoi: BusinessInputs = {
+    industry: "RV Park",
+    business_category: "real_estate_income",
+    cap_rate_low: 8,
+    cap_rate_selected: 10,
+    cap_rate_high: 12,
+    financials: [
+      latestFixture({
+        revenue: 500_000,
+        net_income: -100_000,
+        depreciation: 0,
+        amortization: 0,
+        interest: 0,
+        income_taxes: 0,
+        owner_salary: 0,
+        addbacks: 0,
+        assets: 0,
+        liabilities: 0,
+        debt: 0,
+      }),
+    ],
+  };
+
+  const capRate = methodCapRate(negativeNoi);
+  const valuation = valueBusiness(negativeNoi);
+
+  assertEqual(capRate.available, false, "negative NOI cap-rate method unavailable");
+  assertApprox(capRate.value, 0, "negative NOI cap-rate median floored");
+  assertApprox(capRate.low, 0, "negative NOI cap-rate low floored");
+  assertApprox(capRate.high, 0, "negative NOI cap-rate high floored");
+  assert(capRate.low <= capRate.high, "negative NOI cap-rate range remains ordered");
+  assert(
+    capRate.warning?.includes("NOI is negative") ?? false,
+    "negative NOI cap-rate warning is shown",
+  );
+  assertApprox(valuation.rangeLow, 0, "negative NOI blended low floored");
+  assertApprox(valuation.rangeMid, 0, "negative NOI blended mid floored");
+  assertApprox(valuation.rangeHigh, 0, "negative NOI blended high floored");
+  assert(valuation.rangeLow <= valuation.rangeHigh, "negative NOI blended range remains ordered");
+});
+
 test("empty financials return unavailable method outputs and a zero blended range", () => {
   const valuation = valueBusiness({ ...hvacFixture, financials: [] });
 

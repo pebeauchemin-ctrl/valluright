@@ -444,6 +444,21 @@ function shiftMultiple(range: [number, number, number], adj: number): [number, n
   return [Math.max(0, newLo), Math.max(0, newMid), Math.max(0, newHi)];
 }
 
+function floorValuationInput(value: number): number {
+  return Number.isFinite(value) ? Math.max(0, value) : 0;
+}
+
+function orderedNonNegativeRange(low: number, value: number, high: number) {
+  const safeLow = floorValuationInput(low);
+  const safeValue = floorValuationInput(value);
+  const safeHigh = floorValuationInput(high);
+  const rangeLow = Math.min(safeLow, safeHigh);
+  const rangeHigh = Math.max(safeLow, safeHigh);
+  const rangeValue = Math.min(Math.max(safeValue, rangeLow), rangeHigh);
+
+  return { low: rangeLow, value: rangeValue, high: rangeHigh };
+}
+
 // ---------------------------------------------------------------------------
 // METHODS
 // ---------------------------------------------------------------------------
@@ -586,15 +601,17 @@ export function methodEBITDA(b: BusinessInputs): MethodResult {
   const assumption = selected.assumption;
   if (!latest) return blankMethod("ebitda", "EBITDA Multiple", "Add financials to compute.");
   const normalized = calculateNormalizedEarnings(latest);
-  const ebitda = normalized.ebitda;
+  const rawEbitda = normalized.ebitda;
+  const ebitda = floorValuationInput(rawEbitda);
   const adj = riskAdjustment(b);
   const [lo, mid, hi] = shiftMultiple(m.ebitda, adj);
+  const range = orderedNonNegativeRange(ebitda * lo, ebitda * mid, ebitda * hi);
   return {
     method: "ebitda",
     label: "EBITDA Multiple",
-    value: ebitda * mid,
-    low: ebitda * lo,
-    high: ebitda * hi,
+    value: range.value,
+    low: range.low,
+    high: range.high,
     multipleUsed: mid,
     inputUsed: ebitda,
     inputLabel: "EBITDA",
@@ -606,7 +623,11 @@ export function methodEBITDA(b: BusinessInputs): MethodResult {
     multipleSource: assumption.source_label,
     multipleNotes: assumption.source_notes,
     multipleConfidence: assumption.confidence_level,
-    available: ebitda > 0,
+    available: rawEbitda > 0,
+    warning:
+      rawEbitda < 0
+        ? "EBITDA is negative, so this method is not meaningful as a going-concern valuation. Review the asset-based floor or normalize stabilized earnings."
+        : undefined,
   };
 }
 
@@ -616,15 +637,17 @@ export function methodRevenue(b: BusinessInputs): MethodResult {
   const m = selected.multiples;
   const assumption = selected.assumption;
   if (!latest) return blankMethod("revenue", "Revenue Multiple", "Add financials to compute.");
-  const revenue = latest.revenue;
+  const rawRevenue = latest.revenue;
+  const revenue = floorValuationInput(rawRevenue);
   const adj = riskAdjustment(b);
   const [lo, mid, hi] = shiftMultiple(m.revenue, adj);
+  const range = orderedNonNegativeRange(revenue * lo, revenue * mid, revenue * hi);
   return {
     method: "revenue",
     label: "Revenue Multiple",
-    value: revenue * mid,
-    low: revenue * lo,
-    high: revenue * hi,
+    value: range.value,
+    low: range.low,
+    high: range.high,
     multipleUsed: mid,
     inputUsed: revenue,
     inputLabel: "Annual Revenue",
@@ -636,7 +659,11 @@ export function methodRevenue(b: BusinessInputs): MethodResult {
     multipleSource: assumption.source_label,
     multipleNotes: assumption.source_notes,
     multipleConfidence: assumption.confidence_level,
-    available: revenue > 0,
+    available: rawRevenue > 0,
+    warning:
+      rawRevenue < 0
+        ? "Revenue is negative, so this method is not meaningful. Review imported financials before relying on revenue multiples."
+        : undefined,
   };
 }
 
@@ -731,13 +758,18 @@ export function methodComparable(b: BusinessInputs): MethodResult {
       "Coming soon — comp database in development.",
     );
   }
-  const avg = (sde.value + ebitda.value) / 2;
+  const availableMethods = [sde, ebitda].filter((method) => method.available);
+  const avg =
+    availableMethods.reduce((sum, method) => sum + floorValuationInput(method.value), 0) /
+    availableMethods.length;
+  const rangeLow = Math.min(...availableMethods.map((method) => floorValuationInput(method.low)));
+  const rangeHigh = Math.max(...availableMethods.map((method) => floorValuationInput(method.high)));
   return {
     method: "comparable",
     label: "Comparable Sales",
     value: avg * 0.95,
-    low: Math.min(sde.low, ebitda.low) * 0.95,
-    high: Math.max(sde.high, ebitda.high) * 0.95,
+    low: rangeLow * 0.95,
+    high: rangeHigh * 0.95,
     confidence: "low",
     notes:
       "Placeholder estimate. Live comp matching from BizBuySell / IBBA data is in development.",
@@ -807,7 +839,7 @@ export function methodCapRate(b: BusinessInputs): MethodResult {
   const capMid = b.cap_rate_selected ?? 10; // % — selected
   const capHigh = b.cap_rate_high ?? 12; // % — produces low value
 
-  const safe = (cap: number) => (cap > 0 ? noi / (cap / 100) : 0);
+  const safe = (cap: number) => (noi > 0 && cap > 0 ? noi / (cap / 100) : 0);
   const value = safe(capMid);
   const low = safe(capHigh);
   const high = safe(capLow);
@@ -815,14 +847,14 @@ export function methodCapRate(b: BusinessInputs): MethodResult {
   const debt = latest.debt || 0;
   const equity = value - debt;
 
-  const available = noi !== 0 && capMid > 0;
+  const available = noi > 0 && capMid > 0;
   const warning = !available
     ? capMid <= 0
       ? "Selected cap rate must be greater than 0."
-      : ""
-    : noi < 0
-      ? "NOI is negative — cap-rate valuation may not be meaningful without stabilized or normalized NOI."
-      : "";
+      : noi < 0
+        ? "NOI is negative, so this method is not meaningful as a going-concern valuation. Review the asset-based floor or normalize stabilized NOI."
+        : "NOI is zero, so this method is not meaningful without stabilized or normalized NOI."
+    : "";
 
   const noiFormulaLine =
     noiSource === "EBITDA proxy"
@@ -1003,14 +1035,15 @@ export function valueBusiness(b: BusinessInputs): Valuation {
 
   const latest = latestFinancials(b);
   const debt = latest?.debt || 0;
-  const enterpriseValue = mid;
+  const range = orderedNonNegativeRange(lo, mid, hi);
+  const enterpriseValue = range.value;
   const equityValue = enterpriseValue - debt;
 
   return {
     methods,
-    rangeLow: lo,
-    rangeMid: mid,
-    rangeHigh: hi,
+    rangeLow: range.low,
+    rangeMid: range.value,
+    rangeHigh: range.high,
     weights,
     category,
     isRvOrCampground: isRv,
