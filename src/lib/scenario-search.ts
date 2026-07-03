@@ -1,5 +1,5 @@
 import type { Business } from "@/lib/business";
-import { valueBusiness, type BusinessInputs } from "@/lib/valuation";
+import { calculateNormalizedEarnings, valueBusiness, type BusinessInputs } from "@/lib/valuation";
 
 export type ScenarioSearch = {
   ownerHrs?: number;
@@ -104,11 +104,17 @@ export function scenarioInputs(base: BusinessInputs, knobs: ScenarioKnobs): Busi
   const financials = base.financials.map((year, index, years) => {
     if (index !== years.length - 1) return year;
     const revenue = year.revenue * (1 + knobs.revenueGrowth / 100);
-    const currentMarginPct = year.revenue > 0 ? (year.ebitda / year.revenue) * 100 : 0;
-    const targetMarginPct = currentMarginPct + knobs.profitMargin;
-    let ebitda = revenue * (targetMarginPct / 100);
-    if (knobs.managerHired) ebitda -= MANAGER_COST;
-    return { ...year, revenue, ebitda };
+    const normalized = calculateNormalizedEarnings(year);
+    const currentEbitda = normalized.ebitda;
+    const currentMarginPct = year.revenue > 0 ? (currentEbitda / year.revenue) * 100 : 0;
+    const revenueDelta = revenue - year.revenue;
+    let ebitda =
+      currentEbitda +
+      revenueDelta * (currentMarginPct / 100) +
+      revenue * (knobs.profitMargin / 100);
+    if (knobs.managerHired && base.manager_team_depth !== "strong") ebitda -= MANAGER_COST;
+    const ebitdaDelta = ebitda - currentEbitda;
+    return { ...year, revenue, ebitda, net_income: year.net_income + ebitdaDelta };
   });
 
   return {
