@@ -20,6 +20,7 @@ import { fmtCurrency } from "@/lib/format";
 import type { Database } from "@/integrations/supabase/types";
 import { COUNSEL_REVIEW_TEXT, VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 import { recordProductEvent } from "@/lib/observability.functions";
+import { LoadErrorState, errorMessage } from "@/components/LoadErrorState";
 
 export const Route = createFileRoute("/app/advisors")({
   head: () => ({ meta: [{ title: "Advisors — ValuRight.ai" }] }),
@@ -93,17 +94,20 @@ function Advisors() {
   );
   const [feedback, setFeedback] = useState("");
   const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   const refresh = async () => {
     if (!current) return;
     const [
-      { data: inv },
-      { data: cm },
-      { data: fy },
-      { data: addBackRows },
-      { data: addBackEventRows },
-      { data: val },
-      { data: rp },
+      invitesResult,
+      commentsResult,
+      financialsResult,
+      addBackRowsResult,
+      addBackEventRowsResult,
+      valuationResult,
+      reportsResult,
     ] = await Promise.all([
       supabase
         .from("advisor_invites")
@@ -145,6 +149,22 @@ function Advisors() {
         .order("generated_at", { ascending: false })
         .limit(5),
     ]);
+    const error =
+      invitesResult.error ??
+      commentsResult.error ??
+      financialsResult.error ??
+      addBackRowsResult.error ??
+      addBackEventRowsResult.error ??
+      valuationResult.error ??
+      reportsResult.error;
+    if (error) throw error;
+    const inv = invitesResult.data;
+    const cm = commentsResult.data;
+    const fy = financialsResult.data;
+    const addBackRows = addBackRowsResult.data;
+    const addBackEventRows = addBackEventRowsResult.data;
+    const val = valuationResult.data;
+    const rp = reportsResult.data;
     setInvites((inv ?? []) as Invite[]);
     setComments((cm ?? []) as Comment[]);
     setFinancials((fy ?? []) as FinancialYearRow[]);
@@ -155,8 +175,33 @@ function Advisors() {
   };
 
   useEffect(() => {
-    refresh(); /* eslint-disable-next-line */
-  }, [current]);
+    let cancelled = false;
+    if (!current) {
+      setInvites([]);
+      setComments([]);
+      setFinancials([]);
+      setAddBacks([]);
+      setAddBackEvents([]);
+      setValuation(null);
+      setReports([]);
+      setLoadError(null);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setLoadError(null);
+    refresh()
+      .catch((error) => {
+        if (!cancelled) setLoadError(errorMessage(error, "Could not load advisor review data."));
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    /* eslint-disable-next-line */
+  }, [current, loadAttempt]);
 
   const invite = async () => {
     if (!current || !email) return;
@@ -200,15 +245,23 @@ function Advisors() {
 
   const updatePerm = async (id: string, permission_level: string) => {
     const payload: AdvisorInviteUpdate = { permission_level };
-    await supabase.from("advisor_invites").update(payload).eq("id", id);
-    refresh();
+    const { error } = await supabase.from("advisor_invites").update(payload).eq("id", id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    refresh().catch((error) =>
+      toast.error(errorMessage(error, "Could not refresh advisor review data.")),
+    );
   };
 
   const updateInviteStatus = async (id: string, status: string) => {
     const payload: AdvisorInviteUpdate = { status: status as AdvisorInviteUpdate["status"] };
     const { error } = await supabase.from("advisor_invites").update(payload).eq("id", id);
     if (error) toast.error(error.message);
-    refresh();
+    refresh().catch((error) =>
+      toast.error(errorMessage(error, "Could not refresh advisor review data.")),
+    );
   };
 
   const addFeedback = async () => {
@@ -242,6 +295,17 @@ function Advisors() {
 
   if (!current)
     return <div className="p-12 text-sm text-muted-foreground">No business selected.</div>;
+  if (loading)
+    return <div className="p-12 text-sm text-muted-foreground">Loading advisor review…</div>;
+  if (loadError) {
+    return (
+      <LoadErrorState
+        title="Could not load advisor review"
+        message={loadError}
+        onRetry={() => setLoadAttempt((attempt) => attempt + 1)}
+      />
+    );
+  }
 
   const latest = financials[0];
   const latestAddBacks = addBacks.filter((row) => row.year === latest?.year);

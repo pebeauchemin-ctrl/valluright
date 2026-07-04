@@ -4,6 +4,7 @@ import { Upload, FileText, Trash2, Download } from "lucide-react";
 import { useBusiness } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { LoadErrorState, errorMessage } from "@/components/LoadErrorState";
 
 export const Route = createFileRoute("/app/data-room")({
   head: () => ({ meta: [{ title: "Data Room — ValuRight.ai" }] }),
@@ -40,21 +41,44 @@ function DataRoom() {
   const [files, setFiles] = useState<FileRow[]>([]);
   const [uploading, setUploading] = useState(false);
   const [category, setCategory] = useState<Category>("financials");
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const refresh = async () => {
     if (!current) return;
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("data_room_files")
       .select("*")
       .eq("business_id", current.id)
       .order("uploaded_at", { ascending: false });
+    if (error) throw error;
     setFiles((data ?? []) as FileRow[]);
   };
 
   useEffect(() => {
-    refresh(); /* eslint-disable-next-line */
-  }, [current]);
+    let cancelled = false;
+    if (!current) {
+      setFiles([]);
+      setLoadError(null);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setLoadError(null);
+    refresh()
+      .catch((error) => {
+        if (!cancelled) setLoadError(errorMessage(error, "Could not load data room files."));
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    /* eslint-disable-next-line */
+  }, [current, loadAttempt]);
 
   const upload = async (f: File) => {
     if (!current) return;
@@ -103,6 +127,16 @@ function DataRoom() {
 
   if (!current)
     return <div className="p-12 text-sm text-muted-foreground">No business selected.</div>;
+  if (loading) return <div className="p-12 text-sm text-muted-foreground">Loading data room…</div>;
+  if (loadError) {
+    return (
+      <LoadErrorState
+        title="Could not load data room"
+        message={loadError}
+        onRetry={() => setLoadAttempt((attempt) => attempt + 1)}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-10">

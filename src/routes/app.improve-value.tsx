@@ -5,6 +5,7 @@ import { useBusiness, toBusinessInputs, type FinancialYearRow } from "@/lib/busi
 import { supabase } from "@/integrations/supabase/client";
 import { valueBusiness, computeHealthScore, type BusinessInputs } from "@/lib/valuation";
 import { fmtCurrency } from "@/lib/format";
+import { LoadErrorState, errorMessage } from "@/components/LoadErrorState";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/improve-value")({
@@ -205,23 +206,39 @@ function ImproveValue() {
   const [financials, setFinancials] = useState<FinancialYearRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [roadmap, setRoadmap] = useState<Set<string>>(new Set());
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
     if (!current) {
+      setFinancials([]);
+      setLoadError(null);
       setLoading(false);
       return;
     }
     setLoading(true);
+    setLoadError(null);
     supabase
       .from("financial_years")
       .select("*")
       .eq("business_id", current.id)
       .order("year", { ascending: true })
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) throw error;
         setFinancials(data ?? []);
-        setLoading(false);
+      })
+      .catch((error) => {
+        if (!cancelled) setLoadError(errorMessage(error, "Could not load improvement ideas."));
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
       });
-  }, [current]);
+    return () => {
+      cancelled = true;
+    };
+  }, [current, loadAttempt]);
 
   const inputs = useMemo(
     () => (current ? toBusinessInputs(current, financials) : null),
@@ -232,6 +249,15 @@ function ImproveValue() {
 
   if (!current || loading)
     return <div className="p-12 text-sm text-muted-foreground">Loading…</div>;
+  if (loadError) {
+    return (
+      <LoadErrorState
+        title="Could not load improvement ideas"
+        message={loadError}
+        onRetry={() => setLoadAttempt((attempt) => attempt + 1)}
+      />
+    );
+  }
   if (!inputs || !valuation) return null;
 
   const baselineMid = valuation.rangeMid || 0;

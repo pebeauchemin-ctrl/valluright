@@ -6,6 +6,7 @@ import { useBusiness, type FinancialYearRow } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
+import { LoadErrorState, errorMessage } from "@/components/LoadErrorState";
 import { fmtCurrency } from "@/lib/format";
 import { recordProductEvent } from "@/lib/observability.functions";
 
@@ -57,26 +58,39 @@ function BuyerTeaser() {
   const [financials, setFinancials] = useState<FinancialYearRow[]>([]);
   const [savedPublished, setSavedPublished] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   useEffect(() => {
-    if (!current) return;
+    let cancelled = false;
+    if (!current) {
+      setFinancials([]);
+      setLoadError(null);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setLoadError(null);
     setAnonymous(current.anonymous_description ?? "");
     setReason(current.reason_for_sale ?? "");
     setAskLow(current.asking_price_low ? Number(current.asking_price_low) : null);
     setAskHigh(current.asking_price_high ? Number(current.asking_price_high) : null);
-    supabase
-      .from("financial_years")
-      .select("*")
-      .eq("business_id", current.id)
-      .order("year", { ascending: true })
-      .then(({ data }) => setFinancials((data ?? []) as FinancialYearRow[]));
-    supabase
-      .from("buyer_view_settings")
-      .select("*")
-      .eq("business_id", current.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) {
+    Promise.all([
+      supabase
+        .from("financial_years")
+        .select("*")
+        .eq("business_id", current.id)
+        .order("year", { ascending: true }),
+      supabase.from("buyer_view_settings").select("*").eq("business_id", current.id).maybeSingle(),
+    ])
+      .then(([financialsResult, settingsResult]) => {
+        if (cancelled) return;
+        const error = financialsResult.error ?? settingsResult.error;
+        if (error) throw error;
+        setFinancials((financialsResult.data ?? []) as FinancialYearRow[]);
+        if (settingsResult.data) {
+          const data = settingsResult.data;
           setSavedPublished(data.is_published);
           setSettings({
             is_published: data.is_published,
@@ -98,9 +112,18 @@ function BuyerTeaser() {
           if (Array.isArray(data.growth_opportunities))
             setOpps((data.growth_opportunities as string[]).join("\n"));
         }
+      })
+      .catch((error) => {
+        if (!cancelled) setLoadError(errorMessage(error, "Could not load buyer teaser settings."));
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
       });
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current]);
+  }, [current, loadAttempt]);
 
   const save = async () => {
     if (!current) return;
@@ -161,6 +184,16 @@ function BuyerTeaser() {
 
   if (!current)
     return <div className="p-12 text-sm text-muted-foreground">No business selected.</div>;
+  if (loading) return <div className="p-12 text-sm text-muted-foreground">Loading teaser…</div>;
+  if (loadError) {
+    return (
+      <LoadErrorState
+        title="Could not load buyer teaser"
+        message={loadError}
+        onRetry={() => setLoadAttempt((attempt) => attempt + 1)}
+      />
+    );
+  }
 
   const teaserUrl =
     typeof window !== "undefined" ? `${window.location.origin}/teaser/${current.public_id}` : "";

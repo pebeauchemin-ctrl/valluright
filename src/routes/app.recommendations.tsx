@@ -9,6 +9,7 @@ import { fmtCurrency } from "@/lib/format";
 import { toast } from "sonner";
 import { COUNSEL_REVIEW_TEXT, VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 import { recordProductEvent } from "@/lib/observability.functions";
+import { LoadErrorState, errorMessage } from "@/components/LoadErrorState";
 
 export const Route = createFileRoute("/app/recommendations")({
   head: () => ({ meta: [{ title: "Recommendations — ValuRight.ai" }] }),
@@ -34,14 +35,35 @@ function Recs() {
   const [financials, setFinancials] = useState<FinancialYearRow[]>([]);
   const [recs, setRecs] = useState<Rec[]>([]);
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   useEffect(() => {
-    if (!current) return;
+    let cancelled = false;
+    if (!current) {
+      setFinancials([]);
+      setLoadError(null);
+      setPageLoading(false);
+      return;
+    }
+    setPageLoading(true);
+    setLoadError(null);
     supabase
       .from("financial_years")
       .select("*")
       .eq("business_id", current.id)
-      .then(({ data }) => setFinancials(data ?? []));
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) throw error;
+        setFinancials(data ?? []);
+      })
+      .catch((error) => {
+        if (!cancelled) setLoadError(errorMessage(error, "Could not load recommendations."));
+      })
+      .finally(() => {
+        if (!cancelled) setPageLoading(false);
+      });
     recordEvent({
       data: {
         eventName: "recommendation_viewed",
@@ -52,7 +74,10 @@ function Recs() {
         metadata: { source: "page" },
       },
     }).catch(() => undefined);
-  }, [current, recordEvent]);
+    return () => {
+      cancelled = true;
+    };
+  }, [current, recordEvent, loadAttempt]);
 
   const generate = async () => {
     if (!current) return;
@@ -90,6 +115,17 @@ function Recs() {
 
   if (!current)
     return <div className="p-12 text-sm text-muted-foreground">No business selected.</div>;
+  if (pageLoading)
+    return <div className="p-12 text-sm text-muted-foreground">Loading recommendations…</div>;
+  if (loadError) {
+    return (
+      <LoadErrorState
+        title="Could not load recommendations"
+        message={loadError}
+        onRetry={() => setLoadAttempt((attempt) => attempt + 1)}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-10">

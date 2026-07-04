@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { fmtCurrency, fmtPct } from "@/lib/format";
 import { toast } from "sonner";
 import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
+import { LoadErrorState, errorMessage } from "@/components/LoadErrorState";
 import type { Database } from "@/integrations/supabase/types";
 import { useServerFn } from "@tanstack/react-start";
 import { recordProductEvent } from "@/lib/observability.functions";
@@ -91,44 +92,72 @@ function Reports() {
   const [bundle, setBundle] = useState<Bundle | null>(null);
   const [open, setOpen] = useState<ReportKey | null>(null);
   const [printOnOpen, setPrintOnOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   useEffect(() => {
-    if (!current) return;
-    Promise.all([
-      supabase
-        .from("financial_years")
-        .select("*")
-        .eq("business_id", current.id)
-        .order("year", { ascending: false }),
-      supabase
-        .from("valuations")
-        .select("*")
-        .eq("business_id", current.id)
-        .order("computed_at", { ascending: false })
-        .limit(1),
-      supabase
-        .from("scenarios")
-        .select("*")
-        .eq("business_id", current.id)
-        .eq("include_in_report", true)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("recommendations")
-        .select("*")
-        .eq("business_id", current.id)
-        .order("created_at", { ascending: false }),
-      supabase.from("buyer_view_settings").select("*").eq("business_id", current.id).maybeSingle(),
-    ]).then(([fy, v, sc, rec, bs]) => {
-      setBundle({
-        business: current,
-        financials: fy.data ?? [],
-        valuation: v.data?.[0] ?? null,
-        scenarios: sc.data ?? [],
-        recommendations: rec.data ?? [],
-        buyerSettings: bs.data ?? null,
-      });
-    });
-  }, [current]);
+    let cancelled = false;
+    if (!current) {
+      setBundle(null);
+      setLoadError(null);
+      setLoading(false);
+      return;
+    }
+    async function loadReports() {
+      setLoading(true);
+      setLoadError(null);
+      try {
+        const [fy, v, sc, rec, bs] = await Promise.all([
+          supabase
+            .from("financial_years")
+            .select("*")
+            .eq("business_id", current.id)
+            .order("year", { ascending: false }),
+          supabase
+            .from("valuations")
+            .select("*")
+            .eq("business_id", current.id)
+            .order("computed_at", { ascending: false })
+            .limit(1),
+          supabase
+            .from("scenarios")
+            .select("*")
+            .eq("business_id", current.id)
+            .eq("include_in_report", true)
+            .order("created_at", { ascending: false }),
+          supabase
+            .from("recommendations")
+            .select("*")
+            .eq("business_id", current.id)
+            .order("created_at", { ascending: false }),
+          supabase.from("buyer_view_settings").select("*").eq("business_id", current.id).maybeSingle(),
+        ]);
+        const error = fy.error ?? v.error ?? sc.error ?? rec.error ?? bs.error;
+        if (error) throw error;
+        if (cancelled) return;
+        setBundle({
+          business: current,
+          financials: fy.data ?? [],
+          valuation: v.data?.[0] ?? null,
+          scenarios: sc.data ?? [],
+          recommendations: rec.data ?? [],
+          buyerSettings: bs.data ?? null,
+        });
+      } catch (error) {
+        if (!cancelled) {
+          setBundle(null);
+          setLoadError(errorMessage(error, "Could not load reports."));
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    void loadReports();
+    return () => {
+      cancelled = true;
+    };
+  }, [current, loadAttempt]);
 
   useEffect(() => {
     if (!open || !bundle || !printOnOpen) return;
@@ -141,6 +170,16 @@ function Reports() {
 
   if (!current)
     return <div className="p-12 text-sm text-muted-foreground">No business selected.</div>;
+  if (loading) return <div className="p-12 text-sm text-muted-foreground">Loading reports…</div>;
+  if (loadError) {
+    return (
+      <LoadErrorState
+        title="Could not load reports"
+        message={loadError}
+        onRetry={() => setLoadAttempt((attempt) => attempt + 1)}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-10">

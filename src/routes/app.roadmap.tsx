@@ -5,6 +5,7 @@ import { useBusiness } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
 import { fmtCurrency } from "@/lib/format";
 import { toast } from "sonner";
+import { LoadErrorState, errorMessage } from "@/components/LoadErrorState";
 
 type ScenarioRow = {
   id: string;
@@ -30,10 +31,19 @@ function Roadmap() {
   const { current } = useBusiness();
   const [rows, setRows] = useState<ScenarioRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   useEffect(() => {
-    if (!current) return;
+    let cancelled = false;
+    if (!current) {
+      setRows([]);
+      setLoadError(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
+    setLoadError(null);
     supabase
       .from("scenarios")
       .select(
@@ -41,11 +51,21 @@ function Roadmap() {
       )
       .eq("business_id", current.id)
       .order("created_at", { ascending: false })
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) throw error;
         setRows((data ?? []) as ScenarioRow[]);
-        setLoading(false);
+      })
+      .catch((error) => {
+        if (!cancelled) setLoadError(errorMessage(error, "Could not load your roadmap."));
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
       });
-  }, [current]);
+    return () => {
+      cancelled = true;
+    };
+  }, [current, loadAttempt]);
 
   async function movePhase(id: string, newPhase: string) {
     const { error } = await supabase
@@ -61,6 +81,15 @@ function Roadmap() {
 
   if (!current)
     return <div className="p-12 text-sm text-muted-foreground">No business selected.</div>;
+  if (loadError) {
+    return (
+      <LoadErrorState
+        title="Could not load your roadmap"
+        message={loadError}
+        onRetry={() => setLoadAttempt((attempt) => attempt + 1)}
+      />
+    );
+  }
 
   const totalLift = rows.reduce((s, r) => s + (Number(r.value_delta) || 0), 0);
 
