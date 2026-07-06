@@ -745,6 +745,81 @@ export type Database = {
           },
         ]
       }
+      industry_multiple_assumptions: {
+        Row: {
+          active: boolean
+          business_category: string
+          confidence_level: string
+          created_at: string
+          ebitda_high: number
+          ebitda_low: number
+          ebitda_mid: number
+          id: string
+          industry: string
+          owner_dependence: string
+          revenue_high: number
+          revenue_low: number
+          revenue_max: number | null
+          revenue_mid: number
+          revenue_min: number | null
+          sde_high: number
+          sde_low: number
+          sde_mid: number
+          slug: string
+          source_label: string
+          source_notes: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          business_category?: string
+          confidence_level?: string
+          created_at?: string
+          ebitda_high: number
+          ebitda_low: number
+          ebitda_mid: number
+          id?: string
+          industry: string
+          owner_dependence?: string
+          revenue_high: number
+          revenue_low: number
+          revenue_max?: number | null
+          revenue_mid: number
+          revenue_min?: number | null
+          sde_high: number
+          sde_low: number
+          sde_mid: number
+          slug: string
+          source_label: string
+          source_notes: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          business_category?: string
+          confidence_level?: string
+          created_at?: string
+          ebitda_high?: number
+          ebitda_low?: number
+          ebitda_mid?: number
+          id?: string
+          industry?: string
+          owner_dependence?: string
+          revenue_high?: number
+          revenue_low?: number
+          revenue_max?: number | null
+          revenue_mid?: number
+          revenue_min?: number | null
+          sde_high?: number
+          sde_low?: number
+          sde_mid?: number
+          slug?: string
+          source_label?: string
+          source_notes?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
