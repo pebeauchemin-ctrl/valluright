@@ -27,6 +27,7 @@ import { fmtCurrency, fmtPct } from "@/lib/format";
 import { MethodDetailDialog, MethodRangeBar } from "@/components/MethodDetailDialog";
 import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 import { AccessibleChart } from "@/components/AccessibleChart";
+import { LoadErrorState, errorMessage } from "@/components/LoadErrorState";
 import { recordProductEvent } from "@/lib/observability.functions";
 import {
   dataQualityAcknowledgementKey,
@@ -67,6 +68,8 @@ function Dashboard() {
   const [reviewOpen, setReviewOpen] = useState(false);
   const [dataQualityAcknowledged, setDataQualityAcknowledged] = useState(false);
   const [multipleAssumptions, setMultipleAssumptions] = useState<MultipleAssumption[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -79,27 +82,43 @@ function Dashboard() {
       setMultipleAssumptions([]);
       setReviewOpen(false);
       setDataQualityAcknowledged(false);
+      setLoadError(null);
       setLoading(false);
       return;
     }
-    setLoading(true);
-    Promise.all([
-      supabase
-        .from("financial_years")
-        .select("*")
-        .eq("business_id", current.id)
-        .order("year", { ascending: true }),
-      supabase
-        .from("valuations")
-        .select("id, computed_at")
-        .eq("business_id", current.id)
-        .order("computed_at", { ascending: false })
-        .limit(1),
-      supabase.from("xero_connections").select("id").eq("business_id", current.id).limit(1),
-      supabase.from("quickbooks_connections").select("id").eq("business_id", current.id).limit(1),
-      (supabase as any).from("industry_multiple_assumptions").select("*").eq("active", true),
-    ]).then(
-      ([financialsResult, valuationsResult, xeroResult, quickBooksResult, assumptionsResult]) => {
+    async function loadDashboard() {
+      setLoading(true);
+      setLoadError(null);
+      try {
+        const [
+          financialsResult,
+          valuationsResult,
+          xeroResult,
+          quickBooksResult,
+          assumptionsResult,
+        ] = await Promise.all([
+          supabase
+            .from("financial_years")
+            .select("*")
+            .eq("business_id", current.id)
+            .order("year", { ascending: true }),
+          supabase
+            .from("valuations")
+            .select("id, computed_at")
+            .eq("business_id", current.id)
+            .order("computed_at", { ascending: false })
+            .limit(1),
+          supabase.from("xero_connections").select("id").eq("business_id", current.id).limit(1),
+          supabase.from("quickbooks_connections").select("id").eq("business_id", current.id).limit(1),
+          (supabase as any).from("industry_multiple_assumptions").select("*").eq("active", true),
+        ]);
+        const error =
+          financialsResult.error ??
+          valuationsResult.error ??
+          xeroResult.error ??
+          quickBooksResult.error ??
+          assumptionsResult.error;
+        if (error) throw error;
         if (cancelled) return;
         setFinancials(financialsResult.data ?? []);
         setHasSavedValuation(Boolean(valuationsResult.data?.length));
@@ -108,13 +127,17 @@ function Dashboard() {
         setHasQuickBooksConnection(Boolean(quickBooksResult.data?.length));
         setMultipleAssumptions(normalizeMultipleAssumptions(assumptionsResult.data));
         setReviewOpen(false);
-        setLoading(false);
-      },
-    );
+      } catch (error) {
+        if (!cancelled) setLoadError(errorMessage(error, "Could not load your dashboard."));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    void loadDashboard();
     return () => {
       cancelled = true;
     };
-  }, [current]);
+  }, [current, loadAttempt]);
 
   const inputs = useMemo(
     () => (current ? toBusinessInputs(current, financials, multipleAssumptions) : null),
@@ -201,6 +224,15 @@ function Dashboard() {
 
   if (bizLoading || loading) {
     return <div className="p-12 text-sm text-muted-foreground">Loading your dashboard…</div>;
+  }
+  if (loadError) {
+    return (
+      <LoadErrorState
+        title="Could not load your dashboard"
+        message={loadError}
+        onRetry={() => setLoadAttempt((attempt) => attempt + 1)}
+      />
+    );
   }
   if (!current) {
     return (

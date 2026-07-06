@@ -18,6 +18,7 @@ import { fmtCurrency } from "@/lib/format";
 import { toast } from "sonner";
 import { COUNSEL_REVIEW_TEXT, VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 import { recordProductEvent } from "@/lib/observability.functions";
+import { LoadErrorState, errorMessage } from "@/components/LoadErrorState";
 
 type ScenarioRow = {
   id: string;
@@ -90,6 +91,9 @@ function Scenarios() {
   const [actionStepsText, setActionStepsText] = useState("");
   const [includeInReport, setIncludeInReport] = useState(false);
   const [phase, setPhase] = useState<(typeof PHASES)[number]>("Next 90 Days");
+  const [pageLoading, setPageLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   const [k, setK] = useState<ScenarioKnobs>({
     ownerInvolvement: 70,
@@ -103,26 +107,51 @@ function Scenarios() {
   });
 
   useEffect(() => {
-    if (!current) return;
-    supabase
-      .from("financial_years")
-      .select("*")
-      .eq("business_id", current.id)
-      .order("year", { ascending: true })
-      .then(({ data }) => setFinancials(data ?? []));
-    supabase
-      .from("scenarios")
-      .select("*")
-      .eq("business_id", current.id)
-      .order("created_at", { ascending: false })
-      .then(({ data }) => setSaved((data ?? []) as ScenarioRow[]));
+    let cancelled = false;
+    if (!current) {
+      setFinancials([]);
+      setSaved([]);
+      setLoadError(null);
+      setPageLoading(false);
+      return;
+    }
+    setPageLoading(true);
+    setLoadError(null);
+    Promise.all([
+      supabase
+        .from("financial_years")
+        .select("*")
+        .eq("business_id", current.id)
+        .order("year", { ascending: true }),
+      supabase
+        .from("scenarios")
+        .select("*")
+        .eq("business_id", current.id)
+        .order("created_at", { ascending: false }),
+    ])
+      .then(([financialsResult, scenariosResult]) => {
+        if (cancelled) return;
+        const error = financialsResult.error ?? scenariosResult.error;
+        if (error) throw error;
+        setFinancials(financialsResult.data ?? []);
+        setSaved((scenariosResult.data ?? []) as ScenarioRow[]);
+      })
+      .catch((error) => {
+        if (!cancelled) setLoadError(errorMessage(error, "Could not load scenarios."));
+      })
+      .finally(() => {
+        if (!cancelled) setPageLoading(false);
+      });
     setK((prev) =>
       applyScenarioSearchToKnobs(
         { ...prev, ...businessKnobs(current), timelineMonths: prev.timelineMonths },
         scenarioSearch,
       ),
     );
-  }, [current, scenarioSearch]);
+    return () => {
+      cancelled = true;
+    };
+  }, [current, scenarioSearch, loadAttempt]);
 
   const baseline = useMemo<Valuation | null>(() => {
     if (!current) return null;
@@ -146,6 +175,16 @@ function Scenarios() {
 
   if (!current)
     return <div className="p-12 text-sm text-muted-foreground">No business selected.</div>;
+  if (pageLoading) return <div className="p-12 text-sm text-muted-foreground">Loading…</div>;
+  if (loadError) {
+    return (
+      <LoadErrorState
+        title="Could not load scenarios"
+        message={loadError}
+        onRetry={() => setLoadAttempt((attempt) => attempt + 1)}
+      />
+    );
+  }
   if (!baseline || !projected)
     return <div className="p-12 text-sm text-muted-foreground">Loading…</div>;
 

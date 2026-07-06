@@ -23,6 +23,7 @@ import {
 import { fmtCurrency } from "@/lib/format";
 import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 import { AccessibleChart } from "@/components/AccessibleChart";
+import { LoadErrorState, errorMessage } from "@/components/LoadErrorState";
 import { toast } from "sonner";
 import {
   ResponsiveContainer,
@@ -278,23 +279,39 @@ function HealthScorePage() {
   const { current } = useBusiness();
   const [financials, setFinancials] = useState<FinancialYearRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
     if (!current) {
+      setFinancials([]);
+      setLoadError(null);
       setLoading(false);
       return;
     }
     setLoading(true);
+    setLoadError(null);
     supabase
       .from("financial_years")
       .select("*")
       .eq("business_id", current.id)
       .order("year", { ascending: true })
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) throw error;
         setFinancials(data ?? []);
-        setLoading(false);
+      })
+      .catch((error) => {
+        if (!cancelled) setLoadError(errorMessage(error, "Could not load health score."));
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
       });
-  }, [current]);
+    return () => {
+      cancelled = true;
+    };
+  }, [current, loadAttempt]);
 
   const inputs = useMemo(
     () => (current ? toBusinessInputs(current, financials) : null),
@@ -305,6 +322,15 @@ function HealthScorePage() {
 
   if (!current || loading)
     return <div className="p-12 text-sm text-muted-foreground">Loading…</div>;
+  if (loadError) {
+    return (
+      <LoadErrorState
+        title="Could not load health score"
+        message={loadError}
+        onRetry={() => setLoadAttempt((attempt) => attempt + 1)}
+      />
+    );
+  }
   if (!result || !inputs) return null;
 
   const baselineMid = valuation?.rangeMid || 0;
