@@ -915,10 +915,34 @@ function confidenceFromAdj(adj: number, hasInput: boolean): "low" | "medium" | "
 // ---------------------------------------------------------------------------
 // METHOD ROLE ASSIGNMENT BY CATEGORY
 // ---------------------------------------------------------------------------
+function recurringRevenueAggregationWeight(b: BusinessInputs): number {
+  const recurringPct = Math.max(0, Math.min(100, Number(b.recurring_revenue_pct ?? 0) || 0));
+  if (recurringPct < 60) return 0;
+
+  const scale = (recurringPct - 60) / 40;
+  return 0.15 + scale * 0.2;
+}
+
+function standardOperatingWeights(b: BusinessInputs): Record<string, number> {
+  const base = { sde: 0.35, ebitda: 0.3, dcf: 0.15, comparable: 0.2 };
+  const revenueWeight = recurringRevenueAggregationWeight(b);
+  if (revenueWeight <= 0) return base;
+
+  const remainingWeight = 1 - revenueWeight;
+  return {
+    sde: base.sde * remainingWeight,
+    ebitda: base.ebitda * remainingWeight,
+    dcf: base.dcf * remainingWeight,
+    comparable: base.comparable * remainingWeight,
+    revenue: revenueWeight,
+  };
+}
+
 function assignRoles(
   methods: MethodResult[],
   category: BusinessCategory,
   isRv: boolean,
+  recurringRevenueWeight = 0,
 ): MethodResult[] {
   return methods.map((m) => {
     let role: MethodRole = "supporting";
@@ -942,7 +966,9 @@ function assignRoles(
       if (m.method === "sde" || m.method === "ebitda") role = "primary";
       else if (m.method === "comparable") role = "supporting";
       else if (m.method === "dcf") role = "supporting";
-      else if (m.method === "revenue") role = "sanity_check";
+      else if (m.method === "revenue") {
+        role = recurringRevenueWeight > 0 ? "supporting" : "sanity_check";
+      }
       else if (m.method === "asset") role = "floor";
       else if (m.method === "cap_rate") role = "supporting";
     }
@@ -970,6 +996,8 @@ export function valueBusiness(b: BusinessInputs): Valuation {
   const category =
     (b.business_category as BusinessCategory) || inferCategory(b.industry, b.sub_industry);
   const isRv = isRvOrCampground(b.industry, b.sub_industry);
+  const recurringRevenueWeight =
+    category === "standard_operating" ? recurringRevenueAggregationWeight(b) : 0;
 
   let methods = [
     methodSDE(b),
@@ -980,7 +1008,7 @@ export function valueBusiness(b: BusinessInputs): Valuation {
     methodComparable(b),
     methodCapRate(b),
   ];
-  methods = assignRoles(methods, category, isRv);
+  methods = assignRoles(methods, category, isRv, recurringRevenueWeight);
 
   // Hide cap rate for standard operating businesses unless explicitly applicable
   if (category === "standard_operating") {
@@ -994,13 +1022,14 @@ export function valueBusiness(b: BusinessInputs): Valuation {
   // Examples:
   //  • Real-estate income → cap rate drives value; SDE/EBITDA/Revenue/Asset are reference only.
   //  • Asset-heavy → earnings + asset floor; cap rate and revenue excluded.
-  //  • Standard operating → SDE/EBITDA + DCF + comparables; asset floor and revenue excluded.
+  //  • Standard operating → SDE/EBITDA + DCF + comparables.
+  //    If recurring revenue is 60%+, revenue multiples are weighted in as a supporting signal.
   const weights: Record<string, number> =
     category === "real_estate_income"
       ? { cap_rate: 0.7, dcf: 0.15, comparable: 0.15 }
       : category === "asset_heavy"
         ? { sde: 0.35, ebitda: 0.35, asset: 0.15, comparable: 0.15 }
-        : { sde: 0.35, ebitda: 0.3, dcf: 0.15, comparable: 0.2 };
+        : standardOperatingWeights(b);
 
   // Cap-rate fallback: if real-estate cap rate is unavailable (missing NOI or cap rate),
   // fall back to DCF + comparable + EBITDA so the range is still meaningful.
