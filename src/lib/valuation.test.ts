@@ -231,6 +231,61 @@ test("distressed or missing earnings do not create false precision from unavaila
   assertApprox(valuation.rangeHigh, 0, "distressed blended high");
 });
 
+test("high-recurring standard operating businesses weight revenue multiples into valuation", () => {
+  const saasLike: BusinessInputs = {
+    industry: "Software / SaaS",
+    business_category: "standard_operating",
+    recurring_revenue_pct: 85,
+    owner_hours_per_week: 20,
+    owner_in_sales: false,
+    owner_in_operations: false,
+    owner_in_customer_relationships: false,
+    top_customer_concentration_pct: 10,
+    sop_status: "complete",
+    manager_team_depth: "strong",
+    financials: [
+      latestFixture({
+        revenue: 1_000_000,
+        net_income: 20_000,
+        depreciation: 0,
+        amortization: 0,
+        interest: 0,
+        income_taxes: 0,
+        owner_salary: 0,
+        addbacks: 0,
+        assets: 0,
+        liabilities: 0,
+        debt: 0,
+      }),
+    ],
+  };
+  const lowRecurring = { ...saasLike, recurring_revenue_pct: 30 };
+  const highValuation = valueBusiness(saasLike);
+  const lowValuation = valueBusiness(lowRecurring);
+  const revenue = highValuation.methods.find((method) => method.method === "revenue");
+
+  assertEqual(highValuation.category, "standard_operating", "SaaS category remains standard");
+  assertApprox(highValuation.weights.revenue, 0.275, "85% recurring revenue weight");
+  assertApprox(highValuation.weights.sde, 0.25375, "SDE weight scaled down");
+  assertEqual(revenue?.role, "supporting", "revenue method becomes supporting");
+  assert(highValuation.rangeMid > lowValuation.rangeMid, "recurring revenue lifts blended value");
+});
+
+test("lower-recurring standard operating businesses keep revenue as a sanity check", () => {
+  const services: BusinessInputs = {
+    industry: "Professional Services",
+    business_category: "standard_operating",
+    recurring_revenue_pct: 50,
+    financials: [latestFixture()],
+  };
+  const valuation = valueBusiness(services);
+  const revenue = valuation.methods.find((method) => method.method === "revenue");
+
+  assertEqual(valuation.weights.revenue ?? 0, 0, "sub-threshold revenue weight");
+  assertApprox(valuation.weights.sde, 0.35, "standard SDE weight preserved");
+  assertEqual(revenue?.role, "sanity_check", "revenue remains a sanity check");
+});
+
 test("negative EBITDA is unavailable and does not produce negative or inverted method ranges", () => {
   const lossMaker: BusinessInputs = {
     industry: "Professional Services",
