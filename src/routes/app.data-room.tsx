@@ -151,6 +151,7 @@ function DataRoom() {
       <div className="rounded-xl border border-border bg-card p-6">
         <div className="flex items-center gap-3 flex-wrap">
           <select
+            aria-label="Data room upload category"
             value={category}
             onChange={(e) => setCategory(e.target.value as Category)}
             className="rounded-md border border-input bg-background px-3 py-2 text-sm capitalize"
@@ -164,6 +165,7 @@ function DataRoom() {
           <input
             ref={inputRef}
             type="file"
+            aria-label="Choose data room file to upload"
             className="hidden"
             onChange={(e) => {
               const f = e.target.files?.[0];
@@ -205,10 +207,17 @@ function DataRoom() {
                     </div>
                   </div>
                   <div className="flex gap-1 shrink-0">
-                    <button onClick={() => download(f)} className="p-1.5 rounded hover:bg-card">
+                    <button
+                      type="button"
+                      aria-label={`Download ${f.filename}`}
+                      onClick={() => download(f)}
+                      className="p-1.5 rounded hover:bg-card"
+                    >
                       <Download className="h-3.5 w-3.5" />
                     </button>
                     <button
+                      type="button"
+                      aria-label={`Delete ${f.filename}`}
                       onClick={() => remove(f)}
                       className="p-1.5 rounded hover:bg-card text-destructive"
                     >

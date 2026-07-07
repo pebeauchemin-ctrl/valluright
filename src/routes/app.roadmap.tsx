@@ -192,6 +192,7 @@ function Roadmap() {
                           </span>
                         )}
                         <select
+                          aria-label={`Move ${r.title} to roadmap phase`}
                           value={phase}
                           onChange={(e) => movePhase(r.id, e.target.value)}
                           className="ml-auto text-xs rounded border border-border bg-background px-1.5 py-1"

@@ -1837,6 +1837,8 @@ function Financials() {
                     <div className="flex items-center justify-center gap-2">
                       <span className="font-semibold">{y.year}</span>
                       <button
+                        type="button"
+                        aria-label={`Remove financial year ${y.year}`}
                         onClick={() => removeYear(i)}
                         className="text-muted-foreground hover:text-destructive"
                       >
@@ -1855,6 +1857,7 @@ function Financials() {
                     <td key={y.id} className="py-1">
                       <input
                         type="number"
+                        aria-label={`${label} for ${y.year}`}
                         value={
                           key === "addbacks"
                             ? formatNumberInputValue(addBackTotalsByYear.get(y.year) ?? y.addbacks)
