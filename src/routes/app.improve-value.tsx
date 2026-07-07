@@ -219,22 +219,22 @@ function ImproveValue() {
     }
     setLoading(true);
     setLoadError(null);
-    supabase
-      .from("financial_years")
-      .select("*")
-      .eq("business_id", current.id)
-      .order("year", { ascending: true })
-      .then(({ data, error }) => {
+    void (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("financial_years")
+          .select("*")
+          .eq("business_id", current.id)
+          .order("year", { ascending: true });
         if (cancelled) return;
         if (error) throw error;
         setFinancials(data ?? []);
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!cancelled) setLoadError(errorMessage(error, "Could not load improvement ideas."));
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) setLoading(false);
-      });
+      }
+    })();
     return () => {
       cancelled = true;
     };

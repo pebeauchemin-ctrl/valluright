@@ -105,6 +105,7 @@ function Reports() {
       setLoading(false);
       return;
     }
+    const biz = current;
     async function loadReports() {
       setLoading(true);
       setLoadError(null);
@@ -113,32 +114,32 @@ function Reports() {
           supabase
             .from("financial_years")
             .select("*")
-            .eq("business_id", current.id)
+            .eq("business_id", biz.id)
             .order("year", { ascending: false }),
           supabase
             .from("valuations")
             .select("*")
-            .eq("business_id", current.id)
+            .eq("business_id", biz.id)
             .order("computed_at", { ascending: false })
             .limit(1),
           supabase
             .from("scenarios")
             .select("*")
-            .eq("business_id", current.id)
+            .eq("business_id", biz.id)
             .eq("include_in_report", true)
             .order("created_at", { ascending: false }),
           supabase
             .from("recommendations")
             .select("*")
-            .eq("business_id", current.id)
+            .eq("business_id", biz.id)
             .order("created_at", { ascending: false }),
-          supabase.from("buyer_view_settings").select("*").eq("business_id", current.id).maybeSingle(),
+          supabase.from("buyer_view_settings").select("*").eq("business_id", biz.id).maybeSingle(),
         ]);
         const error = fy.error ?? v.error ?? sc.error ?? rec.error ?? bs.error;
         if (error) throw error;
         if (cancelled) return;
         setBundle({
-          business: current,
+          business: biz,
           financials: fy.data ?? [],
           valuation: v.data?.[0] ?? null,
           scenarios: sc.data ?? [],

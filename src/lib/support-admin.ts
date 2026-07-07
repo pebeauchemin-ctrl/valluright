@@ -17,7 +17,7 @@ export type SupportImportStatus = {
   warningCount: number;
   retryAction: string | null;
   reportNames: string[];
-  metadata: Record<string, unknown>;
+  metadata: Record<string, string | number | boolean | null | string[]>;
 };
 
 export type SupportConnectionStatus = {
@@ -32,7 +32,7 @@ export type SupportEventSummary = {
   area: string;
   severity: string;
   createdAt: string;
-  metadata: Record<string, unknown>;
+  metadata: Record<string, string | number | boolean | null | string[]>;
 };
 
 export type SupportAccountSummary = {
@@ -90,14 +90,17 @@ const SENSITIVE_METADATA_KEYS = new Set([
   "valuation",
 ]);
 
-export function sanitizeSupportMetadata(value: unknown): Record<string, unknown> {
+export function sanitizeSupportMetadata(
+  value: unknown,
+): Record<string, string | number | boolean | null | string[]> {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
 
   const safeEntries = Object.entries(value as Record<string, unknown>)
     .filter(([key]) => !SENSITIVE_METADATA_KEYS.has(key.toLowerCase()))
     .slice(0, 12)
-    .map(([key, raw]) => {
-      if (raw === null || ["string", "number", "boolean"].includes(typeof raw)) return [key, raw];
+    .map(([key, raw]): [string, string | number | boolean | null | string[]] => {
+      if (raw === null) return [key, null];
+      if (typeof raw === "string" || typeof raw === "number" || typeof raw === "boolean") return [key, raw];
       if (Array.isArray(raw)) return [key, raw.slice(0, 5).map((item) => String(item))];
       return [key, "[object]"];
     });

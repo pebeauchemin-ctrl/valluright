@@ -45,24 +45,24 @@ function Roadmap() {
     }
     setLoading(true);
     setLoadError(null);
-    supabase
-      .from("scenarios")
-      .select(
-        "id,name,description,current_value,projected_value,value_delta,timeline_months,include_in_report,action_steps,roadmap_phase",
-      )
-      .eq("business_id", current.id)
-      .order("created_at", { ascending: false })
-      .then(({ data, error }) => {
+    void (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("scenarios")
+          .select(
+            "id,name,description,current_value,projected_value,value_delta,timeline_months,include_in_report,action_steps,roadmap_phase",
+          )
+          .eq("business_id", current.id)
+          .order("created_at", { ascending: false });
         if (cancelled) return;
         if (error) throw error;
         setRows((data ?? []) as ScenarioRow[]);
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!cancelled) setLoadError(errorMessage(error, "Could not load your roadmap."));
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) setLoading(false);
-      });
+      }
+    })();
     return () => {
       cancelled = true;
     };
