@@ -29,6 +29,7 @@ import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 import { AccessibleChart } from "@/components/AccessibleChart";
 import { LoadErrorState, errorMessage } from "@/components/LoadErrorState";
 import { recordProductEvent } from "@/lib/observability.functions";
+import { displayIndustryLabel } from "@/lib/industry-display";
 import {
   dataQualityAcknowledgementKey,
   normalizeAccountingBasis,
@@ -397,8 +398,9 @@ function Dashboard() {
             )}
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            {current.industry} · {current.region || "—"} · {current.years_in_business ?? "?"} years
-            · {current.employees ?? "?"} employees
+            {displayIndustryLabel(current.industry, current.sub_industry, "—")} ·{" "}
+            {current.region || "—"} · {current.years_in_business ?? "?"} years ·{" "}
+            {current.employees ?? "?"} employees
           </p>
         </div>
         <div className="flex w-full flex-wrap gap-2 sm:w-auto">

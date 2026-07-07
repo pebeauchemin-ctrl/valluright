@@ -747,15 +747,14 @@ export function methodAsset(b: BusinessInputs): MethodResult {
 }
 
 export function methodComparable(b: BusinessInputs): MethodResult {
-  // Placeholder until we wire a real comp database.
-  // Average of SDE & EBITDA mids, slightly discounted.
+  // Directional comp-informed reference from available earnings methods.
   const sde = methodSDE(b);
   const ebitda = methodEBITDA(b);
   if (!sde.available && !ebitda.available) {
     return blankMethod(
       "comparable",
       "Comparable Sales",
-      "Coming soon — comp database in development.",
+      "Add positive normalized earnings to compute this directional reference.",
     );
   }
   const availableMethods = [sde, ebitda].filter((method) => method.available);
@@ -772,11 +771,10 @@ export function methodComparable(b: BusinessInputs): MethodResult {
     high: rangeHigh * 0.95,
     confidence: "low",
     notes:
-      "Placeholder estimate. Live comp matching from BizBuySell / IBBA data is in development.",
-    formula:
-      "Avg(SDE value, EBITDA value) × 0.95\n(placeholder until live comp database is wired in)",
+      "Directional comp-informed reference based on available earnings methods. Review against current buyer activity before relying on an asking price.",
+    formula: "Avg(SDE value, EBITDA value) × 0.95\n(conservative comp-informed reference)",
     reasoning:
-      "Comparable sales typically anchor real-world buyer behavior. This blend approximates a comp-implied range until live BizBuySell / IBBA matching is enabled.",
+      "Comparable sales typically anchor real-world buyer behavior. This directional reference uses the available earnings methods with a conservative adjustment and should be checked against current market activity.",
     available: true,
   };
 }

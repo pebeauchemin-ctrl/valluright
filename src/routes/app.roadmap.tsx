@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { fmtCurrency } from "@/lib/format";
 import { toast } from "sonner";
 import { LoadErrorState, errorMessage } from "@/components/LoadErrorState";
+import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 
 type ScenarioRow = {
   id: string;
@@ -210,6 +211,7 @@ function Roadmap() {
           })}
         </div>
       )}
+      <ValuationDisclaimer className="mt-4" />
     </div>
   );
 }
