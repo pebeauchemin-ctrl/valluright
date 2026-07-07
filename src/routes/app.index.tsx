@@ -87,6 +87,7 @@ function Dashboard() {
       setLoading(false);
       return;
     }
+    const biz = current;
     async function loadDashboard() {
       setLoading(true);
       setLoadError(null);
@@ -101,16 +102,16 @@ function Dashboard() {
           supabase
             .from("financial_years")
             .select("*")
-            .eq("business_id", current.id)
+            .eq("business_id", biz.id)
             .order("year", { ascending: true }),
           supabase
             .from("valuations")
             .select("id, computed_at")
-            .eq("business_id", current.id)
+            .eq("business_id", biz.id)
             .order("computed_at", { ascending: false })
             .limit(1),
-          supabase.from("xero_connections").select("id").eq("business_id", current.id).limit(1),
-          supabase.from("quickbooks_connections").select("id").eq("business_id", current.id).limit(1),
+          supabase.from("xero_connections").select("id").eq("business_id", biz.id).limit(1),
+          supabase.from("quickbooks_connections").select("id").eq("business_id", biz.id).limit(1),
           (supabase as any).from("industry_multiple_assumptions").select("*").eq("active", true),
         ]);
         const error =
