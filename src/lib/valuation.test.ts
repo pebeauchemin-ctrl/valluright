@@ -15,6 +15,7 @@ import {
   type MultipleAssumption,
 } from "./valuation";
 import { VALUATION_BENCHMARK_CASES, getBenchmarkCase } from "./valuation-benchmarks";
+import { displayIndustryLabel } from "./industry-display";
 
 type TestCase = {
   name: string;
@@ -84,6 +85,24 @@ test("normalizes EBITDA and SDE from net income bridge without double-counting o
   assert(
     normalized.sdeFormula.includes("Owner Compensation + One-time Add-backs"),
     "SDE formula explains owner comp",
+  );
+});
+
+test("RV parks and campgrounds use a buyer-safe display label", () => {
+  assertEqual(
+    displayIndustryLabel("Restaurant / Hospitality", "RV park"),
+    "RV Park / Campground",
+    "RV park display label",
+  );
+  assertEqual(
+    displayIndustryLabel("Restaurant / Hospitality", "campground"),
+    "RV Park / Campground",
+    "campground display label",
+  );
+  assertEqual(
+    displayIndustryLabel("Professional Services", "Accounting"),
+    "Professional Services / Accounting",
+    "standard industry display label",
   );
 });
 

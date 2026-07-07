@@ -109,9 +109,8 @@ function TermsPage() {
 
       <LegalSection title="Availability and changes">
         <p>
-          ValuRight.ai may update features, pricing, integrations, and
-          documentation over time. Preview, beta, or placeholder capabilities may
-          change before general availability.
+          ValuRight.ai may update features, pricing, integrations, and documentation over time.
+          Preview or beta capabilities may change before general availability.
         </p>
         <p>
           The service may be unavailable during maintenance, outages, provider disruptions, or

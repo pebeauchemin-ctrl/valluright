@@ -88,9 +88,9 @@ function MethodologyPage() {
           capture goodwill or earnings power.
         </p>
         <p>
-          Comparable sales placeholder: a provisional blend of SDE and EBITDA values discounted by 5
-          percent. It exists as a directional reference until a live comparable transaction database
-          is connected.
+          Comparable sales: a directional comp-informed reference based on the available earnings
+          methods, calibrated conservatively so it does not overstate value. It should be reviewed
+          against current buyer activity before setting an asking price.
         </p>
         <p>
           Cap rate / income approach: stabilized NOI divided by a selected cap rate. This is used

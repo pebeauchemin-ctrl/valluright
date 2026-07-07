@@ -17,6 +17,7 @@ import {
   reviewFinancialData,
   type DataQualityReview,
 } from "@/lib/data-quality";
+import { displayIndustryLabel } from "@/lib/industry-display";
 
 export const Route = createFileRoute("/app/reports")({
   head: () => ({ meta: [{ title: "Reports — ValuRight.ai" }] }),
@@ -276,6 +277,7 @@ function ReportPreview({
   });
   const dataNotes = buildDataQualityNotes(business, financials, valuation, dataReview);
   const confidence = confidenceLabel(financials, valuation, dataReview);
+  const industryLabel = displayIndustryLabel(business.industry, business.sub_industry, "—");
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-stretch justify-center overflow-y-auto print:bg-white print:static print:overflow-visible">
@@ -307,7 +309,7 @@ function ReportPreview({
                 : business.name}
             </h1>
             <div className="mt-2 text-sm text-neutral-600">
-              {business.industry ?? "—"} · {business.region ?? "—"} · Generated{" "}
+              {industryLabel} · {business.region ?? "—"} · Generated{" "}
               {new Date().toLocaleDateString()}
             </div>
           </header>
@@ -320,7 +322,7 @@ function ReportPreview({
                   <Tile label="Business" value={business.name} />
                   <Tile
                     label="Industry"
-                    value={`${business.industry ?? "—"} / ${business.sub_industry ?? "—"}`}
+                    value={industryLabel}
                   />
                   <Tile label="Region" value={business.region ?? "—"} />
                   <Tile label="Years operating" value={business.years_in_business ?? "—"} />
@@ -446,7 +448,7 @@ function ReportPreview({
                   <KV k="Business" v={business.name} />
                   <KV
                     k="Industry"
-                    v={`${business.industry ?? "—"} / ${business.sub_industry ?? "—"}`}
+                    v={industryLabel}
                   />
                   <KV k="Years operating" v={business.years_in_business ?? "—"} />
                   <KV k="Employees" v={business.employees ?? "—"} />

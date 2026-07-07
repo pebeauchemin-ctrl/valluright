@@ -6,11 +6,13 @@ import { fmtCurrency } from "@/lib/format";
 import { toast } from "sonner";
 import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 import { AccessibleChart } from "@/components/AccessibleChart";
+import { displayIndustryLabel } from "@/lib/industry-display";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
 type PublicBusiness = {
   public_id: string;
   industry: string | null;
+  sub_industry: string | null;
   region: string | null;
   years_in_business: number | null;
   employees: number | null;
@@ -173,7 +175,8 @@ function Teaser() {
             Confidential business for sale
           </span>
           <h1 className="mt-4 font-display text-3xl font-semibold text-primary">
-            {business.industry} · {business.region || "Confidential location"}
+            {displayIndustryLabel(business.industry, business.sub_industry)} ·{" "}
+            {business.region || "Confidential location"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Established {business.years_in_business ?? "?"} years

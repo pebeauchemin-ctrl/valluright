@@ -9,6 +9,7 @@ import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 import { LoadErrorState, errorMessage } from "@/components/LoadErrorState";
 import { fmtCurrency } from "@/lib/format";
 import { recordProductEvent } from "@/lib/observability.functions";
+import { displayIndustryLabel } from "@/lib/industry-display";
 
 export const Route = createFileRoute("/app/buyer-teaser")({
   head: () => ({ meta: [{ title: "Buyer Teaser — ValuRight.ai" }] }),
@@ -394,6 +395,7 @@ function BuyerTeaser() {
 
         <BuyerPreview
           industry={current.industry}
+          subIndustry={current.sub_industry}
           region={current.region}
           yearsInBusiness={current.years_in_business}
           employees={current.employees}
@@ -525,6 +527,7 @@ function VisibilityRow({
 
 function BuyerPreview({
   industry,
+  subIndustry,
   region,
   yearsInBusiness,
   employees,
@@ -540,6 +543,7 @@ function BuyerPreview({
   financials,
 }: {
   industry: string | null;
+  subIndustry: string | null;
   region: string | null;
   yearsInBusiness: number | null;
   employees: number | null;
@@ -592,7 +596,7 @@ function BuyerPreview({
             <Shield className="h-3 w-3" /> Confidential business for sale
           </span>
           <h3 className="mt-3 font-display text-xl font-semibold text-primary">
-            {industry || "Confidential industry"} · {region || "Confidential region"}
+            {displayIndustryLabel(industry, subIndustry)} · {region || "Confidential region"}
           </h3>
           <p className="mt-1 text-xs text-muted-foreground">
             Established {yearsInBusiness ?? "?"} years
