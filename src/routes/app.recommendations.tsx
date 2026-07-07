@@ -49,21 +49,21 @@ function Recs() {
     }
     setPageLoading(true);
     setLoadError(null);
-    supabase
-      .from("financial_years")
-      .select("*")
-      .eq("business_id", current.id)
-      .then(({ data, error }) => {
+    void (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("financial_years")
+          .select("*")
+          .eq("business_id", current.id);
         if (cancelled) return;
         if (error) throw error;
         setFinancials(data ?? []);
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!cancelled) setLoadError(errorMessage(error, "Could not load recommendations."));
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) setPageLoading(false);
-      });
+      }
+    })();
     recordEvent({
       data: {
         eventName: "recommendation_viewed",
