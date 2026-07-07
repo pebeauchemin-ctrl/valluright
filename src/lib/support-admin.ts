@@ -17,7 +17,7 @@ export type SupportImportStatus = {
   warningCount: number;
   retryAction: string | null;
   reportNames: string[];
-  metadata: Record<string, unknown>;
+  metadata: Record<string, string | number | boolean | null | string[]>;
 };
 
 export type SupportConnectionStatus = {
