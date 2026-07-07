@@ -32,7 +32,7 @@ export type SupportEventSummary = {
   area: string;
   severity: string;
   createdAt: string;
-  metadata: Record<string, unknown>;
+  metadata: Record<string, string | number | boolean | null | string[]>;
 };
 
 export type SupportAccountSummary = {
