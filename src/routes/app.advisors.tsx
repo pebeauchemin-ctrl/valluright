@@ -51,6 +51,8 @@ const PERMISSIONS = [
   },
 ] as const;
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 type Invite = {
   id: string;
   advisor_email: string;
@@ -87,6 +89,7 @@ function Advisors() {
   const [valuation, setValuation] = useState<ValuationRow | null>(null);
   const [reports, setReports] = useState<ReportRow[]>([]);
   const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [role, setRole] = useState<string>("cpa");
   const [perm, setPerm] = useState<string>("comment");
   const [reviewStatus, setReviewStatus] = useState<"reviewing" | "approved" | "changes_requested">(
@@ -204,12 +207,24 @@ function Advisors() {
   }, [current, loadAttempt]);
 
   const invite = async () => {
-    if (!current || !email) return;
+    if (!current) return;
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) {
+      setEmailError("Enter an advisor email address.");
+      toast.error("Enter an advisor email address.");
+      return;
+    }
+    if (!EMAIL_PATTERN.test(normalizedEmail)) {
+      setEmailError("Enter a valid email address.");
+      toast.error("Enter a valid email address.");
+      return;
+    }
+    setEmailError(null);
     setBusy(true);
     try {
       const payload: AdvisorInviteInsert = {
         business_id: current.id,
-        advisor_email: email,
+        advisor_email: normalizedEmail,
         status: "pending",
         advisor_role: role,
         permission_level: perm,
@@ -235,7 +250,7 @@ function Advisors() {
       }).catch(() => undefined);
       setEmail("");
       await refresh();
-      toast.success(`Advisor invite record created for ${email}`);
+      toast.success(`Advisor invite record created for ${normalizedEmail}`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to invite");
     } finally {
@@ -357,11 +372,22 @@ function Advisors() {
             <label className="text-xs uppercase tracking-wider text-muted-foreground">Email</label>
             <input
               type="email"
+              required
+              aria-invalid={emailError ? "true" : undefined}
+              aria-describedby={emailError ? "advisor-email-error" : undefined}
               placeholder="advisor@firm.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (emailError) setEmailError(null);
+              }}
               className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             />
+            {emailError && (
+              <p id="advisor-email-error" className="mt-1 text-xs font-medium text-destructive">
+                {emailError}
+              </p>
+            )}
           </div>
           <div>
             <label className="text-xs uppercase tracking-wider text-muted-foreground">
@@ -400,8 +426,9 @@ function Advisors() {
           {PERMISSIONS.find((p) => p.value === perm)?.desc}
         </p>
         <button
+          type="button"
           onClick={invite}
-          disabled={busy || !email}
+          disabled={busy}
           className="inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90 disabled:opacity-60"
         >
           <UserPlus className="h-4 w-4" /> Create invite

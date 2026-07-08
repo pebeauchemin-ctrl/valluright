@@ -90,6 +90,46 @@ type FinancialAddBackRow = Database["public"]["Tables"]["financial_addbacks"]["R
 type FinancialAddBackEventInsert =
   Database["public"]["Tables"]["financial_addback_events"]["Insert"];
 type FinancialFieldKey = (typeof FIELD_KEYS)[number];
+
+const FINANCIAL_FIELD_LABELS: Record<FinancialFieldKey, string> = {
+  revenue: "Gross revenue",
+  cogs: "COGS",
+  operating_expenses: "Operating expenses",
+  owner_salary: "Owner's salary",
+  addbacks: "Add-backs (personal)",
+  depreciation: "Depreciation",
+  amortization: "Amortization",
+  interest: "Interest",
+  income_taxes: "Income taxes",
+  net_income: "Net income",
+  assets: "Total assets",
+  liabilities: "Total liabilities",
+  debt: "Debt",
+};
+
+const MONEY_FIELD_MAX = 1_000_000_000;
+const NON_NEGATIVE_FINANCIAL_FIELDS = new Set<FinancialFieldKey>([
+  "revenue",
+  "cogs",
+  "operating_expenses",
+  "owner_salary",
+  "addbacks",
+  "depreciation",
+  "amortization",
+  "interest",
+  "income_taxes",
+  "assets",
+  "liabilities",
+  "debt",
+]);
+
+function financialFieldBounds(key: string) {
+  return {
+    min: NON_NEGATIVE_FINANCIAL_FIELDS.has(key as FinancialFieldKey) ? 0 : -MONEY_FIELD_MAX,
+    max: MONEY_FIELD_MAX,
+  };
+}
+
 type XeroImportSummary = {
   importedAccounts: number;
   unmappedAccounts: string[];
@@ -342,6 +382,18 @@ function Financials() {
   };
 
   const update = (i: number, key: string, val: number) => {
+    const { min, max } = financialFieldBounds(key);
+    if (!Number.isFinite(val)) return;
+    if (val < min) {
+      toast.error(
+        `${FINANCIAL_FIELD_LABELS[key as FinancialFieldKey] ?? "This field"} cannot be negative.`,
+      );
+      return;
+    }
+    if (val > max) {
+      toast.error("That value is too large. Please check for an extra zero.");
+      return;
+    }
     setYears((prev) => prev.map((y, idx) => (idx === i ? { ...y, [key]: val } : y)));
   };
 
@@ -851,6 +903,20 @@ function Financials() {
 
   const save = async () => {
     if (!current) return;
+    const invalidYear = yearsWithReviewedAddBacks.find((year) =>
+      FIELD_KEYS.some((key) => {
+        const value =
+          key === "addbacks"
+            ? Number(addBackTotalsByYear.get(year.year) ?? year.addbacks ?? 0)
+            : Number((year as Record<string, unknown>)[key] ?? 0);
+        const { min, max } = financialFieldBounds(key);
+        return !Number.isFinite(value) || value < min || value > max;
+      }),
+    );
+    if (invalidYear) {
+      toast.error("Review financial inputs before saving. Some values are negative where not allowed or unusually large.");
+      return;
+    }
     setSaving(true);
     try {
       const auditEvents: FinancialAddBackEventInsert[] = [];
@@ -1066,21 +1132,7 @@ function Financials() {
   if (!current)
     return <div className="p-12 text-sm text-muted-foreground">No business selected.</div>;
 
-  const rows = [
-    ["revenue", "Gross revenue"],
-    ["cogs", "COGS"],
-    ["operating_expenses", "Operating expenses"],
-    ["owner_salary", "Owner's salary"],
-    ["addbacks", "Add-backs (personal)"],
-    ["depreciation", "Depreciation"],
-    ["amortization", "Amortization"],
-    ["interest", "Interest"],
-    ["income_taxes", "Income taxes"],
-    ["net_income", "Net income"],
-    ["assets", "Total assets"],
-    ["liabilities", "Total liabilities"],
-    ["debt", "Debt"],
-  ] as const;
+  const rows = FIELD_KEYS.map((key) => [key, FINANCIAL_FIELD_LABELS[key]] as const);
   const mappingRows = uniqueMappedAccounts(mappingReview);
   const selectedXeroTenant = xeroTenants.find((tenant) => tenant.tenant_id === selectedTenant);
   const xeroLastSyncedAt = xeroImportSummary?.lastSyncedAt ?? selectedXeroTenant?.last_synced_at;
@@ -1858,6 +1910,9 @@ function Financials() {
                       <input
                         type="number"
                         aria-label={`${label} for ${y.year}`}
+                        min={financialFieldBounds(key).min}
+                        max={financialFieldBounds(key).max}
+                        step="1"
                         value={
                           key === "addbacks"
                             ? formatNumberInputValue(addBackTotalsByYear.get(y.year) ?? y.addbacks)
