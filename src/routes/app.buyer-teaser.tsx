@@ -349,6 +349,8 @@ function BuyerTeaser() {
                 </code>
                 <div className="flex gap-1.5 shrink-0">
                   <button
+                    type="button"
+                    aria-label="Copy public teaser link"
                     onClick={() => {
                       navigator.clipboard.writeText(teaserUrl);
                       toast.success("Link copied");
@@ -361,6 +363,7 @@ function BuyerTeaser() {
                     to="/teaser/$publicId"
                     params={{ publicId: current.public_id }}
                     target="_blank"
+                    aria-label="Open public teaser link in a new tab"
                     className="p-1.5 rounded hover:bg-secondary"
                   >
                     <ExternalLink className="h-3.5 w-3.5" />

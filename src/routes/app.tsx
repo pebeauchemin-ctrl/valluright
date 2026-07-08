@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, useNavigate, useLocation } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   FileSpreadsheet,
@@ -32,6 +32,7 @@ function AppLayout() {
   const { businesses, current, setCurrent, loading: bizLoading } = useBusiness();
   const navigate = useNavigate();
   const location = useLocation();
+  const [businessMenuOpen, setBusinessMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth" });
@@ -97,10 +98,23 @@ function AppLayout() {
         {/* Business switcher */}
         <div className="px-3 py-3 border-b border-sidebar-border">
           {businesses.length > 0 && current ? (
-            <div className="relative group">
+            <div
+              className="relative"
+              onBlur={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+                  setBusinessMenuOpen(false);
+                }
+              }}
+            >
               <button
                 type="button"
                 aria-label={`Current business: ${current.name}. Switch business`}
+                aria-haspopup="menu"
+                aria-expanded={businessMenuOpen}
+                onClick={() => setBusinessMenuOpen((open) => !open)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") setBusinessMenuOpen(false);
+                }}
                 className="w-full flex items-center justify-between gap-2 rounded-md bg-sidebar-accent px-3 py-2 text-sm text-left hover:bg-sidebar-accent/80 transition"
               >
                 <div className="min-w-0 flex-1">
@@ -118,14 +132,23 @@ function AppLayout() {
                 </div>
                 <ChevronDown className="h-4 w-4 shrink-0 text-sidebar-foreground/60" />
               </button>
-              {businesses.length > 1 && (
-                <div className="absolute z-20 left-0 right-0 mt-1 hidden group-hover:block group-focus-within:block">
-                  <div className="rounded-md bg-sidebar-accent border border-sidebar-border shadow-lg overflow-hidden">
+              {businesses.length > 1 && businessMenuOpen && (
+                <div className="absolute z-20 left-0 right-0 mt-1">
+                  <div
+                    role="menu"
+                    aria-label="Switch business"
+                    className="rounded-md bg-sidebar-accent border border-sidebar-border shadow-lg overflow-hidden"
+                  >
                     {businesses.map((b) => (
                       <button
                         key={b.id}
                         type="button"
-                        onClick={() => setCurrent(b)}
+                        role="menuitem"
+                        aria-current={b.id === current.id ? "true" : undefined}
+                        onClick={() => {
+                          setCurrent(b);
+                          setBusinessMenuOpen(false);
+                        }}
                         className={`w-full text-left px-3 py-2 text-sm hover:bg-sidebar/40 ${b.id === current.id ? "bg-sidebar/30" : ""}`}
                       >
                         {b.name}

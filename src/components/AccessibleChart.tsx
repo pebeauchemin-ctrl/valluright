@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 
 type AccessibleChartProps = {
   title: string;
@@ -8,8 +8,9 @@ type AccessibleChartProps = {
 };
 
 export function AccessibleChart({ title, summary, children, className }: AccessibleChartProps) {
-  const titleId = `${slug(title)}-chart-title`;
-  const summaryId = `${slug(title)}-chart-summary`;
+  const chartId = useId();
+  const titleId = `${chartId}-chart-title`;
+  const summaryId = `${chartId}-chart-summary`;
 
   return (
     <figure
@@ -28,11 +29,4 @@ export function AccessibleChart({ title, summary, children, className }: Accessi
       {children}
     </figure>
   );
-}
-
-function slug(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
 }

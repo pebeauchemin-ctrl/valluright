@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { Sliders, Save, Trash2, Lightbulb, AlertTriangle } from "lucide-react";
 import { useBusiness, toBusinessInputs, type FinancialYearRow } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
@@ -623,16 +623,21 @@ function Slider({
   suffix?: string;
   help?: string;
 }) {
+  const inputId = useId();
+
   return (
     <div>
       <div className="flex items-center justify-between gap-3 text-sm">
-        <span className="min-w-0 font-medium">{label}</span>
+        <label htmlFor={inputId} className="min-w-0 font-medium">
+          {label}
+        </label>
         <span className="shrink-0 text-muted-foreground tabular-nums">
           {value}
           {suffix}
         </span>
       </div>
       <input
+        id={inputId}
         type="range"
         min={min}
         max={max}

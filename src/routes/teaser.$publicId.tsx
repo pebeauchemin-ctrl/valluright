@@ -324,14 +324,22 @@ function Teaser() {
               <h2 className="font-display text-xl font-semibold text-primary text-center">
                 Request more information
               </h2>
+              <label htmlFor="buyer-name" className="sr-only">
+                Your name
+              </label>
               <input
+                id="buyer-name"
                 required
                 placeholder="Your name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               />
+              <label htmlFor="buyer-email" className="sr-only">
+                Email
+              </label>
               <input
+                id="buyer-email"
                 required
                 type="email"
                 placeholder="Email"
@@ -339,14 +347,22 @@ function Teaser() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               />
+              <label htmlFor="buyer-phone" className="sr-only">
+                Phone
+              </label>
               <input
+                id="buyer-phone"
                 type="tel"
                 placeholder="Phone (optional)"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               />
+              <label htmlFor="buyer-type" className="sr-only">
+                Buyer type
+              </label>
               <select
+                id="buyer-type"
                 value={buyerType}
                 onChange={(e) => setBuyerType(e.target.value)}
                 required
@@ -359,7 +375,11 @@ function Teaser() {
                 <option value="search_fund">Search fund</option>
                 <option value="other">Other</option>
               </select>
+              <label htmlFor="buyer-financing" className="sr-only">
+                Financing status
+              </label>
               <select
+                id="buyer-financing"
                 value={financing}
                 onChange={(e) => setFinancing(e.target.value)}
                 required
@@ -372,7 +392,11 @@ function Teaser() {
                 <option value="seller_financing">Needs seller financing</option>
                 <option value="other">Other / exploring</option>
               </select>
+              <label htmlFor="buyer-message" className="sr-only">
+                Brief message
+              </label>
               <textarea
+                id="buyer-message"
                 placeholder="Brief message (optional)"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
