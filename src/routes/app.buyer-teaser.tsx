@@ -11,6 +11,8 @@ import { fmtCurrency } from "@/lib/format";
 import { recordProductEvent } from "@/lib/observability.functions";
 import { displayIndustryLabel } from "@/lib/industry-display";
 
+const ASKING_PRICE_MAX = 1_000_000_000;
+
 export const Route = createFileRoute("/app/buyer-teaser")({
   head: () => ({ meta: [{ title: "Buyer Teaser — ValuRight.ai" }] }),
   component: BuyerTeaser,
@@ -128,6 +130,11 @@ function BuyerTeaser() {
 
   const save = async () => {
     if (!current) return;
+    const askingPriceError = validateAskingPrice(askLow, askHigh);
+    if (askingPriceError) {
+      toast.error(askingPriceError);
+      return;
+    }
     setSaving(true);
     try {
       const { error: businessError } = await supabase
@@ -201,6 +208,7 @@ function BuyerTeaser() {
   const previewHighlights = splitLines(highlights);
   const previewOpps = splitLines(opps);
   const latest = financials[financials.length - 1];
+  const askingPriceError = validateAskingPrice(askLow, askHigh);
 
   return (
     <div className="max-w-6xl space-y-6 p-4 sm:p-6 lg:p-10">
@@ -227,6 +235,9 @@ function BuyerTeaser() {
               <NumField label="Asking price (low)" value={askLow} onChange={setAskLow} />
               <NumField label="Asking price (high)" value={askHigh} onChange={setAskHigh} />
             </div>
+            {askingPriceError && (
+              <p className="text-xs font-medium text-destructive">{askingPriceError}</p>
+            )}
           </Section>
 
           <Section title="Highlights & opportunities">
@@ -636,7 +647,7 @@ function BuyerPreview({
                 }
               />
             )}
-            {askLow && askHigh && (
+            {askLow != null && askHigh != null && (
               <PreviewKpi
                 label="Asking price"
                 value={`${fmtCurrency(askLow, { compact: true })} - ${fmtCurrency(askHigh, {
@@ -756,6 +767,21 @@ function revenueBandLabel(revenue: number) {
   if (revenue < 10_000_000) return "$5M - $10M";
   return "$10M+";
 }
+
+function validateAskingPrice(low: number | null, high: number | null) {
+  if (low == null && high == null) return null;
+  if (low != null && (low < 0 || low > ASKING_PRICE_MAX)) {
+    return "Asking price low must be between $0 and $1B.";
+  }
+  if (high != null && (high < 0 || high > ASKING_PRICE_MAX)) {
+    return "Asking price high must be between $0 and $1B.";
+  }
+  if (low != null && high != null && low > high) {
+    return "Asking price low must be less than or equal to asking price high.";
+  }
+  return null;
+}
+
 function Textarea({
   label,
   value,
@@ -796,8 +822,17 @@ function NumField({
       <span className="text-sm font-medium">{label}</span>
       <input
         type="number"
+        min={0}
+        max={ASKING_PRICE_MAX}
+        step="1"
         value={value ?? ""}
-        onChange={(e) => onChange(e.target.value ? Number(e.target.value) : null)}
+        onChange={(e) => {
+          const next = e.target.value ? Number(e.target.value) : null;
+          if (next != null && (!Number.isFinite(next) || next < 0 || next > ASKING_PRICE_MAX)) {
+            return;
+          }
+          onChange(next);
+        }}
         className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
       />
     </label>
