@@ -1,8 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Database } from "@/integrations/supabase/types";
 import { withSupabaseAuth } from "@/lib/with-supabase-auth";
 import { recordObservabilityEvent } from "@/lib/observability.server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 const severitySchema = z.enum(["info", "warn", "error", "critical"]);
 const metadataSchema = z.record(z.string(), z.unknown()).optional();
@@ -28,9 +30,17 @@ export const recordProductEvent = createServerFn({ method: "POST" })
   .middleware([withSupabaseAuth, requireSupabaseAuth])
   .inputValidator(authenticatedEventSchema)
   .handler(async ({ data, context }) => {
+    const ownedBusinessId = data.businessId
+      ? await resolveOwnedBusinessId({
+          businessId: data.businessId,
+          userId: context.userId,
+          supabase: context.supabase,
+        })
+      : null;
+
     await recordObservabilityEvent({
       actorUserId: context.userId,
-      businessId: data.businessId ?? null,
+      businessId: ownedBusinessId,
       eventName: data.eventName,
       severity: data.severity,
       area: data.area,
@@ -40,6 +50,26 @@ export const recordProductEvent = createServerFn({ method: "POST" })
     });
     return { ok: true };
   });
+
+async function resolveOwnedBusinessId({
+  businessId,
+  userId,
+  supabase,
+}: {
+  businessId: string;
+  userId: string;
+  supabase: SupabaseClient<Database>;
+}) {
+  const { data, error } = await supabase
+    .from("businesses")
+    .select("id")
+    .eq("id", businessId)
+    .eq("owner_id", userId)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return data.id;
+}
 
 export const recordPublicClientEvent = createServerFn({ method: "POST" })
   .inputValidator(publicEventSchema)
