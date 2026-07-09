@@ -26,10 +26,10 @@ function getOrigin() {
   const req = getRequest();
   const fwdProto = req?.headers.get("x-forwarded-proto");
   const host = getRequestHost();
-  if (host === "valuright.ai" || host === "www.valuright.ai") {
+  const proto = fwdProto ?? (host?.startsWith("localhost") ? "http" : "https");
+  if (!host?.startsWith("localhost") && host !== "127.0.0.1") {
     return "https://valuright.ai";
   }
-  const proto = fwdProto ?? (host?.startsWith("localhost") ? "http" : "https");
   return `${proto}://${host}`;
 }
 
