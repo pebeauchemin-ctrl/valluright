@@ -18,7 +18,7 @@ import { decryptToken, encryptToken, isEncryptedToken } from "./token-crypto.ser
 import { recordSecurityAuditEvent } from "./security-audit.server";
 import { recordObservabilityEvent } from "./observability.server";
 
-const XERO_REDIRECT_URI = "https://valuright.ai/api/public/xero/callback";
+const XERO_REDIRECT_URI = "https://www.valuright.ai/api/public/xero/callback";
 
 function safeErrorMessage(error: unknown) {
   return error instanceof Error ? error.message.slice(0, 300) : "Xero import failed";
