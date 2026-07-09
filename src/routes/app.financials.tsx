@@ -19,7 +19,12 @@ import type { Database } from "@/integrations/supabase/types";
 import { fmtCurrency } from "@/lib/format";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
-import { startXeroConnect, importXeroFinancials, listXeroConnections } from "@/lib/xero.functions";
+import {
+  disconnectXeroConnection,
+  importXeroFinancials,
+  listXeroConnections,
+  startXeroConnect,
+} from "@/lib/xero.functions";
 import {
   disconnectQuickBooksConnection,
   listQuickBooksConnections,
@@ -216,6 +221,7 @@ function Financials() {
   const startXero = useServerFn(startXeroConnect);
   const importXero = useServerFn(importXeroFinancials);
   const fetchConnections = useServerFn(listXeroConnections);
+  const disconnectXero = useServerFn(disconnectXeroConnection);
   const startQuickBooks = useServerFn(startQuickBooksConnect);
   const fetchQuickBooksConnections = useServerFn(listQuickBooksConnections);
   const refreshQuickBooks = useServerFn(refreshQuickBooksConnection);
@@ -224,7 +230,7 @@ function Financials() {
   const [xeroLoading, setXeroLoading] = useState(false);
   const [quickBooksLoading, setQuickBooksLoading] = useState(false);
   const [xeroTenants, setXeroTenants] = useState<
-    { tenant_id: string; tenant_name: string | null; last_synced_at?: string | null }[]
+    { id: string; tenant_id: string; tenant_name: string | null; last_synced_at?: string | null }[]
   >([]);
   const [quickBooksConnections, setQuickBooksConnections] = useState<
     {
@@ -283,6 +289,7 @@ function Financials() {
         if (connections?.length) {
           setXeroTenants(
             connections.map((c) => ({
+              id: c.id,
               tenant_id: c.tenant_id,
               tenant_name: c.tenant_name,
               last_synced_at: c.last_synced_at,
@@ -630,6 +637,24 @@ function Financials() {
     }
   };
 
+  const handleDisconnectXero = async (connectionId: string) => {
+    try {
+      setXeroLoading(true);
+      await disconnectXero({ data: { connectionId } });
+      setXeroTenants((prev) => prev.filter((connection) => connection.id !== connectionId));
+      if (selectedXeroTenant?.id === connectionId) {
+        const remaining = xeroTenants.filter((connection) => connection.id !== connectionId);
+        setSelectedTenant(remaining[0]?.tenant_id ?? null);
+      }
+      setXeroImportSummary(null);
+      toast.success("Xero disconnected. You can connect again now.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not disconnect Xero");
+    } finally {
+      setXeroLoading(false);
+    }
+  };
+
   const runXeroImport = async () => {
     if (!selectedTenant) return;
     try {
@@ -654,6 +679,7 @@ function Financials() {
         .then(({ connections }) =>
           setXeroTenants(
             connections.map((c) => ({
+              id: c.id,
               tenant_id: c.tenant_id,
               tenant_name: c.tenant_name,
               last_synced_at: c.last_synced_at,
@@ -1312,6 +1338,15 @@ function Financials() {
                     : "Not synced yet"}
                 </p>
               </div>
+              {selectedXeroTenant && (
+                <button
+                  onClick={() => handleDisconnectXero(selectedXeroTenant.id)}
+                  disabled={xeroLoading}
+                  className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-destructive hover:bg-secondary disabled:opacity-60"
+                >
+                  Disconnect Xero
+                </button>
+              )}
               {xeroImportSummary && (
                 <div className="text-right text-[11px] text-muted-foreground">
                   <p>{xeroImportSummary.importedAccounts} account line(s) imported</p>

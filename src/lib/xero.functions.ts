@@ -67,6 +67,38 @@ export const listXeroConnections = createServerFn({ method: "GET" })
     return { connections: data ?? [] };
   });
 
+export const disconnectXeroConnection = createServerFn({ method: "POST" })
+  .middleware([withSupabaseAuth, requireSupabaseAuth])
+  .inputValidator(z.object({ connectionId: z.string().uuid() }))
+  .handler(async ({ data, context }) => {
+    const { data: conn, error } = await supabaseAdmin
+      .from("xero_connections")
+      .select("id, business_id, tenant_id")
+      .eq("id", data.connectionId)
+      .eq("user_id", context.userId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!conn) throw new Error("Xero connection not found");
+
+    const { error: deleteErr } = await supabaseAdmin
+      .from("xero_connections")
+      .delete()
+      .eq("id", conn.id)
+      .eq("user_id", context.userId);
+    if (deleteErr) throw new Error(deleteErr.message);
+
+    await recordSecurityAuditEvent({
+      actorUserId: context.userId,
+      businessId: conn.business_id,
+      action: "xero_oauth_disconnected",
+      targetType: "xero_connection",
+      targetId: conn.id,
+      metadata: { tenant_id: conn.tenant_id },
+    });
+
+    return { ok: true };
+  });
+
 async function ensureFreshToken(connection: {
   id: string;
   access_token: string;
