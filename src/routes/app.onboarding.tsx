@@ -218,10 +218,53 @@ function emptyYear(year: number) {
     addbacks: 0,
     ebitda: 0,
     net_income: 0,
+    depreciation: 0,
+    amortization: 0,
+    interest: 0,
+    income_taxes: 0,
     assets: 0,
     liabilities: 0,
     debt: 0,
   };
+}
+
+function dbNumber(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+function financialYearInsert(row: ReturnType<typeof emptyYear>, businessId: string) {
+  return {
+    business_id: businessId,
+    year: row.year,
+    revenue: dbNumber(row.revenue),
+    cogs: dbNumber(row.cogs),
+    gross_profit: dbNumber(row.gross_profit),
+    operating_expenses: dbNumber(row.operating_expenses),
+    owner_salary: dbNumber(row.owner_salary),
+    addbacks: dbNumber(row.addbacks),
+    ebitda: dbNumber(row.ebitda),
+    net_income: dbNumber(row.net_income),
+    depreciation: dbNumber(row.depreciation),
+    amortization: dbNumber(row.amortization),
+    interest: dbNumber(row.interest),
+    income_taxes: dbNumber(row.income_taxes),
+    assets: dbNumber(row.assets),
+    liabilities: dbNumber(row.liabilities),
+    debt: dbNumber(row.debt),
+  };
+}
+
+function saveErrorMessage(error: unknown) {
+  if (error instanceof Error) return error.message;
+  if (
+    error &&
+    typeof error === "object" &&
+    "message" in error &&
+    typeof error.message === "string"
+  ) {
+    return error.message;
+  }
+  return "Failed to save";
 }
 
 function Onboarding() {
@@ -524,7 +567,7 @@ function Onboarding() {
   const persistFinancials = async (bizId: string) => {
     const yearsToInsert = years
       .filter((y) => y.revenue > 0)
-      .map((y) => ({ ...y, business_id: bizId }));
+      .map((y) => financialYearInsert(y, bizId));
     // Wipe and re-insert so re-clicking Next stays idempotent.
     const { error: deleteError } = await supabase
       .from("financial_years")
@@ -563,7 +606,7 @@ function Onboarding() {
       toast.success("Saved");
       setStep((s) => Math.min(2, s + 1) as Step);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to save");
+      toast.error(saveErrorMessage(e));
     } finally {
       setSaving(false);
     }
@@ -645,7 +688,7 @@ function Onboarding() {
           },
         },
       }).catch(() => undefined);
-      toast.error(e instanceof Error ? e.message : "Failed to save");
+      toast.error(saveErrorMessage(e));
     } finally {
       setSaving(false);
     }
