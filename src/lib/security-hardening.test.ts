@@ -52,6 +52,16 @@ assertIncludes(
   "Environment example must document the dedicated token key",
 );
 assertIncludes(
+  "src/integrations/supabase/client.ts",
+  "FALLBACK_SUPABASE_URL",
+  "Client Supabase bootstrap must keep the Lovable Cloud public fallback",
+);
+assertIncludes(
+  "src/integrations/supabase/auth-middleware.ts",
+  "FALLBACK_SUPABASE_PUBLISHABLE_KEY",
+  "Authenticated server functions must keep the public Supabase fallback",
+);
+assertIncludes(
   "docs/security-hardening.md",
   "Buyer Lead Spam Mitigation",
   "Lead spam mitigation must be documented",
