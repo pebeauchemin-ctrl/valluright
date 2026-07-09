@@ -3,6 +3,8 @@ const ENCRYPTED_TOKEN_PREFIX_V2 = "enc:v2:";
 const TOKEN_ENCRYPTION_KEY_MIN_LENGTH = 32;
 const TOKEN_KEY_SALT = new TextEncoder().encode("valuright:oauth-token-encryption:v2");
 const TOKEN_KEY_INFO = new TextEncoder().encode("ValuRight OAuth token AES-GCM key");
+const TOKEN_RECONNECT_MESSAGE =
+  "Saved accounting connection credentials could not be read. Disconnect and reconnect the accounting integration.";
 
 function getTokenEncryptionSecret() {
   const secret = process.env.TOKEN_ENCRYPTION_KEY;
@@ -77,20 +79,31 @@ export async function encryptToken(token: string) {
 export async function decryptToken(token: string) {
   if (!isEncryptedToken(token)) return token;
 
-  const isV1 = token.startsWith(ENCRYPTED_TOKEN_PREFIX_V1);
-  const payload = token.slice(
-    isV1 ? ENCRYPTED_TOKEN_PREFIX_V1.length : ENCRYPTED_TOKEN_PREFIX_V2.length,
-  );
-  const [ivPart, ciphertextPart] = payload.split(".");
-  if (!ivPart || !ciphertextPart) {
-    throw new Error("Stored OAuth token is malformed.");
-  }
+  try {
+    const isV1 = token.startsWith(ENCRYPTED_TOKEN_PREFIX_V1);
+    const payload = token.slice(
+      isV1 ? ENCRYPTED_TOKEN_PREFIX_V1.length : ENCRYPTED_TOKEN_PREFIX_V2.length,
+    );
+    const [ivPart, ciphertextPart] = payload.split(".");
+    if (!ivPart || !ciphertextPart) {
+      throw new Error("Stored OAuth token is malformed.");
+    }
 
-  const key = isV1 ? await getEncryptionKeyV1() : await getEncryptionKeyV2();
-  const plaintext = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv: base64UrlToBytes(ivPart) },
-    key,
-    base64UrlToBytes(ciphertextPart),
-  );
-  return new TextDecoder().decode(plaintext);
+    const key = isV1 ? await getEncryptionKeyV1() : await getEncryptionKeyV2();
+    const plaintext = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: base64UrlToBytes(ivPart) },
+      key,
+      base64UrlToBytes(ciphertextPart),
+    );
+    return new TextDecoder().decode(plaintext);
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      (error.message.includes("TOKEN_ENCRYPTION_KEY") ||
+        error.message === "Stored OAuth token is malformed.")
+    ) {
+      throw error;
+    }
+    throw new Error(TOKEN_RECONNECT_MESSAGE);
+  }
 }

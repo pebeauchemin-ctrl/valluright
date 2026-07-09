@@ -28,6 +28,19 @@ assert(isEncryptedToken(encrypted), "New encrypted tokens must be detected as en
 assert(encrypted.startsWith("enc:v2:"), "New encrypted tokens must use the HKDF-backed v2 prefix");
 assert((await decryptToken(encrypted)) === plaintext, "Encrypted token must round-trip");
 
+process.env.TOKEN_ENCRYPTION_KEY = "different-token-encryption-key-32-chars-minimum";
+try {
+  await decryptToken(encrypted);
+  throw new Error("Decrypting with the wrong token key should fail");
+} catch (error) {
+  assert(
+    error instanceof Error &&
+      error.message.includes("Disconnect and reconnect the accounting integration"),
+    "Wrong-key decrypt failures must produce a reconnect-required message",
+  );
+}
+process.env.TOKEN_ENCRYPTION_KEY = "test-token-encryption-key-32-chars-minimum";
+
 assertIncludes(
   ".gitignore",
   ".env",
