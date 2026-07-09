@@ -18,6 +18,8 @@ import { decryptToken, encryptToken, isEncryptedToken } from "./token-crypto.ser
 import { recordSecurityAuditEvent } from "./security-audit.server";
 import { recordObservabilityEvent } from "./observability.server";
 
+const XERO_REDIRECT_URI = "https://valuright.ai/api/public/xero/callback";
+
 function safeErrorMessage(error: unknown) {
   return error instanceof Error ? error.message.slice(0, 300) : "Xero import failed";
 }
@@ -27,9 +29,6 @@ function getOrigin() {
   const fwdProto = req?.headers.get("x-forwarded-proto");
   const host = getRequestHost();
   const proto = fwdProto ?? (host?.startsWith("localhost") ? "http" : "https");
-  if (!host?.startsWith("localhost") && host !== "127.0.0.1") {
-    return "https://valuright.ai";
-  }
   return `${proto}://${host}`;
 }
 
@@ -37,8 +36,8 @@ export const startXeroConnect = createServerFn({ method: "POST" })
   .middleware([withSupabaseAuth, requireSupabaseAuth])
   .inputValidator(z.object({ businessId: z.string().uuid().nullable().optional() }))
   .handler(async ({ data, context }) => {
-    const origin = getOrigin();
-    const redirectUri = `${origin}/api/public/xero/callback`;
+    const redirectUri = XERO_REDIRECT_URI;
+    console.info("Starting Xero OAuth", { host: getOrigin(), redirectUri });
     const state = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
 
     const { error } = await supabaseAdmin.from("xero_oauth_states").insert({
