@@ -24,6 +24,12 @@ import { fmtCurrency } from "@/lib/format";
 import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 import { AccessibleChart } from "@/components/AccessibleChart";
 import { LoadErrorState, errorMessage } from "@/components/LoadErrorState";
+import {
+  addRecommendationToRoadmap,
+  loadRoadmapRecommendationLinks,
+  removeRecommendationFromRoadmap,
+  type RoadmapRecommendationInput,
+} from "@/lib/roadmap-recommendations";
 import { toast } from "sonner";
 import {
   ResponsiveContainer,
@@ -276,6 +282,7 @@ function priorityBadge(p: Priority) {
 function HealthScorePage() {
   const navigate = useNavigate();
   const [roadmap, setRoadmap] = useState<Set<string>>(new Set());
+  const [roadmapScenarioIds, setRoadmapScenarioIds] = useState<Record<string, string>>({});
   const { current } = useBusiness();
   const [financials, setFinancials] = useState<FinancialYearRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -294,14 +301,25 @@ function HealthScorePage() {
     setLoadError(null);
     void (async () => {
       try {
-        const { data, error } = await supabase
-          .from("financial_years")
-          .select("*")
-          .eq("business_id", current.id)
-          .order("year", { ascending: true });
+        const [financialsResult, roadmapLinks] = await Promise.all([
+          supabase
+            .from("financial_years")
+            .select("*")
+            .eq("business_id", current.id)
+            .order("year", { ascending: true }),
+          loadRoadmapRecommendationLinks(current.id),
+        ]);
         if (cancelled) return;
-        if (error) throw error;
-        setFinancials(data ?? []);
+        if (financialsResult.error) throw financialsResult.error;
+        setFinancials(financialsResult.data ?? []);
+        const titleToKey = new Map(TEMPLATES.map((template) => [template.title, template.key]));
+        const scenarioIds: Record<string, string> = {};
+        for (const link of roadmapLinks) {
+          const key = titleToKey.get(link.title);
+          if (key) scenarioIds[key] = link.id;
+        }
+        setRoadmap(new Set(Object.keys(scenarioIds)));
+        setRoadmapScenarioIds(scenarioIds);
       } catch (error) {
         if (!cancelled) setLoadError(errorMessage(error, "Could not load health score."));
       } finally {
@@ -346,18 +364,51 @@ function HealthScorePage() {
     return b.impact_high - a.impact_high;
   });
 
-  const toggleRoadmap = (key: string) => {
-    setRoadmap((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
+  const roadmapInput = (rec: (typeof recs)[number]): RoadmapRecommendationInput => ({
+    actionSteps: rec.action_steps,
+    buyerConcern: rec.buyer_concern,
+    category: rec.category,
+    description: rec.description,
+    impactHigh: rec.impact_high,
+    impactLow: rec.impact_low,
+    key: rec.key,
+    timeRequired: rec.time_required,
+    title: rec.title,
+  });
+
+  const toggleRoadmap = async (rec: (typeof recs)[number]) => {
+    if (!current) return;
+    try {
+      if (roadmap.has(rec.key)) {
+        await removeRecommendationFromRoadmap({
+          businessId: current.id,
+          scenarioId: roadmapScenarioIds[rec.key],
+          title: rec.title,
+        });
+        setRoadmap((prev) => {
+          const next = new Set(prev);
+          next.delete(rec.key);
+          return next;
+        });
+        setRoadmapScenarioIds((prev) => {
+          const next = { ...prev };
+          delete next[rec.key];
+          return next;
+        });
         toast("Removed from roadmap");
-      } else {
-        next.add(key);
-        toast.success("Added to roadmap");
+        return;
       }
-      return next;
-    });
+
+      const scenarioId = await addRecommendationToRoadmap({
+        businessId: current.id,
+        recommendation: roadmapInput(rec),
+      });
+      setRoadmap((prev) => new Set(prev).add(rec.key));
+      setRoadmapScenarioIds((prev) => ({ ...prev, [rec.key]: scenarioId }));
+      toast.success("Added to roadmap");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not update roadmap");
+    }
   };
 
   const runScenario = (rec: (typeof recs)[number]) => {
@@ -680,7 +731,7 @@ function HealthScorePage() {
 
                 <div className="mt-4 flex flex-wrap items-center gap-2">
                   <button
-                    onClick={() => toggleRoadmap(r.key)}
+                    onClick={() => toggleRoadmap(r)}
                     className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition ${
                       inRoadmap
                         ? "bg-accent text-accent-foreground hover:bg-accent/90"
