@@ -102,8 +102,8 @@ function Roadmap() {
             <Map className="h-6 w-6" /> Exit roadmap
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Sequence the moves that grow your value before sale. Drag scenarios across phases as
-            they advance.
+            Sequence the moves that grow your value before sale. Use the phase menu on each card as
+            scenarios advance.
           </p>
         </div>
         <div className="rounded-lg border border-border bg-card px-4 py-3">
@@ -124,7 +124,7 @@ function Roadmap() {
           <Sliders className="mx-auto h-10 w-10 text-muted-foreground" />
           <h2 className="mt-3 font-display text-lg font-semibold">No scenarios yet</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Build a scenario in What-if and assign it to a roadmap phase.
+            Add recommendations from Improve Value or Health Score, or build a scenario in What-if.
           </p>
           <Link
             to="/app/scenarios"
