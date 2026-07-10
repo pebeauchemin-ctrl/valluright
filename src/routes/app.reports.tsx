@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { FileText, Download, Eye, Users, Map, X, Printer } from "lucide-react";
-import { useBusiness } from "@/lib/business";
+import { toBusinessInputs, useBusiness } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
 import { fmtCurrency, fmtPct } from "@/lib/format";
 import { toast } from "sonner";
@@ -10,6 +10,15 @@ import { LoadErrorState, errorMessage } from "@/components/LoadErrorState";
 import type { Database } from "@/integrations/supabase/types";
 import { useServerFn } from "@tanstack/react-start";
 import { recordProductEvent } from "@/lib/observability.functions";
+import { buildValuationInsert } from "@/lib/valuation-persistence";
+import {
+  computeHealthScore,
+  valueBusiness,
+  type HealthScoreResult,
+  type MultipleAssumption,
+  type Valuation,
+} from "@/lib/valuation";
+import { normalizeMultipleAssumptions } from "@/lib/multiple-assumptions";
 import {
   accountingBasisLabel,
   adjustConfidenceForDataQuality,
@@ -31,6 +40,35 @@ type ValuationRow = Database["public"]["Tables"]["valuations"]["Row"];
 type ScenarioRow = Database["public"]["Tables"]["scenarios"]["Row"];
 type RecommendationRow = Database["public"]["Tables"]["recommendations"]["Row"];
 type BuyerSettingsRow = Database["public"]["Tables"]["buyer_view_settings"]["Row"];
+type ReportValuation = Pick<
+  ValuationRow,
+  | "range_low"
+  | "range_mid"
+  | "range_high"
+  | "sde_value"
+  | "sde_low"
+  | "sde_high"
+  | "ebitda_value"
+  | "ebitda_low"
+  | "ebitda_high"
+  | "revenue_value"
+  | "revenue_low"
+  | "revenue_high"
+  | "dcf_value"
+  | "dcf_low"
+  | "dcf_high"
+  | "asset_value"
+  | "asset_low"
+  | "asset_high"
+  | "health_score"
+  | "health_breakdown"
+> & {
+  computed_at: string | null;
+};
+type SavedValuationSummary = Pick<
+  ValuationRow,
+  "computed_at" | "range_low" | "range_mid" | "range_high"
+>;
 
 const REPORTS: {
   key: ReportKey;
@@ -81,11 +119,46 @@ const REPORTS: {
 type Bundle = {
   business: BusinessRow;
   financials: FinancialYearRow[];
-  valuation: ValuationRow | null;
+  valuation: ReportValuation | null;
+  savedValuation: SavedValuationSummary | null;
+  multipleAssumptions: MultipleAssumption[];
   scenarios: ScenarioRow[];
   recommendations: RecommendationRow[];
   buyerSettings: BuyerSettingsRow | null;
 };
+
+function toReportValuation(
+  valuation: Valuation,
+  health: HealthScoreResult,
+  computedAt: string | null,
+): ReportValuation {
+  const findMethod = (method: Valuation["methods"][number]["method"]) =>
+    valuation.methods.find((m) => m.method === method);
+
+  return {
+    range_low: valuation.rangeLow,
+    range_mid: valuation.rangeMid,
+    range_high: valuation.rangeHigh,
+    sde_value: findMethod("sde")?.value ?? null,
+    sde_low: findMethod("sde")?.low ?? null,
+    sde_high: findMethod("sde")?.high ?? null,
+    ebitda_value: findMethod("ebitda")?.value ?? null,
+    ebitda_low: findMethod("ebitda")?.low ?? null,
+    ebitda_high: findMethod("ebitda")?.high ?? null,
+    revenue_value: findMethod("revenue")?.value ?? null,
+    revenue_low: findMethod("revenue")?.low ?? null,
+    revenue_high: findMethod("revenue")?.high ?? null,
+    dcf_value: findMethod("dcf")?.value ?? null,
+    dcf_low: findMethod("dcf")?.low ?? null,
+    dcf_high: findMethod("dcf")?.high ?? null,
+    asset_value: findMethod("asset")?.value ?? null,
+    asset_low: findMethod("asset")?.low ?? null,
+    asset_high: findMethod("asset")?.high ?? null,
+    health_score: health.total,
+    health_breakdown: health.breakdown as unknown as ReportValuation["health_breakdown"],
+    computed_at: computedAt,
+  };
+}
 
 function Reports() {
   const { current } = useBusiness();
@@ -96,6 +169,7 @@ function Reports() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loadAttempt, setLoadAttempt] = useState(0);
+  const [savingSnapshot, setSavingSnapshot] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -110,7 +184,7 @@ function Reports() {
       setLoading(true);
       setLoadError(null);
       try {
-        const [fy, v, sc, rec, bs] = await Promise.all([
+        const [fy, v, sc, rec, bs, assumptions] = await Promise.all([
           supabase
             .from("financial_years")
             .select("*")
@@ -134,14 +208,25 @@ function Reports() {
             .eq("business_id", biz.id)
             .order("created_at", { ascending: false }),
           supabase.from("buyer_view_settings").select("*").eq("business_id", biz.id).maybeSingle(),
+          (supabase as any).from("industry_multiple_assumptions").select("*").eq("active", true),
         ]);
-        const error = fy.error ?? v.error ?? sc.error ?? rec.error ?? bs.error;
+        const error = fy.error ?? v.error ?? sc.error ?? rec.error ?? bs.error ?? assumptions.error;
         if (error) throw error;
         if (cancelled) return;
+        const financials = fy.data ?? [];
+        const multipleAssumptions = normalizeMultipleAssumptions(assumptions.data);
+        const inputs = toBusinessInputs(biz, financials, multipleAssumptions);
+        const liveValuation = financials.length ? valueBusiness(inputs) : null;
+        const liveHealth = financials.length ? computeHealthScore(inputs) : null;
         setBundle({
           business: biz,
-          financials: fy.data ?? [],
-          valuation: v.data?.[0] ?? null,
+          financials,
+          valuation:
+            liveValuation && liveHealth
+              ? toReportValuation(liveValuation, liveHealth, null)
+              : null,
+          savedValuation: v.data?.[0] ?? null,
+          multipleAssumptions,
           scenarios: sc.data ?? [],
           recommendations: rec.data ?? [],
           buyerSettings: bs.data ?? null,
@@ -160,6 +245,30 @@ function Reports() {
       cancelled = true;
     };
   }, [current, loadAttempt]);
+
+  const saveCurrentSnapshot = async () => {
+    if (!bundle) return;
+    setSavingSnapshot(true);
+    try {
+      const inputs = toBusinessInputs(
+        bundle.business,
+        bundle.financials,
+        bundle.multipleAssumptions,
+      );
+      const liveValuation = valueBusiness(inputs);
+      const liveHealth = computeHealthScore(inputs);
+      const { error } = await supabase
+        .from("valuations")
+        .insert(buildValuationInsert(bundle.business.id, inputs, liveValuation, liveHealth));
+      if (error) throw error;
+      toast.success("Saved a current valuation snapshot for reports.");
+      setLoadAttempt((attempt) => attempt + 1);
+    } catch (error) {
+      toast.error(errorMessage(error, "Could not save current valuation snapshot."));
+    } finally {
+      setSavingSnapshot(false);
+    }
+  };
 
   useEffect(() => {
     if (!open || !bundle || !printOnOpen) return;
@@ -188,10 +297,37 @@ function Reports() {
       <div>
         <h1 className="font-display text-3xl font-semibold text-primary">Reports</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Preview printable reports for owners, buyers, and advisors. Use your browser print dialog
-          to save a PDF.
+          Preview printable reports for owners, buyers, and advisors. Report previews recompute from
+          your current inputs; use your browser print dialog to save a PDF.
         </p>
       </div>
+
+      {bundle && (
+        <div className="rounded-2xl border border-border bg-card p-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="font-display text-lg font-semibold text-primary">
+                Current report valuation
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Reports use the live recomputed valuation now. Last saved snapshot:{" "}
+                {bundle.savedValuation?.computed_at
+                  ? new Date(bundle.savedValuation.computed_at).toLocaleString()
+                  : "none yet"}
+                .
+              </p>
+            </div>
+            <button
+              onClick={saveCurrentSnapshot}
+              disabled={savingSnapshot || !bundle.valuation}
+              className="inline-flex items-center justify-center gap-1.5 rounded-md border border-border px-3 py-2 text-sm font-semibold hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <FileText className="h-4 w-4" />
+              {savingSnapshot ? "Saving…" : "Save current valuation snapshot"}
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2">
         {REPORTS.map((r) => {
@@ -270,13 +406,27 @@ function ReportPreview({
   onClose: () => void;
 }) {
   const r = REPORTS.find((x) => x.key === reportKey)!;
-  const { business, financials, valuation, scenarios, recommendations, buyerSettings } = bundle;
+  const {
+    business,
+    financials,
+    valuation,
+    savedValuation,
+    scenarios,
+    recommendations,
+    buyerSettings,
+  } = bundle;
   const latest = financials[0];
   const risks = buildKeyRisks(business, financials);
   const dataReview = reviewFinancialData(financials, {
     accountingBasis: normalizeAccountingBasis(business.accounting_basis),
   });
-  const dataNotes = buildDataQualityNotes(business, financials, valuation, dataReview);
+  const dataNotes = buildDataQualityNotes(
+    business,
+    financials,
+    valuation,
+    savedValuation,
+    dataReview,
+  );
   const confidence = confidenceLabel(financials, valuation, dataReview);
   const industryLabel = displayIndustryLabel(business.industry, business.sub_industry, "—");
 
@@ -345,13 +495,13 @@ function ReportPreview({
                     <div className="mt-1 font-display text-2xl font-semibold">{confidence}</div>
                     <p className="mt-2 text-xs leading-relaxed text-neutral-600">
                       Based on saved financial history, accounting basis, balance-sheet detail, data
-                      quality review, and the latest saved valuation snapshot.
+                      quality review, and a live recompute from current valuation inputs.
                     </p>
                     <p className="mt-3 text-[11px] text-neutral-500">
-                      Saved valuation:{" "}
-                      {valuation?.computed_at
-                        ? new Date(valuation.computed_at).toLocaleString()
-                        : "Not saved yet"}
+                      Last saved snapshot:{" "}
+                      {savedValuation?.computed_at
+                        ? new Date(savedValuation.computed_at).toLocaleString()
+                        : "none yet"}
                     </p>
                   </div>
                 </div>
@@ -589,7 +739,7 @@ function Methods({
   financials,
   dataReview,
 }: {
-  v: ValuationRow | null;
+  v: ReportValuation | null;
   financials: FinancialYearRow[];
   dataReview: DataQualityReview;
 }) {
@@ -714,7 +864,7 @@ function Assumptions({ b }: { b: BusinessRow }) {
   );
 }
 
-function HealthScore({ valuation }: { valuation: ValuationRow | null }) {
+function HealthScore({ valuation }: { valuation: ReportValuation | null }) {
   const score = Number(valuation?.health_score ?? 0);
   const breakdown = valuation?.health_breakdown as
     | Record<string, { score?: number; max?: number }>
@@ -732,12 +882,12 @@ function HealthScore({ valuation }: { valuation: ValuationRow | null }) {
         </div>
         <div className="text-xs text-neutral-600">
           {score >= 80
-            ? "Strong readiness"
-            : score >= 60
-              ? "Moderate readiness"
-              : score > 0
-                ? "Needs preparation"
-                : "No saved health score"}
+                ? "Strong readiness"
+                : score >= 60
+                  ? "Moderate readiness"
+                  : score > 0
+                    ? "Needs preparation"
+                    : "No current health score"}
         </div>
       </div>
       {breakdown && (
@@ -852,10 +1002,10 @@ function methodRow(
 
 function confidenceLabel(
   financials: FinancialYearRow[],
-  valuation: ValuationRow | null,
+  valuation: ReportValuation | null,
   dataReview: DataQualityReview,
 ) {
-  if (!valuation) return "No saved valuation";
+  if (!valuation) return "No current valuation";
   const latest = financials[0];
   const hasBalanceSheet = Number(latest?.assets ?? 0) > 0 || Number(latest?.liabilities ?? 0) > 0;
   let confidence: "Low" | "Medium" | "High" = "Low";
@@ -904,18 +1054,23 @@ function buildKeyRisks(business: BusinessRow, financials: FinancialYearRow[]) {
 function buildDataQualityNotes(
   business: BusinessRow,
   financials: FinancialYearRow[],
-  valuation: ValuationRow | null,
+  valuation: ReportValuation | null,
+  savedValuation: SavedValuationSummary | null,
   dataReview: DataQualityReview,
 ) {
   const latest = financials[0];
   const notes: string[] = [];
-  if (valuation?.computed_at) {
+  notes.push("Report valuation is recomputed from current inputs when previewed or printed.");
+  if (!valuation) {
+    notes.push("No current valuation could be calculated from the available inputs.");
+  }
+  if (savedValuation?.computed_at) {
     notes.push(
-      `Report uses the saved valuation snapshot from ${new Date(valuation.computed_at).toLocaleString()}.`,
+      `Last saved valuation snapshot: ${new Date(savedValuation.computed_at).toLocaleString()}. Use Save current valuation snapshot to refresh it before export if you need a saved audit point.`,
     );
   } else {
     notes.push(
-      "No saved valuation snapshot is available; generate and save a valuation before relying on this report.",
+      "No saved valuation snapshot is available yet; use Save current valuation snapshot if you need a saved audit point.",
     );
   }
   notes.push(
