@@ -528,7 +528,7 @@ export function calculateNormalizedEarnings(latest: FinancialYear): NormalizedEa
   const addbacks = amount(latest.addbacks);
   const enteredEbitda = amount(latest.ebitda);
   const hasBridgeInputs = [interest, incomeTaxes, depreciation, amortization].some((v) => v !== 0);
-  const useBridge = hasBridgeInputs || enteredEbitda === 0;
+  const useBridge = enteredEbitda === 0;
   const bridgeEbitda = netIncome + interest + incomeTaxes + depreciation + amortization;
   const ebitda = useBridge ? bridgeEbitda : enteredEbitda;
   const sde = ebitda + ownerCompensation + addbacks;
@@ -546,7 +546,9 @@ export function calculateNormalizedEarnings(latest: FinancialYear): NormalizedEa
     usedEnteredEbitda: !useBridge,
     ebitdaFormula: useBridge
       ? `EBITDA = Net Income + Interest + Income Taxes + Depreciation + Amortization\n= ${fmtMoney(netIncome)} + ${fmtMoney(interest)} + ${fmtMoney(incomeTaxes)} + ${fmtMoney(depreciation)} + ${fmtMoney(amortization)} = ${fmtMoney(ebitda)}`
-      : `EBITDA = Entered EBITDA = ${fmtMoney(ebitda)}\nNo interest, tax, depreciation, or amortization bridge was provided for this year.`,
+      : hasBridgeInputs
+        ? `EBITDA = Entered EBITDA = ${fmtMoney(ebitda)}\nEntered EBITDA takes precedence when both a reconciled EBITDA value and bridge fields are provided. Bridge check: Net Income + Interest + Income Taxes + Depreciation + Amortization = ${fmtMoney(bridgeEbitda)}.`
+        : `EBITDA = Entered EBITDA = ${fmtMoney(ebitda)}\nNo interest, tax, depreciation, or amortization bridge was provided for this year.`,
     sdeFormula: `SDE = EBITDA + Owner Compensation + One-time Add-backs\n= ${fmtMoney(ebitda)} + ${fmtMoney(ownerCompensation)} + ${fmtMoney(addbacks)} = ${fmtMoney(sde)}`,
     plainEnglish:
       "EBITDA adds back interest, income taxes, depreciation, and amortization to net income. SDE then adds one working owner's compensation and buyer-acceptable one-time add-backs. Owner compensation is not included in EBITDA, so it is not double-counted.",
@@ -674,7 +676,7 @@ export function methodDCF(b: BusinessInputs): MethodResult {
     return blankMethod("dcf", "Discounted Cash Flow", "Add financials to compute.");
   const latest = sorted[sorted.length - 1];
   const normalized = calculateNormalizedEarnings(latest);
-  const baseFCF = Math.max(0, normalized.ebitda - latest.debt * 0.05); // rough debt service haircut
+  const baseFCF = Math.max(0, normalized.ebitda);
 
   // Growth: trailing CAGR if we have 2+ years, else 5%
   let growth = 0.05;
@@ -715,7 +717,7 @@ export function methodDCF(b: BusinessInputs): MethodResult {
     inputLabel: "Year-1 Free Cash Flow",
     confidence: sorted.length >= 2 ? "medium" : "low",
     notes: `5-year projection at ${(growth * 100).toFixed(1)}% growth, 20% discount rate, 2.5% terminal growth.`,
-    formula: `PV = Σ FCFₜ / (1+r)ᵗ + Terminal / (1+r)⁵\nFCF₀ = ${fmtMoney(baseFCF)}, growth = ${(growth * 100).toFixed(1)}%\nDiscount r = 20%, terminal g = 2.5%`,
+    formula: `PV = Σ FCFₜ / (1+r)ᵗ + Terminal / (1+r)⁵\nFCF₀ = normalized EBITDA (${fmtMoney(baseFCF)}), growth = ${(growth * 100).toFixed(1)}%\nDiscount r = 20%, terminal g = 2.5%\nDebt is handled in the equity bridge, not as a haircut to enterprise DCF.`,
     reasoning:
       sorted.length >= 2
         ? `Growth derived from trailing revenue CAGR across ${sorted.length} years of financials. Discount rate reflects SMB risk premium.`
@@ -1186,8 +1188,8 @@ function healthRating(total: number): HealthScoreResult["rating"] {
 function healthRatingLabel(rating: HealthScoreResult["rating"]): string {
   if (rating === "strong") return "Strong exit readiness";
   if (rating === "developing") return "Developing exit readiness";
-  if (rating === "needs_preparation") return "Needs preparation";
-  return "Not buyer-ready yet";
+  if (rating === "needs_preparation") return "Needs preparation for exit readiness";
+  return "Low exit readiness";
 }
 
 export function computeHealthScore(b: BusinessInputs): HealthScoreResult {
@@ -1245,8 +1247,9 @@ export function computeHealthScore(b: BusinessInputs): HealthScoreResult {
   if (sorted.length >= 2) {
     const first = sorted[0].revenue;
     const last = latest.revenue;
-    if (first > 0) {
-      growth = last / first - 1;
+    const years = sorted.length - 1;
+    if (first > 0 && years > 0) {
+      growth = Math.pow(last / first, 1 / years) - 1;
       if (growth >= 0.3) gt = 10;
       else if (growth >= 0.15) gt = 8;
       else if (growth >= 0.05) gt = 6;
@@ -1267,7 +1270,13 @@ export function computeHealthScore(b: BusinessInputs): HealthScoreResult {
 
   // Data quality (5) — based on how many fields are populated
   let dq = 0;
-  if (latest && latest.revenue > 0 && ebitda !== 0) dq += 2;
+  const hasUsableEarningsField =
+    latest &&
+    latest.revenue > 0 &&
+    [latest.ebitda, latest.net_income, latest.interest, latest.income_taxes, latest.depreciation, latest.amortization].some(
+      (value) => value != null && Number.isFinite(Number(value)),
+    );
+  if (hasUsableEarningsField) dq += 2;
   if (sorted.length >= 2) dq += 1;
   if (sorted.length >= 3) dq += 1;
   if (latest && latest.assets > 0 && latest.liabilities >= 0) dq += 1;
@@ -1311,9 +1320,9 @@ export function computeHealthScore(b: BusinessInputs): HealthScoreResult {
       "growth_trend",
       "Growth trend",
       gt,
-      "30%+ trailing growth earns full credit; 5%+ is positive; decline is weak.",
+      "30%+ annualized trailing growth earns full credit; 5%+ is positive; decline is weak.",
       sorted.length >= 2
-        ? `${pctLabel((growth ?? 0) * 100)} revenue change from first to latest year`
+        ? `${pctLabel((growth ?? 0) * 100)} annualized revenue growth across the financial years on file`
         : "Only one year on file; default neutral score used",
       "Uses the financial years on file to show whether revenue is expanding, flat, or declining.",
     ),

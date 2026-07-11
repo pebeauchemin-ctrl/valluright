@@ -47,9 +47,9 @@ export const VALUATION_BENCHMARK_CASES: ValuationBenchmarkCase[] = [
       })),
     },
     expectedValuationRange: {
-      low: 941_603.49,
-      mid: 1_223_426.02,
-      high: 1_531_147.1,
+      low: 944_886.43,
+      mid: 1_227_923.19,
+      high: 1_536_678.62,
       tolerancePct: 0.01,
     },
     expectedRiskFactors: [
@@ -141,9 +141,9 @@ export const VALUATION_BENCHMARK_CASES: ValuationBenchmarkCase[] = [
       ],
     },
     expectedValuationRange: {
-      low: 217_033.36,
-      mid: 294_391.11,
-      high: 379_399.19,
+      low: 251_915.37,
+      mid: 344_222.55,
+      high: 439_196.92,
       tolerancePct: 0.01,
     },
     expectedRiskFactors: [
@@ -242,9 +242,9 @@ export const VALUATION_BENCHMARK_CASES: ValuationBenchmarkCase[] = [
       ],
     },
     expectedValuationRange: {
-      low: 2_178_204.42,
-      mid: 2_634_896.65,
-      high: 3_311_671.43,
+      low: 2_201_325.06,
+      mid: 2_663_797.44,
+      high: 3_349_242.45,
       tolerancePct: 0.01,
     },
     expectedRiskFactors: ["lease_or_location_risk"],
@@ -332,9 +332,9 @@ export const VALUATION_BENCHMARK_CASES: ValuationBenchmarkCase[] = [
       ],
     },
     expectedValuationRange: {
-      low: 545_662.95,
-      mid: 743_029.15,
-      high: 946_344.11,
+      low: 546_741.38,
+      mid: 744_476.72,
+      high: 948_146.34,
       tolerancePct: 0.01,
     },
     expectedRiskFactors: [
