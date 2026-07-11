@@ -106,7 +106,7 @@ test("RV parks and campgrounds use a buyer-safe display label", () => {
   );
 });
 
-test("uses entered EBITDA only when no bridge fields are available", () => {
+test("uses entered EBITDA when no bridge fields are available", () => {
   const normalized = calculateNormalizedEarnings(
     latestFixture({
       ebitda: 180_000,
@@ -125,6 +125,29 @@ test("uses entered EBITDA only when no bridge fields are available", () => {
   assertEqual(normalized.usedEnteredEbitda, true, "entered EBITDA flag");
 });
 
+test("entered EBITDA takes precedence when bridge fields are also present", () => {
+  const normalized = calculateNormalizedEarnings(
+    latestFixture({
+      ebitda: 180_000,
+      net_income: 75_000,
+      depreciation: 30_000,
+      amortization: 5_000,
+      interest: 10_000,
+      income_taxes: 12_000,
+      owner_salary: 50_000,
+      addbacks: 10_000,
+    }),
+  );
+
+  assertApprox(normalized.ebitda, 180_000, "entered EBITDA overrides bridge");
+  assertApprox(normalized.sde, 240_000, "entered EBITDA SDE with add-backs");
+  assertEqual(normalized.usedEnteredEbitda, true, "entered EBITDA flag with bridge fields");
+  assert(
+    normalized.ebitdaFormula.includes("takes precedence"),
+    "formula documents entered EBITDA precedence",
+  );
+});
+
 test("sample HVAC fixture locks SDE, EBITDA, revenue, DCF, asset, comparable, and blended range", () => {
   const valuation = valueBusiness(hvacFixture);
   const sde = methodSDE(hvacFixture);
@@ -139,12 +162,12 @@ test("sample HVAC fixture locks SDE, EBITDA, revenue, DCF, asset, comparable, an
   assertApprox(sde.value, 1_131_600, "HVAC SDE value");
   assertApprox(ebitda.value, 1_082_400, "HVAC EBITDA value");
   assertApprox(revenue.value, 627_000, "HVAC revenue value");
-  assertApprox(dcf.value, 1_948_773.45, "HVAC DCF value");
+  assertApprox(dcf.value, 1_978_754.58, "HVAC DCF value");
   assertApprox(asset.value, 313_000, "HVAC asset floor");
   assertApprox(comparable.value, 1_051_650, "HVAC comparable value");
-  assertApprox(valuation.rangeLow, 941_603.49, "HVAC blended low");
-  assertApprox(valuation.rangeMid, 1_223_426.02, "HVAC blended mid");
-  assertApprox(valuation.rangeHigh, 1_531_147.1, "HVAC blended high");
+  assertApprox(valuation.rangeLow, 944_886.43, "HVAC blended low");
+  assertApprox(valuation.rangeMid, 1_227_923.19, "HVAC blended mid");
+  assertApprox(valuation.rangeHigh, 1_536_678.62, "HVAC blended high");
 });
 
 test("benchmark cases cover the required business categories with 3-year financial history", () => {
@@ -186,9 +209,47 @@ test("negative net income can still normalize to positive EBITDA while high debt
 
   assertApprox(normalized.ebitda, 131_174, "restaurant normalized EBITDA");
   assertApprox(normalized.sde, 131_174, "restaurant normalized SDE");
-  assertApprox(valuation.rangeMid, 294_391.11, "restaurant blended mid");
+  assertApprox(valuation.rangeMid, 344_222.55, "restaurant blended mid");
   assert((valuation.equityValue ?? 0) < 0, "high debt should reduce equity below zero");
   assertEqual(dcf.confidence, "medium", "three-year DCF confidence");
+});
+
+test("DCF does not subtract debt balance from enterprise free cash flow", () => {
+  const leveraged: BusinessInputs = {
+    industry: "Professional Services",
+    business_category: "standard_operating",
+    financials: [
+      latestFixture({
+        year: 2024,
+        revenue: 900_000,
+        ebitda: 225_000,
+        net_income: 225_000,
+        debt: 4_500_000,
+        depreciation: 0,
+        amortization: 0,
+        interest: 0,
+        income_taxes: 0,
+      }),
+      latestFixture({
+        year: 2025,
+        revenue: 1_000_000,
+        ebitda: 250_000,
+        net_income: 250_000,
+        debt: 5_000_000,
+        depreciation: 0,
+        amortization: 0,
+        interest: 0,
+        income_taxes: 0,
+      }),
+    ],
+  };
+
+  const dcf = methodDCF(leveraged);
+
+  assertEqual(dcf.available, true, "leveraged but profitable DCF remains available");
+  assertApprox(dcf.inputUsed ?? 0, 250_000, "DCF uses normalized EBITDA before debt");
+  assert(dcf.value > 0, "DCF value remains positive");
+  assert(dcf.formula?.includes("Debt is handled in the equity bridge") === true, "DCF formula explains debt treatment");
 });
 
 test("real estate income fixture uses cap rate as the primary valuation driver", () => {
@@ -199,7 +260,7 @@ test("real estate income fixture uses cap rate as the primary valuation driver",
   assertEqual(capRate.role, "recommended", "cap-rate method role");
   assertApprox(capRate.inputUsed ?? 0, 303_600, "stabilized NOI");
   assertApprox(capRate.value, 3_036_000, "cap-rate value");
-  assertApprox(valuation.rangeMid, 2_634_896.65, "campground blended mid");
+  assertApprox(valuation.rangeMid, 2_663_797.44, "campground blended mid");
   assertApprox(valuation.weights.cap_rate, 0.7, "cap-rate weight");
 });
 
@@ -426,6 +487,51 @@ test("health score responds to financial and profile input changes", () => {
     strong.breakdown.financial_performance.score > weak.breakdown.financial_performance.score,
     "financial performance should improve with stronger normalized earnings",
   );
+});
+
+test("health score growth trend uses annualized revenue growth", () => {
+  const steadyGrower: BusinessInputs = {
+    industry: "Professional Services",
+    business_category: "standard_operating",
+    financials: [
+      latestFixture({ year: 2023, revenue: 100_000, ebitda: 20_000, net_income: 20_000 }),
+      latestFixture({ year: 2024, revenue: 115_000, ebitda: 23_000, net_income: 23_000 }),
+      latestFixture({ year: 2025, revenue: 130_000, ebitda: 26_000, net_income: 26_000 }),
+    ],
+  };
+
+  const health = computeHealthScore(steadyGrower);
+
+  assertEqual(health.breakdown.growth_trend.score, 6, "13-14% CAGR earns positive but not full credit");
+  assert(
+    health.breakdown.growth_trend.driver.includes("annualized revenue growth"),
+    "growth trend driver describes annualized growth",
+  );
+});
+
+test("health score data quality credits break-even earnings fields", () => {
+  const breakEven: BusinessInputs = {
+    industry: "Professional Services",
+    business_category: "standard_operating",
+    financials: [
+      latestFixture({
+        revenue: 500_000,
+        ebitda: 0,
+        net_income: 0,
+        assets: 0,
+        liabilities: 0,
+        debt: 0,
+        depreciation: 0,
+        amortization: 0,
+        interest: 0,
+        income_taxes: 0,
+      }),
+    ],
+  };
+
+  const health = computeHealthScore(breakEven);
+
+  assertEqual(health.breakdown.data_quality.score, 2, "break-even earnings field earns data credit");
 });
 
 test("professional services benchmark captures concentration and transferability risk", () => {
