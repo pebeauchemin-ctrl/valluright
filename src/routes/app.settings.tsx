@@ -1,16 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { Activity, CheckCircle2, Circle, Search, ShieldCheck, Save, Trash2 } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  CheckCircle2,
+  Circle,
+  Search,
+  ShieldCheck,
+  Save,
+  Trash2,
+} from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useBusiness } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PRODUCT_ANALYTICS_PRIVACY_NOTE, productFunnelProgress } from "@/lib/product-analytics";
-import {
-  getSupportAdminAccess,
-  searchSupportAccounts,
-} from "@/lib/support-admin.functions";
+import { getSupportAdminAccess, searchSupportAccounts } from "@/lib/support-admin.functions";
 import {
   SUPPORT_ACTIONS,
   SUPPORT_ADMIN_NOTICE,
@@ -279,6 +285,19 @@ function Settings() {
   const funnelProgress = productFunnelProgress(analyticsEvents);
   const completedFunnelSteps = funnelProgress.filter((step) => step.completed).length;
   const lastAnalyticsEvent = analyticsEvents[analyticsEvents.length - 1] ?? null;
+  const healthScoreDefaultedInputs = current
+    ? [
+        current.owner_hours_per_week == null ? "owner hours" : null,
+        current.owner_in_sales == null ||
+        current.owner_in_operations == null ||
+        current.owner_in_customer_relationships == null
+          ? "owner role toggles"
+          : null,
+        current.top_customer_concentration_pct == null ? "top customer concentration" : null,
+        current.sop_status == null ? "SOP status" : null,
+        current.manager_team_depth == null ? "management team depth" : null,
+      ].filter((value): value is string => Boolean(value))
+    : [];
 
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-10 max-w-5xl">
@@ -563,6 +582,21 @@ function Settings() {
                 Operations & owner role
               </h3>
             </div>
+            {healthScoreDefaultedInputs.length > 0 && (
+              <div className="flex gap-3 rounded-lg border border-gold/40 bg-gold/10 p-4 text-sm">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-gold-foreground" />
+                <div>
+                  <div className="font-semibold text-foreground">
+                    Confirm the assumptions used by Health Score
+                  </div>
+                  <p className="mt-1 text-muted-foreground">
+                    These fields are showing default suggestions but have not been saved yet:{" "}
+                    {healthScoreDefaultedInputs.join(", ")}. Review the values below and click Save
+                    to confirm them.
+                  </p>
+                </div>
+              </div>
+            )}
 
             <SliderField
               label="Owner hours per week"
