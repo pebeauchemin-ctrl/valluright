@@ -133,7 +133,7 @@ const TEMPLATES: RecTemplate[] = [
     ],
     impact_pct: [0.1, 0.2],
     applies: (b) =>
-      (b.owner_hours_per_week ?? 50) >= 45 ||
+      (b.owner_hours_per_week != null && b.owner_hours_per_week >= 45) ||
       [b.owner_in_sales, b.owner_in_operations, b.owner_in_customer_relationships].filter(Boolean)
         .length >= 2,
     scenario: { ownerHrs: 35, sopComplete: true },
@@ -224,7 +224,8 @@ const TEMPLATES: RecTemplate[] = [
       "Aim for top customer ≤15% within a year.",
     ],
     impact_pct: [0.05, 0.12],
-    applies: (b) => (b.top_customer_concentration_pct ?? 0) >= 15,
+    applies: (b) =>
+      b.top_customer_concentration_pct != null && b.top_customer_concentration_pct >= 15,
     scenario: { topCust: 12 },
   },
   {
