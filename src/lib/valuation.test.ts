@@ -249,7 +249,10 @@ test("DCF does not subtract debt balance from enterprise free cash flow", () => 
   assertEqual(dcf.available, true, "leveraged but profitable DCF remains available");
   assertApprox(dcf.inputUsed ?? 0, 250_000, "DCF uses normalized EBITDA before debt");
   assert(dcf.value > 0, "DCF value remains positive");
-  assert(dcf.formula?.includes("Debt is handled in the equity bridge") === true, "DCF formula explains debt treatment");
+  assert(
+    dcf.formula?.includes("Debt is handled in the equity bridge") === true,
+    "DCF formula explains debt treatment",
+  );
 });
 
 test("real estate income fixture uses cap rate as the primary valuation driver", () => {
@@ -400,7 +403,10 @@ test("negative EBITDA is unavailable and does not produce negative or inverted m
   assertApprox(valuation.rangeLow, 0, "negative EBITDA blended low floored");
   assertApprox(valuation.rangeMid, 0, "negative EBITDA blended mid floored");
   assertApprox(valuation.rangeHigh, 0, "negative EBITDA blended high floored");
-  assert(valuation.rangeLow <= valuation.rangeHigh, "negative EBITDA blended range remains ordered");
+  assert(
+    valuation.rangeLow <= valuation.rangeHigh,
+    "negative EBITDA blended range remains ordered",
+  );
 });
 
 test("negative NOI makes cap-rate unavailable and cannot drag real-estate range below zero", () => {
@@ -502,7 +508,11 @@ test("health score growth trend uses annualized revenue growth", () => {
 
   const health = computeHealthScore(steadyGrower);
 
-  assertEqual(health.breakdown.growth_trend.score, 6, "13-14% CAGR earns positive but not full credit");
+  assertEqual(
+    health.breakdown.growth_trend.score,
+    6,
+    "13-14% CAGR earns positive but not full credit",
+  );
   assert(
     health.breakdown.growth_trend.driver.includes("annualized revenue growth"),
     "growth trend driver describes annualized growth",
@@ -513,6 +523,13 @@ test("health score data quality credits break-even earnings fields", () => {
   const breakEven: BusinessInputs = {
     industry: "Professional Services",
     business_category: "standard_operating",
+    owner_hours_per_week: 40,
+    owner_in_sales: false,
+    owner_in_operations: false,
+    owner_in_customer_relationships: false,
+    top_customer_concentration_pct: 10,
+    sop_status: "partial",
+    manager_team_depth: "partial",
     financials: [
       latestFixture({
         revenue: 500_000,
@@ -531,7 +548,65 @@ test("health score data quality credits break-even earnings fields", () => {
 
   const health = computeHealthScore(breakEven);
 
-  assertEqual(health.breakdown.data_quality.score, 2, "break-even earnings field earns data credit");
+  assertEqual(
+    health.breakdown.data_quality.score,
+    2,
+    "break-even earnings field earns data credit",
+  );
+});
+
+test("health score does not max unknown profile inputs", () => {
+  const minimalProfile: BusinessInputs = {
+    industry: "Professional Services",
+    business_category: "standard_operating",
+    financials: [
+      latestFixture({
+        revenue: 500_000,
+        net_income: 50_000,
+        ebitda: 0,
+        depreciation: 0,
+        amortization: 0,
+        interest: 0,
+        income_taxes: 0,
+        owner_salary: 0,
+        addbacks: 0,
+        assets: 0,
+        liabilities: 0,
+        debt: 0,
+      }),
+    ],
+  };
+
+  const health = computeHealthScore(minimalProfile);
+
+  assert(
+    health.breakdown.customer_concentration.score < health.breakdown.customer_concentration.max,
+    "unknown customer concentration should not earn full credit",
+  );
+  assert(
+    health.breakdown.owner_independence.score < health.breakdown.owner_independence.max,
+    "unknown owner involvement should not earn full credit",
+  );
+  assert(
+    health.breakdown.management_team.score < health.breakdown.management_team.max,
+    "unknown management depth should not earn full credit",
+  );
+  assert(
+    health.breakdown.documentation.score < health.breakdown.documentation.max,
+    "unknown documentation status should not earn full credit",
+  );
+  assert(
+    health.breakdown.data_quality.score < health.breakdown.data_quality.max,
+    "missing profile inputs should reduce data quality confidence",
+  );
+  assert(
+    health.breakdown.customer_concentration.driver.includes("Unknown"),
+    "customer concentration driver should show unknown rather than 0%",
+  );
+  assert(
+    health.breakdown.data_quality.driver.includes("missing profile inputs"),
+    "data quality should explain missing profile inputs",
+  );
 });
 
 test("professional services benchmark captures concentration and transferability risk", () => {

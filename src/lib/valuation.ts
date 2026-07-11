@@ -390,19 +390,23 @@ function riskAdjustment(b: BusinessInputs): number {
   let adj = 0;
 
   // Owner dependence
-  const ownerHrs = b.owner_hours_per_week ?? 50;
-  if (ownerHrs >= 60) adj -= 0.4;
+  const ownerHrs = b.owner_hours_per_week;
+  if (ownerHrs == null) adj -= 0.1;
+  else if (ownerHrs >= 60) adj -= 0.4;
   else if (ownerHrs >= 45) adj -= 0.2;
   else if (ownerHrs <= 25) adj += 0.3;
 
-  const ownerRoles = [
+  const ownerRoleInputs = [
     b.owner_in_sales,
     b.owner_in_operations,
     b.owner_in_customer_relationships,
-  ].filter(Boolean).length;
+  ];
+  const knownOwnerRoles = ownerRoleInputs.filter((value) => value != null).length;
+  const ownerRoles = ownerRoleInputs.filter(Boolean).length;
   if (ownerRoles >= 3) adj -= 0.3;
   else if (ownerRoles === 2) adj -= 0.15;
-  else if (ownerRoles === 0) adj += 0.2;
+  else if (ownerRoles === 0 && knownOwnerRoles === ownerRoleInputs.length) adj += 0.2;
+  if (knownOwnerRoles < ownerRoleInputs.length) adj -= 0.1;
 
   // Recurring revenue
   const rec = b.recurring_revenue_pct ?? 0;
@@ -412,8 +416,9 @@ function riskAdjustment(b: BusinessInputs): number {
   else adj -= 0.1;
 
   // Customer concentration
-  const conc = b.top_customer_concentration_pct ?? 0;
-  if (conc >= 40) adj -= 0.4;
+  const conc = b.top_customer_concentration_pct;
+  if (conc == null) adj -= 0.1;
+  else if (conc >= 40) adj -= 0.4;
   else if (conc >= 25) adj -= 0.25;
   else if (conc >= 15) adj -= 0.1;
   else adj += 0.1;
@@ -968,8 +973,7 @@ function assignRoles(
       else if (m.method === "dcf") role = "supporting";
       else if (m.method === "revenue") {
         role = recurringRevenueWeight > 0 ? "supporting" : "sanity_check";
-      }
-      else if (m.method === "asset") role = "floor";
+      } else if (m.method === "asset") role = "floor";
       else if (m.method === "cap_rate") role = "supporting";
     }
     return { ...m, role };
@@ -1224,22 +1228,28 @@ export function computeHealthScore(b: BusinessInputs): HealthScoreResult {
   else revq = 2;
 
   // Owner independence (20)
-  const hrs = b.owner_hours_per_week ?? 50;
-  const roles = [b.owner_in_sales, b.owner_in_operations, b.owner_in_customer_relationships].filter(
-    Boolean,
-  ).length;
+  const hrs = b.owner_hours_per_week;
+  const ownerRoleInputs = [
+    b.owner_in_sales,
+    b.owner_in_operations,
+    b.owner_in_customer_relationships,
+  ];
+  const knownOwnerRoles = ownerRoleInputs.filter((value) => value != null).length;
+  const roles = ownerRoleInputs.filter(Boolean).length;
   let oi = 20;
-  if (hrs >= 60) oi -= 8;
+  if (hrs == null) oi -= 5;
+  else if (hrs >= 60) oi -= 8;
   else if (hrs >= 45) oi -= 4;
   oi -= roles * 3;
+  if (knownOwnerRoles < ownerRoleInputs.length) oi -= 5;
   oi = Math.max(0, oi);
 
   // Customer concentration (10)
-  const conc = b.top_customer_concentration_pct ?? 0;
-  let cc = 10;
-  if (conc >= 40) cc = 1;
-  else if (conc >= 25) cc = 4;
-  else if (conc >= 15) cc = 7;
+  const conc = b.top_customer_concentration_pct;
+  let cc = conc == null ? 5 : 10;
+  if (conc != null && conc >= 40) cc = 1;
+  else if (conc != null && conc >= 25) cc = 4;
+  else if (conc != null && conc >= 15) cc = 7;
 
   // Growth trend (10)
   let gt = 5;
@@ -1273,13 +1283,26 @@ export function computeHealthScore(b: BusinessInputs): HealthScoreResult {
   const hasUsableEarningsField =
     latest &&
     latest.revenue > 0 &&
-    [latest.ebitda, latest.net_income, latest.interest, latest.income_taxes, latest.depreciation, latest.amortization].some(
-      (value) => value != null && Number.isFinite(Number(value)),
-    );
+    [
+      latest.ebitda,
+      latest.net_income,
+      latest.interest,
+      latest.income_taxes,
+      latest.depreciation,
+      latest.amortization,
+    ].some((value) => value != null && Number.isFinite(Number(value)));
   if (hasUsableEarningsField) dq += 2;
   if (sorted.length >= 2) dq += 1;
   if (sorted.length >= 3) dq += 1;
   if (latest && latest.assets > 0 && latest.liabilities >= 0) dq += 1;
+  const missingProfileInputs = [
+    b.top_customer_concentration_pct == null ? "customer concentration" : null,
+    b.owner_hours_per_week == null ? "owner hours" : null,
+    knownOwnerRoles < ownerRoleInputs.length ? "owner roles" : null,
+    b.sop_status == null ? "SOP status" : null,
+    b.manager_team_depth == null ? "management depth" : null,
+  ].filter((value): value is string => Boolean(value));
+  if (missingProfileInputs.length > 0) dq = Math.max(0, dq - 1);
 
   const breakdown: HealthBreakdown = {
     financial_performance: healthItem(
@@ -1305,7 +1328,9 @@ export function computeHealthScore(b: BusinessInputs): HealthScoreResult {
       "Owner independence",
       oi,
       "Full credit requires under 45 owner hours/week and no owner-held core roles.",
-      `${hrs} owner hours/week; owner directly holds ${roles} of 3 core roles`,
+      `${hrs == null ? "Unknown" : hrs} owner hours/week; owner directly holds ${
+        knownOwnerRoles === ownerRoleInputs.length ? roles : `${roles} known`
+      } of 3 core roles`,
       "Reflects whether the buyer is acquiring a transferable business or a job that depends on the seller.",
     ),
     customer_concentration: healthItem(
@@ -1347,7 +1372,11 @@ export function computeHealthScore(b: BusinessInputs): HealthScoreResult {
       "Data quality",
       dq,
       "Full credit requires 3 years, usable revenue and normalized EBITDA, plus balance-sheet data.",
-      `${sorted.length} financial year${sorted.length === 1 ? "" : "s"}; ${latest?.assets ? "balance sheet present" : "balance sheet incomplete"}`,
+      `${sorted.length} financial year${sorted.length === 1 ? "" : "s"}; ${latest?.assets ? "balance sheet present" : "balance sheet incomplete"}${
+        missingProfileInputs.length > 0
+          ? `; missing profile inputs: ${missingProfileInputs.join(", ")}`
+          : "; core profile inputs present"
+      }`,
       "Reduces confidence when the estimate is based on thin history or incomplete books.",
     ),
   };
