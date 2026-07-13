@@ -34,9 +34,15 @@ const advisorInviteGrantRepairMigration = readFileSync(
   "supabase/migrations/20260712014500_repair_advisor_invite_grants.sql",
   "utf8",
 );
+const advisorAcceptanceMigration = readFileSync(
+  "supabase/migrations/20260713020500_enable_advisor_invite_acceptance.sql",
+  "utf8",
+);
 const teaserRoute = readFileSync("src/routes/teaser.$publicId.tsx", "utf8");
 const dataRoomRoute = readFileSync("src/routes/app.data-room.tsx", "utf8");
 const advisorsRoute = readFileSync("src/routes/app.advisors.tsx", "utf8");
+const advisorAcceptanceRoute = readFileSync("src/routes/advisor.accept.$inviteId.tsx", "utf8");
+const advisorRoute = readFileSync("src/routes/advisor.tsx", "utf8");
 
 test("public teaser does not expose internal business ids", () => {
   assert.match(migration, /create or replace function public\.get_public_teaser/);
@@ -189,10 +195,7 @@ test("advisor invite emails are not readable by email-match policy", () => {
     advisorInviteVisibilityMigration,
     /owners manage advisor invites for own businesses/,
   );
-  assert.match(
-    advisorInviteVisibilityMigration,
-    /linked advisors can read their invites/,
-  );
+  assert.match(advisorInviteVisibilityMigration, /linked advisors can read their invites/);
   assert.match(advisorInviteVisibilityMigration, /advisor_id = auth\.uid\(\)/);
   assert.doesNotMatch(
     advisorInviteVisibilityMigration,
@@ -213,10 +216,7 @@ test("advisor invite grant repair restores owner access without email-match read
     advisorInviteGrantRepairMigration,
     /owners manage advisor invites for own businesses/,
   );
-  assert.match(
-    advisorInviteGrantRepairMigration,
-    /linked advisors can read their invites/,
-  );
+  assert.match(advisorInviteGrantRepairMigration, /linked advisors can read their invites/);
   assert.match(advisorInviteGrantRepairMigration, /advisor_id = auth\.uid\(\)/);
   assert.match(advisorInviteGrantRepairMigration, /notify pgrst, 'reload schema'/);
   assert.doesNotMatch(
@@ -225,16 +225,45 @@ test("advisor invite grant repair restores owner access without email-match read
   );
 });
 
+test("advisor acceptance securely links the invited account before access is granted", () => {
+  assert.match(
+    advisorAcceptanceMigration,
+    /create or replace function public\.accept_advisor_invite/,
+  );
+  assert.match(advisorAcceptanceMigration, /lower\(invite_row\.advisor_email\) <> caller_email/);
+  assert.match(advisorAcceptanceMigration, /advisor_id = auth\.uid\(\)/);
+  assert.match(advisorAcceptanceMigration, /status = 'accepted'/);
+  assert.match(
+    advisorAcceptanceMigration,
+    /Business owners cannot accept their own advisor invitation/,
+  );
+  assert.match(
+    advisorAcceptanceMigration,
+    /revoke all on function public\.accept_advisor_invite\(uuid\) from anon/,
+  );
+  assert.match(
+    advisorAcceptanceMigration,
+    /grant execute on function public\.accept_advisor_invite\(uuid\) to authenticated/,
+  );
+  assert.match(advisorAcceptanceRoute, /rpc\("accept_advisor_invite"/);
+  assert.match(advisorRoute, /\.eq\("advisor_id", user\.id\)/);
+  assert.match(advisorRoute, /\.eq\("status", "accepted"\)/);
+});
+
+test("owner advisor page shares an acceptance link instead of simulating advisor responses", () => {
+  assert.match(advisorsRoute, /Copy access link/);
+  assert.match(advisorsRoute, /Owners cannot record feedback on an advisor’s behalf/);
+  assert.doesNotMatch(advisorsRoute, /updateInviteStatus/);
+  assert.doesNotMatch(advisorsRoute, /Record advisor feedback/);
+});
+
 test("advisor page surfaces advisor invite read failures", () => {
   assert.match(advisorsRoute, /const \[loadError, setLoadError\]/);
   assert.match(advisorsRoute, /invitesResult\.error/);
   assert.match(advisorsRoute, /if \(error\) throw error/);
   assert.match(advisorsRoute, /Could not load advisor review data/);
   assert.match(advisorsRoute, /<LoadErrorState/);
-  assert.doesNotMatch(
-    advisorsRoute,
-    /const \[\s*\{\s*data:\s*inv\s*\}/,
-  );
+  assert.doesNotMatch(advisorsRoute, /const \[\s*\{\s*data:\s*inv\s*\}/);
 });
 
 test("advisor permissions are explicit and enforced before comments", () => {
