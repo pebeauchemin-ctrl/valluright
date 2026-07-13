@@ -1397,7 +1397,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      accept_advisor_invite: { Args: { _invite_id: string }; Returns: Json }
       get_public_teaser: { Args: { _public_id: string }; Returns: Json }
       has_role: {
         Args: {
