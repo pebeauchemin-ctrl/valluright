@@ -479,11 +479,8 @@ function Onboarding() {
     setEmployees(SAMPLE_HVAC_BUSINESS.employees);
     setYears(
       SAMPLE_HVAC_FINANCIALS.map((f) => ({
+        ...emptyYear(f.year),
         ...f,
-        depreciation: f.depreciation ?? 0,
-        amortization: f.amortization ?? 0,
-        interest_expense: f.interest_expense ?? 0,
-        income_taxes: f.income_taxes ?? 0,
       })),
     );
     setOwnerHours(SAMPLE_HVAC_BUSINESS.owner_hours_per_week);
