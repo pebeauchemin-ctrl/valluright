@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { useAuth } from "@/lib/auth";
@@ -8,20 +8,23 @@ import { useServerFn } from "@tanstack/react-start";
 import { recordPublicClientEvent } from "@/lib/observability.functions";
 
 type Mode = "signin" | "signup" | "forgot";
-type AuthSearch = { mode?: Mode; plan?: string };
+type AuthSearch = { mode?: Mode; plan?: string; redirect?: string };
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — ValuRight.ai" }] }),
   validateSearch: (search: Record<string, unknown>): AuthSearch => ({
     mode: search.mode === "signup" || search.mode === "forgot" ? search.mode : undefined,
     plan: typeof search.plan === "string" ? search.plan : undefined,
+    redirect:
+      typeof search.redirect === "string" && search.redirect.startsWith("/advisor")
+        ? search.redirect
+        : undefined,
   }),
   component: AuthPage,
 });
 
 function AuthPage() {
   const { signIn, signUp, user } = useAuth();
-  const navigate = useNavigate();
   const search = Route.useSearch();
   const selectedPlan = commercialPlanBySlug(search.plan);
   const recordEvent = useServerFn(recordPublicClientEvent);
@@ -34,8 +37,8 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (user) navigate({ to: "/app" });
-  }, [user, navigate]);
+    if (user) window.location.assign(search.redirect ?? "/app");
+  }, [user, search.redirect]);
 
   useEffect(() => {
     if (search.mode === "signup" || (selectedPlan && mode === "signin")) setMode("signup");
@@ -83,7 +86,7 @@ function AuthPage() {
           },
         }).catch(() => undefined);
       }
-      navigate({ to: "/app" });
+      window.location.assign(search.redirect ?? "/app");
     }
   };
 

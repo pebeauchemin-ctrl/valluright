@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import {
   AlertTriangle,
+  Copy,
   CheckCircle2,
   Clock,
   FileSpreadsheet,
@@ -13,7 +14,6 @@ import {
   UserPlus,
 } from "lucide-react";
 import { useBusiness } from "@/lib/business";
-import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { fmtCurrency } from "@/lib/format";
@@ -75,10 +75,8 @@ type ValuationRow = Database["public"]["Tables"]["valuations"]["Row"];
 type ReportRow = Database["public"]["Tables"]["reports"]["Row"];
 type AdvisorInviteInsert = Database["public"]["Tables"]["advisor_invites"]["Insert"];
 type AdvisorInviteUpdate = Database["public"]["Tables"]["advisor_invites"]["Update"];
-type AdvisorCommentInsert = Database["public"]["Tables"]["advisor_comments"]["Insert"];
 
 function Advisors() {
-  const { user } = useAuth();
   const { current } = useBusiness();
   const recordEvent = useServerFn(recordProductEvent);
   const [invites, setInvites] = useState<Invite[]>([]);
@@ -92,10 +90,6 @@ function Advisors() {
   const [emailError, setEmailError] = useState<string | null>(null);
   const [role, setRole] = useState<string>("cpa");
   const [perm, setPerm] = useState<string>("comment");
-  const [reviewStatus, setReviewStatus] = useState<"reviewing" | "approved" | "changes_requested">(
-    "reviewing",
-  );
-  const [feedback, setFeedback] = useState("");
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -270,41 +264,13 @@ function Advisors() {
     );
   };
 
-  const updateInviteStatus = async (id: string, status: string) => {
-    const payload: AdvisorInviteUpdate = { status: status as AdvisorInviteUpdate["status"] };
-    const { error } = await supabase.from("advisor_invites").update(payload).eq("id", id);
-    if (error) toast.error(error.message);
-    refresh().catch((error) =>
-      toast.error(errorMessage(error, "Could not refresh advisor review data.")),
-    );
-  };
-
-  const addFeedback = async () => {
-    if (!current || !user || !feedback.trim()) return;
-    setBusy(true);
+  const copyAccessLink = async (id: string) => {
+    const url = `${window.location.origin}/advisor/accept/${id}`;
     try {
-      const label =
-        reviewStatus === "approved"
-          ? "Approved"
-          : reviewStatus === "changes_requested"
-            ? "Changes requested"
-            : "Reviewing";
-      const payload: AdvisorCommentInsert = {
-        business_id: current.id,
-        author_id: user.id,
-        body: `${label}: ${feedback.trim()}`,
-        is_approval: reviewStatus === "approved",
-      };
-      const { error } = await supabase.from("advisor_comments").insert(payload);
-      if (error) throw error;
-      setFeedback("");
-      setReviewStatus("reviewing");
-      await refresh();
-      toast.success("Advisor feedback recorded.");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to record feedback");
-    } finally {
-      setBusy(false);
+      await navigator.clipboard.writeText(url);
+      toast.success("Advisor acceptance link copied.");
+    } catch {
+      toast.error("Could not copy the acceptance link. Please copy it from the address bar.");
     }
   };
 
@@ -333,8 +299,8 @@ function Advisors() {
         <h1 className="font-display text-3xl font-semibold text-primary">Advisor Review</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Invite your CPA, broker, attorney, consultant, or financial advisor to review assumptions,
-          planning reports, and valuation outputs. Email delivery is not automated yet; share access
-          details manually for now.
+          planning reports, and valuation outputs. Email delivery is not automated yet, so copy and
+          share the acceptance link with each advisor yourself.
         </p>
       </div>
 
@@ -468,16 +434,15 @@ function Advisors() {
                       </option>
                     ))}
                   </select>
-                  <select
-                    value={i.status}
-                    onChange={(e) => updateInviteStatus(i.id, e.target.value)}
-                    className="text-xs rounded-md border border-border bg-background px-2 py-1"
-                  >
-                    <option value="pending">Pending</option>
-                    <option value="accepted">Accepted</option>
-                    <option value="declined">Declined</option>
-                    <option value="revoked">Revoked</option>
-                  </select>
+                  {i.status === "pending" && (
+                    <button
+                      type="button"
+                      onClick={() => copyAccessLink(i.id)}
+                      className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-semibold text-foreground hover:bg-secondary"
+                    >
+                      <Copy className="h-3.5 w-3.5" /> Copy access link
+                    </button>
+                  )}
                   <span
                     className={`text-xs font-semibold uppercase tracking-wider rounded-full px-2 py-0.5 ${
                       i.status === "accepted"
@@ -619,42 +584,11 @@ function Advisors() {
       </div>
 
       <div className="rounded-xl border border-border bg-card p-6">
-        <h2 className="font-display font-semibold text-primary mb-3">Record advisor feedback</h2>
-        <div className="grid gap-3 md:grid-cols-[220px_1fr]">
-          <div>
-            <label className="text-xs uppercase tracking-wider text-muted-foreground">
-              Review status
-            </label>
-            <select
-              value={reviewStatus}
-              onChange={(e) => setReviewStatus(e.target.value as typeof reviewStatus)}
-              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            >
-              <option value="reviewing">Reviewing</option>
-              <option value="changes_requested">Changes requested</option>
-              <option value="approved">Reviewed</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-xs uppercase tracking-wider text-muted-foreground">
-              Comment
-            </label>
-            <textarea
-              value={feedback}
-              onChange={(e) => setFeedback(e.target.value)}
-              rows={3}
-              placeholder="Add advisor notes, review language, or requested changes..."
-              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
-        </div>
-        <button
-          onClick={addFeedback}
-          disabled={busy || !feedback.trim()}
-          className="mt-3 inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90 disabled:opacity-60"
-        >
-          <MessageSquare className="h-4 w-4" /> Save feedback
-        </button>
+        <h2 className="font-display font-semibold text-primary mb-2">Advisor feedback</h2>
+        <p className="text-sm text-muted-foreground">
+          Feedback is recorded by the advisor after they accept their access link and open their
+          advisor workspace. Owners cannot record feedback on an advisor’s behalf.
+        </p>
       </div>
 
       <div className="rounded-xl border border-border bg-card p-6">

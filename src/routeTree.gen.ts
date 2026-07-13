@@ -17,6 +17,8 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as MethodologyRouteImport } from './routes/methodology'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdvisorRouteImport } from './routes/advisor'
+import { Route as AdvisorAcceptInviteIdRouteImport } from './routes/advisor.accept.$inviteId'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
@@ -75,6 +77,16 @@ const DemoRoute = DemoRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdvisorRoute = AdvisorRouteImport.update({
+  id: '/advisor',
+  path: '/advisor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdvisorAcceptInviteIdRoute = AdvisorAcceptInviteIdRouteImport.update({
+  id: '/advisor/accept/$inviteId',
+  path: '/advisor/accept/$inviteId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -178,6 +190,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/advisor': typeof AdvisorRoute
+  '/advisor/accept/$inviteId': typeof AdvisorAcceptInviteIdRoute
   '/demo': typeof DemoRoute
   '/methodology': typeof MethodologyRoute
   '/pricing': typeof PricingRoute
@@ -206,6 +220,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/advisor': typeof AdvisorRoute
+  '/advisor/accept/$inviteId': typeof AdvisorAcceptInviteIdRoute
   '/demo': typeof DemoRoute
   '/methodology': typeof MethodologyRoute
   '/pricing': typeof PricingRoute
@@ -236,6 +252,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/advisor': typeof AdvisorRoute
+  '/advisor/accept/$inviteId': typeof AdvisorAcceptInviteIdRoute
   '/demo': typeof DemoRoute
   '/methodology': typeof MethodologyRoute
   '/pricing': typeof PricingRoute
@@ -267,6 +285,8 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/auth'
+    | '/advisor'
+    | '/advisor/accept/$inviteId'
     | '/demo'
     | '/methodology'
     | '/pricing'
@@ -295,6 +315,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/advisor'
+    | '/advisor/accept/$inviteId'
     | '/demo'
     | '/methodology'
     | '/pricing'
@@ -324,6 +346,8 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/auth'
+    | '/advisor'
+    | '/advisor/accept/$inviteId'
     | '/demo'
     | '/methodology'
     | '/pricing'
@@ -354,6 +378,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
+  AdvisorRoute: typeof AdvisorRoute
+  AdvisorAcceptInviteIdRoute: typeof AdvisorAcceptInviteIdRoute
   DemoRoute: typeof DemoRoute
   MethodologyRoute: typeof MethodologyRoute
   PricingRoute: typeof PricingRoute
@@ -422,6 +448,20 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/advisor': {
+      id: '/advisor'
+      path: '/advisor'
+      fullPath: '/advisor'
+      preLoaderRoute: typeof AdvisorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/advisor/accept/$inviteId': {
+      id: '/advisor/accept/$inviteId'
+      path: '/advisor/accept/$inviteId'
+      fullPath: '/advisor/accept/$inviteId'
+      preLoaderRoute: typeof AdvisorAcceptInviteIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app': {
@@ -600,6 +640,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
+  AdvisorRoute: AdvisorRoute,
+  AdvisorAcceptInviteIdRoute: AdvisorAcceptInviteIdRoute,
   DemoRoute: DemoRoute,
   MethodologyRoute: MethodologyRoute,
   PricingRoute: PricingRoute,
