@@ -17,9 +17,8 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as MethodologyRouteImport } from './routes/methodology'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AdvisorRouteImport } from './routes/advisor'
-import { Route as AdvisorAcceptInviteIdRouteImport } from './routes/advisor.accept.$inviteId'
 import { Route as AppRouteImport } from './routes/app'
+import { Route as AdvisorRouteImport } from './routes/advisor'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as TeaserPublicIdRouteImport } from './routes/teaser.$publicId'
@@ -36,6 +35,7 @@ import { Route as AppDataRoomRouteImport } from './routes/app.data-room'
 import { Route as AppBuyerTeaserRouteImport } from './routes/app.buyer-teaser'
 import { Route as AppBuyerRequestsRouteImport } from './routes/app.buyer-requests'
 import { Route as AppAdvisorsRouteImport } from './routes/app.advisors'
+import { Route as AdvisorAcceptInviteIdRouteImport } from './routes/advisor.accept.$inviteId'
 import { Route as ApiPublicXeroCallbackRouteImport } from './routes/api.public.xero.callback'
 import { Route as ApiPublicQuickbooksCallbackRouteImport } from './routes/api.public.quickbooks.callback'
 
@@ -79,19 +79,14 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdvisorRoute = AdvisorRouteImport.update({
-  id: '/advisor',
-  path: '/advisor',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdvisorAcceptInviteIdRoute = AdvisorAcceptInviteIdRouteImport.update({
-  id: '/advisor/accept/$inviteId',
-  path: '/advisor/accept/$inviteId',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AppRoute = AppRouteImport.update({
   id: '/app',
   path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdvisorRoute = AdvisorRouteImport.update({
+  id: '/advisor',
+  path: '/advisor',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -174,6 +169,11 @@ const AppAdvisorsRoute = AppAdvisorsRouteImport.update({
   path: '/advisors',
   getParentRoute: () => AppRoute,
 } as any)
+const AdvisorAcceptInviteIdRoute = AdvisorAcceptInviteIdRouteImport.update({
+  id: '/accept/$inviteId',
+  path: '/accept/$inviteId',
+  getParentRoute: () => AdvisorRoute,
+} as any)
 const ApiPublicXeroCallbackRoute = ApiPublicXeroCallbackRouteImport.update({
   id: '/api/public/xero/callback',
   path: '/api/public/xero/callback',
@@ -188,10 +188,9 @@ const ApiPublicQuickbooksCallbackRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/advisor': typeof AdvisorRouteWithChildren
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
-  '/advisor': typeof AdvisorRoute
-  '/advisor/accept/$inviteId': typeof AdvisorAcceptInviteIdRoute
   '/demo': typeof DemoRoute
   '/methodology': typeof MethodologyRoute
   '/pricing': typeof PricingRoute
@@ -214,14 +213,14 @@ export interface FileRoutesByFullPath {
   '/app/settings': typeof AppSettingsRoute
   '/teaser/$publicId': typeof TeaserPublicIdRoute
   '/app/': typeof AppIndexRoute
+  '/advisor/accept/$inviteId': typeof AdvisorAcceptInviteIdRoute
   '/api/public/quickbooks/callback': typeof ApiPublicQuickbooksCallbackRoute
   '/api/public/xero/callback': typeof ApiPublicXeroCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/advisor': typeof AdvisorRouteWithChildren
   '/auth': typeof AuthRoute
-  '/advisor': typeof AdvisorRoute
-  '/advisor/accept/$inviteId': typeof AdvisorAcceptInviteIdRoute
   '/demo': typeof DemoRoute
   '/methodology': typeof MethodologyRoute
   '/pricing': typeof PricingRoute
@@ -244,16 +243,16 @@ export interface FileRoutesByTo {
   '/app/settings': typeof AppSettingsRoute
   '/teaser/$publicId': typeof TeaserPublicIdRoute
   '/app': typeof AppIndexRoute
+  '/advisor/accept/$inviteId': typeof AdvisorAcceptInviteIdRoute
   '/api/public/quickbooks/callback': typeof ApiPublicQuickbooksCallbackRoute
   '/api/public/xero/callback': typeof ApiPublicXeroCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/advisor': typeof AdvisorRouteWithChildren
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
-  '/advisor': typeof AdvisorRoute
-  '/advisor/accept/$inviteId': typeof AdvisorAcceptInviteIdRoute
   '/demo': typeof DemoRoute
   '/methodology': typeof MethodologyRoute
   '/pricing': typeof PricingRoute
@@ -276,6 +275,7 @@ export interface FileRoutesById {
   '/app/settings': typeof AppSettingsRoute
   '/teaser/$publicId': typeof TeaserPublicIdRoute
   '/app/': typeof AppIndexRoute
+  '/advisor/accept/$inviteId': typeof AdvisorAcceptInviteIdRoute
   '/api/public/quickbooks/callback': typeof ApiPublicQuickbooksCallbackRoute
   '/api/public/xero/callback': typeof ApiPublicXeroCallbackRoute
 }
@@ -283,10 +283,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/advisor'
     | '/app'
     | '/auth'
-    | '/advisor'
-    | '/advisor/accept/$inviteId'
     | '/demo'
     | '/methodology'
     | '/pricing'
@@ -309,14 +308,14 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/teaser/$publicId'
     | '/app/'
+    | '/advisor/accept/$inviteId'
     | '/api/public/quickbooks/callback'
     | '/api/public/xero/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/auth'
     | '/advisor'
-    | '/advisor/accept/$inviteId'
+    | '/auth'
     | '/demo'
     | '/methodology'
     | '/pricing'
@@ -339,15 +338,15 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/teaser/$publicId'
     | '/app'
+    | '/advisor/accept/$inviteId'
     | '/api/public/quickbooks/callback'
     | '/api/public/xero/callback'
   id:
     | '__root__'
     | '/'
+    | '/advisor'
     | '/app'
     | '/auth'
-    | '/advisor'
-    | '/advisor/accept/$inviteId'
     | '/demo'
     | '/methodology'
     | '/pricing'
@@ -370,16 +369,16 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/teaser/$publicId'
     | '/app/'
+    | '/advisor/accept/$inviteId'
     | '/api/public/quickbooks/callback'
     | '/api/public/xero/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdvisorRoute: typeof AdvisorRouteWithChildren
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
-  AdvisorRoute: typeof AdvisorRoute
-  AdvisorAcceptInviteIdRoute: typeof AdvisorAcceptInviteIdRoute
   DemoRoute: typeof DemoRoute
   MethodologyRoute: typeof MethodologyRoute
   PricingRoute: typeof PricingRoute
@@ -450,25 +449,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/advisor': {
-      id: '/advisor'
-      path: '/advisor'
-      fullPath: '/advisor'
-      preLoaderRoute: typeof AdvisorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/advisor/accept/$inviteId': {
-      id: '/advisor/accept/$inviteId'
-      path: '/advisor/accept/$inviteId'
-      fullPath: '/advisor/accept/$inviteId'
-      preLoaderRoute: typeof AdvisorAcceptInviteIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/app': {
       id: '/app'
       path: '/app'
       fullPath: '/app'
       preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/advisor': {
+      id: '/advisor'
+      path: '/advisor'
+      fullPath: '/advisor'
+      preLoaderRoute: typeof AdvisorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -583,6 +575,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdvisorsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/advisor/accept/$inviteId': {
+      id: '/advisor/accept/$inviteId'
+      path: '/accept/$inviteId'
+      fullPath: '/advisor/accept/$inviteId'
+      preLoaderRoute: typeof AdvisorAcceptInviteIdRouteImport
+      parentRoute: typeof AdvisorRoute
+    }
     '/api/public/xero/callback': {
       id: '/api/public/xero/callback'
       path: '/api/public/xero/callback'
@@ -599,6 +598,17 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AdvisorRouteChildren {
+  AdvisorAcceptInviteIdRoute: typeof AdvisorAcceptInviteIdRoute
+}
+
+const AdvisorRouteChildren: AdvisorRouteChildren = {
+  AdvisorAcceptInviteIdRoute: AdvisorAcceptInviteIdRoute,
+}
+
+const AdvisorRouteWithChildren =
+  AdvisorRoute._addFileChildren(AdvisorRouteChildren)
 
 interface AppRouteChildren {
   AppAdvisorsRoute: typeof AppAdvisorsRoute
@@ -638,10 +648,9 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdvisorRoute: AdvisorRouteWithChildren,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
-  AdvisorRoute: AdvisorRoute,
-  AdvisorAcceptInviteIdRoute: AdvisorAcceptInviteIdRoute,
   DemoRoute: DemoRoute,
   MethodologyRoute: MethodologyRoute,
   PricingRoute: PricingRoute,
