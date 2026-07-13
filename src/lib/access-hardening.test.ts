@@ -30,8 +30,13 @@ const advisorInviteVisibilityMigration = readFileSync(
   "supabase/migrations/20260606011000_restrict_advisor_invite_email_visibility.sql",
   "utf8",
 );
+const advisorInviteGrantRepairMigration = readFileSync(
+  "supabase/migrations/20260712014500_repair_advisor_invite_grants.sql",
+  "utf8",
+);
 const teaserRoute = readFileSync("src/routes/teaser.$publicId.tsx", "utf8");
 const dataRoomRoute = readFileSync("src/routes/app.data-room.tsx", "utf8");
+const advisorsRoute = readFileSync("src/routes/app.advisors.tsx", "utf8");
 
 test("public teaser does not expose internal business ids", () => {
   assert.match(migration, /create or replace function public\.get_public_teaser/);
@@ -196,6 +201,39 @@ test("advisor invite emails are not readable by email-match policy", () => {
   assert.match(
     advisorInviteVisibilityMigration,
     /cannot read invite rows by matching advisor_email/,
+  );
+});
+
+test("advisor invite grant repair restores owner access without email-match reads", () => {
+  assert.match(
+    advisorInviteGrantRepairMigration,
+    /grant select, insert, update, delete on table public\.advisor_invites to authenticated/,
+  );
+  assert.match(
+    advisorInviteGrantRepairMigration,
+    /owners manage advisor invites for own businesses/,
+  );
+  assert.match(
+    advisorInviteGrantRepairMigration,
+    /linked advisors can read their invites/,
+  );
+  assert.match(advisorInviteGrantRepairMigration, /advisor_id = auth\.uid\(\)/);
+  assert.match(advisorInviteGrantRepairMigration, /notify pgrst, 'reload schema'/);
+  assert.doesNotMatch(
+    advisorInviteGrantRepairMigration,
+    /lower\(advisor_email\)|auth\.jwt\(\)\s*->>\s*'email'|select email from auth\.users/,
+  );
+});
+
+test("advisor page surfaces advisor invite read failures", () => {
+  assert.match(advisorsRoute, /const \[loadError, setLoadError\]/);
+  assert.match(advisorsRoute, /invitesResult\.error/);
+  assert.match(advisorsRoute, /if \(error\) throw error/);
+  assert.match(advisorsRoute, /Could not load advisor review data/);
+  assert.match(advisorsRoute, /<LoadErrorState/);
+  assert.doesNotMatch(
+    advisorsRoute,
+    /const \[\s*\{\s*data:\s*inv\s*\}/,
   );
 });
 
