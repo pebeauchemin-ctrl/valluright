@@ -477,7 +477,15 @@ function Onboarding() {
     setRegion(SAMPLE_HVAC_BUSINESS.region);
     setYearsInBusiness(SAMPLE_HVAC_BUSINESS.years_in_business);
     setEmployees(SAMPLE_HVAC_BUSINESS.employees);
-    setYears(SAMPLE_HVAC_FINANCIALS.map((f) => ({ ...f })));
+    setYears(
+      SAMPLE_HVAC_FINANCIALS.map((f) => ({
+        ...f,
+        depreciation: f.depreciation ?? 0,
+        amortization: f.amortization ?? 0,
+        interest_expense: f.interest_expense ?? 0,
+        income_taxes: f.income_taxes ?? 0,
+      })),
+    );
     setOwnerHours(SAMPLE_HVAC_BUSINESS.owner_hours_per_week);
     setOwnerInSales(SAMPLE_HVAC_BUSINESS.owner_in_sales);
     setOwnerInOps(SAMPLE_HVAC_BUSINESS.owner_in_operations);
