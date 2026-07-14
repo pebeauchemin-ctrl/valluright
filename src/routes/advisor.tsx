@@ -31,7 +31,7 @@ type Valuation = Pick<
 >;
 type Comment = Pick<
   Database["public"]["Tables"]["advisor_comments"]["Row"],
-  "id" | "business_id" | "author_id" | "body" | "created_at" | "is_approval"
+  "id" | "business_id" | "author_id" | "body" | "created_at" | "is_approval" | "review_status"
 >;
 
 function AdvisorWorkspace() {
@@ -43,6 +43,9 @@ function AdvisorWorkspace() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState("");
+  const [reviewStatus, setReviewStatus] = useState<
+    "comment" | "reviewing" | "changes_requested" | "approved"
+  >("comment");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -89,7 +92,7 @@ function AdvisorWorkspace() {
         .order("computed_at", { ascending: false }),
       supabase
         .from("advisor_comments")
-        .select("id, business_id, author_id, body, created_at, is_approval")
+        .select("id, business_id, author_id, body, created_at, is_approval, review_status")
         .in("business_id", businessIds)
         .order("created_at", { ascending: false }),
     ]);
@@ -132,15 +135,15 @@ function AdvisorWorkspace() {
   );
   const selectedComments = comments.filter((comment) => comment.business_id === selectedId);
   const canComment = permissionRank(selectedInvite?.permission_level) >= permissionRank("comment");
+  const canApprove = permissionRank(selectedInvite?.permission_level) >= permissionRank("approve");
 
   const addComment = async () => {
     if (!selectedId || !user || !feedback.trim() || !canComment) return;
     setSaving(true);
-    const { error } = await supabase.from("advisor_comments").insert({
-      business_id: selectedId,
-      author_id: user.id,
-      body: feedback.trim(),
-      is_approval: false,
+    const { error } = await supabase.rpc("record_advisor_review", {
+      _business_id: selectedId,
+      _body: feedback.trim(),
+      _review_status: reviewStatus,
     });
     setSaving(false);
     if (error) {
@@ -148,7 +151,8 @@ function AdvisorWorkspace() {
       return;
     }
     setFeedback("");
-    toast.success("Comment added.");
+    setReviewStatus("comment");
+    toast.success(reviewStatus === "approved" ? "Review marked complete." : "Feedback saved.");
     refresh().catch((error) =>
       toast.error(error instanceof Error ? error.message : "Could not refresh comments."),
     );
@@ -178,7 +182,7 @@ function AdvisorWorkspace() {
         <h1 className="font-display text-3xl font-semibold text-primary">Advisor workspace</h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
           Review the owner’s shared planning inputs and valuation outputs. Your access level
-          controls whether you can leave comments.
+          controls whether you can leave comments or record the final review status.
         </p>
 
         {invites.length === 0 ? (
@@ -311,8 +315,29 @@ function AdvisorWorkspace() {
                         className="text-sm font-medium text-foreground"
                         htmlFor="advisor-comment"
                       >
-                        Add a comment
+                        Advisor feedback
                       </label>
+                      <div className="mt-2 max-w-xs">
+                        <label
+                          className="text-xs font-medium uppercase tracking-wider text-muted-foreground"
+                          htmlFor="advisor-review-status"
+                        >
+                          Review status
+                        </label>
+                        <select
+                          id="advisor-review-status"
+                          value={reviewStatus}
+                          onChange={(event) =>
+                            setReviewStatus(event.target.value as typeof reviewStatus)
+                          }
+                          className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        >
+                          <option value="comment">Comment</option>
+                          <option value="reviewing">Reviewing</option>
+                          <option value="changes_requested">Changes requested</option>
+                          {canApprove && <option value="approved">Review complete</option>}
+                        </select>
+                      </div>
                       <textarea
                         id="advisor-comment"
                         value={feedback}
@@ -326,7 +351,7 @@ function AdvisorWorkspace() {
                         disabled={saving || !feedback.trim()}
                         className="mt-3 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90 disabled:opacity-60"
                       >
-                        {saving ? "Saving…" : "Add comment"}
+                        {saving ? "Saving…" : "Save feedback"}
                       </button>
                     </div>
                   ) : (
@@ -349,6 +374,11 @@ function AdvisorWorkspace() {
                             {comment.author_id === user.id ? "You" : "Advisor"} ·{" "}
                             {new Date(comment.created_at).toLocaleString()}
                           </p>
+                          {comment.review_status !== "comment" && (
+                            <p className="mt-2 text-xs font-semibold text-accent">
+                              {reviewStatusLabel(comment.review_status)}
+                            </p>
+                          )}
                         </article>
                       ))
                     )}
@@ -457,5 +487,17 @@ function permissionLabel(permission: string | null | undefined) {
         approve: "Comment and review",
       } as Record<string, string>
     )[permission ?? ""] ?? "View only"
+  );
+}
+
+function reviewStatusLabel(status: string) {
+  return (
+    (
+      {
+        reviewing: "Reviewing",
+        changes_requested: "Changes requested",
+        approved: "Review complete",
+      } as Record<string, string>
+    )[status] ?? "Comment"
   );
 }
