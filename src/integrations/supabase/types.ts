@@ -66,6 +66,7 @@ export type Database = {
           created_at: string
           id: string
           is_approval: boolean
+          review_status: string
         }
         Insert: {
           author_id: string
@@ -74,6 +75,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_approval?: boolean
+          review_status?: string
         }
         Update: {
           author_id?: string
@@ -82,6 +84,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_approval?: boolean
+          review_status?: string
         }
         Relationships: [
           {
@@ -1398,6 +1401,10 @@ export type Database = {
     }
     Functions: {
       accept_advisor_invite: { Args: { _invite_id: string }; Returns: Json }
+      record_advisor_review: {
+        Args: { _body: string; _business_id: string; _review_status?: string }
+        Returns: string
+      }
       get_public_teaser: { Args: { _public_id: string }; Returns: Json }
       has_role: {
         Args: {

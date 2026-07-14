@@ -38,6 +38,10 @@ const advisorAcceptanceMigration = readFileSync(
   "supabase/migrations/20260713020500_enable_advisor_invite_acceptance.sql",
   "utf8",
 );
+const advisorReviewIntegrityMigration = readFileSync(
+  "supabase/migrations/20260713024500_secure_advisor_review_statuses.sql",
+  "utf8",
+);
 const teaserRoute = readFileSync("src/routes/teaser.$publicId.tsx", "utf8");
 const dataRoomRoute = readFileSync("src/routes/app.data-room.tsx", "utf8");
 const advisorsRoute = readFileSync("src/routes/app.advisors.tsx", "utf8");
@@ -255,6 +259,33 @@ test("owner advisor page shares an acceptance link instead of simulating advisor
   assert.match(advisorsRoute, /Owners cannot record feedback on an advisor’s behalf/);
   assert.doesNotMatch(advisorsRoute, /updateInviteStatus/);
   assert.doesNotMatch(advisorsRoute, /Record advisor feedback/);
+});
+
+test("advisor review status is attributed to an accepted advisor and approval needs approval permission", () => {
+  assert.match(
+    advisorReviewIntegrityMigration,
+    /create or replace function public\.record_advisor_review/,
+  );
+  assert.match(
+    advisorReviewIntegrityMigration,
+    /public\.can_advisor_access\(_business_id, auth\.uid\(\), 'comment'\)/,
+  );
+  assert.match(
+    advisorReviewIntegrityMigration,
+    /public\.can_advisor_access\(_business_id, auth\.uid\(\), 'approve'\)/,
+  );
+  assert.match(
+    advisorReviewIntegrityMigration,
+    /revoke insert, update, delete on table public\.advisor_comments from authenticated/,
+  );
+  assert.match(
+    advisorReviewIntegrityMigration,
+    /grant execute on function public\.record_advisor_review\(uuid, text, text\) to authenticated/,
+  );
+  assert.match(advisorRoute, /rpc\("record_advisor_review"/);
+  assert.match(advisorRoute, /canApprove && <option value="approved">Review complete<\/option>/);
+  assert.match(advisorsRoute, /const latestStatus = comments\.find/);
+  assert.match(advisorsRoute, /Owner note/);
 });
 
 test("advisor page surfaces advisor invite read failures", () => {

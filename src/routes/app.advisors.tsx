@@ -41,8 +41,8 @@ const PERMISSIONS = [
   { value: "comment", label: "Comment only", desc: "Read and leave comments on assumptions." },
   {
     value: "edit_assumptions",
-    label: "Edit assumptions",
-    desc: "Adjust inputs and assumptions feeding the valuation.",
+    label: "Review inputs",
+    desc: "Review inputs and leave comments. Direct financial editing remains owner-only.",
   },
   {
     value: "approve",
@@ -65,6 +65,7 @@ type Comment = {
   id: string;
   body: string;
   is_approval: boolean;
+  review_status: string;
   created_at: string;
   author_id: string;
 };
@@ -605,16 +606,22 @@ function Advisors() {
             {comments.map((c) => (
               <div
                 key={c.id}
-                className={`rounded-md border p-3 ${c.is_approval ? "border-accent/30 bg-accent-soft" : "border-border bg-secondary/30"}`}
+                className={`rounded-md border p-3 ${c.review_status === "approved" ? "border-accent/30 bg-accent-soft" : "border-border bg-secondary/30"}`}
               >
                 <div className="text-sm">{c.body}</div>
                 <div className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
-                  {new Date(c.created_at).toLocaleString()}{" "}
-                  {c.is_approval && (
+                  {c.author_id === current.owner_id ? "Owner note" : "Advisor"} · {new Date(c.created_at).toLocaleString()}{" "}
+                  {c.review_status === "approved" && (
                     <>
                       <Shield className="h-3 w-3 text-accent" />{" "}
-                      <span className="text-accent font-semibold">Approved</span>
+                      <span className="text-accent font-semibold">Reviewed</span>
                     </>
+                  )}
+                  {c.review_status === "changes_requested" && (
+                    <span className="font-semibold text-destructive">Changes requested</span>
+                  )}
+                  {c.review_status === "reviewing" && (
+                    <span className="font-semibold text-foreground">Reviewing</span>
                   )}
                 </div>
               </div>
@@ -677,21 +684,22 @@ function KV({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 function getApprovalState(comments: Comment[]) {
-  if (comments.some((comment) => comment.is_approval)) {
+  const latestStatus = comments.find((comment) => comment.review_status !== "comment")?.review_status;
+  if (latestStatus === "approved") {
     return {
       icon: CheckCircle2,
       label: "Reviewed",
       detail: "Advisor review status has been recorded.",
     };
   }
-  if (comments.some((comment) => /^changes requested:/i.test(comment.body))) {
+  if (latestStatus === "changes_requested") {
     return {
       icon: AlertTriangle,
       label: "Changes requested",
       detail: "Advisor requested updates before review is complete.",
     };
   }
-  if (comments.length > 0) {
+  if (latestStatus === "reviewing" || comments.length > 0) {
     return {
       icon: Clock,
       label: "Reviewing",
