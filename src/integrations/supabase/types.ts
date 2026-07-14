@@ -1401,10 +1401,6 @@ export type Database = {
     }
     Functions: {
       accept_advisor_invite: { Args: { _invite_id: string }; Returns: Json }
-      record_advisor_review: {
-        Args: { _body: string; _business_id: string; _review_status?: string }
-        Returns: string
-      }
       get_public_teaser: { Args: { _public_id: string }; Returns: Json }
       has_role: {
         Args: {
@@ -1416,6 +1412,10 @@ export type Database = {
       is_advisor_of: {
         Args: { _business_id: string; _user_id: string }
         Returns: boolean
+      }
+      record_advisor_review: {
+        Args: { _body: string; _business_id: string; _review_status?: string }
+        Returns: string
       }
       revenue_band: { Args: { _revenue: number }; Returns: string }
       submit_buyer_access_request: {
