@@ -66,6 +66,7 @@ export type Database = {
           created_at: string
           id: string
           is_approval: boolean
+          review_status: string
         }
         Insert: {
           author_id: string
@@ -74,6 +75,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_approval?: boolean
+          review_status?: string
         }
         Update: {
           author_id?: string
@@ -82,6 +84,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_approval?: boolean
+          review_status?: string
         }
         Relationships: [
           {
@@ -1409,6 +1412,10 @@ export type Database = {
       is_advisor_of: {
         Args: { _business_id: string; _user_id: string }
         Returns: boolean
+      }
+      record_advisor_review: {
+        Args: { _body: string; _business_id: string; _review_status?: string }
+        Returns: string
       }
       revenue_band: { Args: { _revenue: number }; Returns: string }
       submit_buyer_access_request: {
