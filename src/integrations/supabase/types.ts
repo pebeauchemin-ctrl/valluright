@@ -103,6 +103,9 @@ export type Database = {
           advisor_role: string | null
           business_id: string
           id: string
+          invite_email_last_attempt_at: string | null
+          invite_email_last_error: string | null
+          invite_email_last_sent_at: string | null
           invited_at: string
           permission_level: string
           responded_at: string | null
@@ -114,6 +117,9 @@ export type Database = {
           advisor_role?: string | null
           business_id: string
           id?: string
+          invite_email_last_attempt_at?: string | null
+          invite_email_last_error?: string | null
+          invite_email_last_sent_at?: string | null
           invited_at?: string
           permission_level?: string
           responded_at?: string | null
@@ -125,6 +131,9 @@ export type Database = {
           advisor_role?: string | null
           business_id?: string
           id?: string
+          invite_email_last_attempt_at?: string | null
+          invite_email_last_error?: string | null
+          invite_email_last_sent_at?: string | null
           invited_at?: string
           permission_level?: string
           responded_at?: string | null
@@ -1401,6 +1410,7 @@ export type Database = {
     }
     Functions: {
       accept_advisor_invite: { Args: { _invite_id: string }; Returns: Json }
+      decline_advisor_invite: { Args: { _invite_id: string }; Returns: Json }
       get_public_teaser: { Args: { _public_id: string }; Returns: Json }
       has_role: {
         Args: {
