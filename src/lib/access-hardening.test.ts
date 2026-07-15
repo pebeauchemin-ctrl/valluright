@@ -42,6 +42,10 @@ const advisorReviewIntegrityMigration = readFileSync(
   "supabase/migrations/20260713024500_secure_advisor_review_statuses.sql",
   "utf8",
 );
+const publicTeaserSdeMigration = readFileSync(
+  "supabase/migrations/20260714020000_fix_public_teaser_sde.sql",
+  "utf8",
+);
 const teaserRoute = readFileSync("src/routes/teaser.$publicId.tsx", "utf8");
 const dataRoomRoute = readFileSync("src/routes/app.data-room.tsx", "utf8");
 const advisorsRoute = readFileSync("src/routes/app.advisors.tsx", "utf8");
@@ -53,6 +57,18 @@ test("public teaser does not expose internal business ids", () => {
   assert.doesNotMatch(teaserRoute, /business_id:\s*business\.id/);
   assert.doesNotMatch(teaserRoute, /\bid:\s*string/);
   assert.doesNotMatch(migration, /'id', p\.id/);
+});
+
+test("public teaser SDE uses the valuation EBITDA bridge and reviewed add-back total", () => {
+  assert.match(publicTeaserSdeMigration, /nullif\(f\.ebitda, 0\)/);
+  assert.match(publicTeaserSdeMigration, /coalesce\(f\.net_income, 0\)/);
+  assert.match(publicTeaserSdeMigration, /coalesce\(f\.interest, 0\)/);
+  assert.match(publicTeaserSdeMigration, /coalesce\(f\.income_taxes, 0\)/);
+  assert.match(publicTeaserSdeMigration, /coalesce\(f\.depreciation, 0\)/);
+  assert.match(publicTeaserSdeMigration, /coalesce\(f\.amortization, 0\)/);
+  assert.match(publicTeaserSdeMigration, /coalesce\(f\.owner_salary, 0\)/);
+  assert.match(publicTeaserSdeMigration, /coalesce\(f\.addbacks, 0\)/);
+  assert.doesNotMatch(publicTeaserSdeMigration, /financial_addbacks/);
 });
 
 test("buyer leads must go through the published-teaser RPC", () => {
