@@ -35,6 +35,7 @@ import { Route as AppDataRoomRouteImport } from './routes/app.data-room'
 import { Route as AppBuyerTeaserRouteImport } from './routes/app.buyer-teaser'
 import { Route as AppBuyerRequestsRouteImport } from './routes/app.buyer-requests'
 import { Route as AppAdvisorsRouteImport } from './routes/app.advisors'
+import { Route as AdvisorDeclineInviteIdRouteImport } from './routes/advisor.decline.$inviteId'
 import { Route as AdvisorAcceptInviteIdRouteImport } from './routes/advisor.accept.$inviteId'
 import { Route as ApiPublicXeroCallbackRouteImport } from './routes/api.public.xero.callback'
 import { Route as ApiPublicQuickbooksCallbackRouteImport } from './routes/api.public.quickbooks.callback'
@@ -169,6 +170,11 @@ const AppAdvisorsRoute = AppAdvisorsRouteImport.update({
   path: '/advisors',
   getParentRoute: () => AppRoute,
 } as any)
+const AdvisorDeclineInviteIdRoute = AdvisorDeclineInviteIdRouteImport.update({
+  id: '/decline/$inviteId',
+  path: '/decline/$inviteId',
+  getParentRoute: () => AdvisorRoute,
+} as any)
 const AdvisorAcceptInviteIdRoute = AdvisorAcceptInviteIdRouteImport.update({
   id: '/accept/$inviteId',
   path: '/accept/$inviteId',
@@ -214,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/teaser/$publicId': typeof TeaserPublicIdRoute
   '/app/': typeof AppIndexRoute
   '/advisor/accept/$inviteId': typeof AdvisorAcceptInviteIdRoute
+  '/advisor/decline/$inviteId': typeof AdvisorDeclineInviteIdRoute
   '/api/public/quickbooks/callback': typeof ApiPublicQuickbooksCallbackRoute
   '/api/public/xero/callback': typeof ApiPublicXeroCallbackRoute
 }
@@ -244,6 +251,7 @@ export interface FileRoutesByTo {
   '/teaser/$publicId': typeof TeaserPublicIdRoute
   '/app': typeof AppIndexRoute
   '/advisor/accept/$inviteId': typeof AdvisorAcceptInviteIdRoute
+  '/advisor/decline/$inviteId': typeof AdvisorDeclineInviteIdRoute
   '/api/public/quickbooks/callback': typeof ApiPublicQuickbooksCallbackRoute
   '/api/public/xero/callback': typeof ApiPublicXeroCallbackRoute
 }
@@ -276,6 +284,7 @@ export interface FileRoutesById {
   '/teaser/$publicId': typeof TeaserPublicIdRoute
   '/app/': typeof AppIndexRoute
   '/advisor/accept/$inviteId': typeof AdvisorAcceptInviteIdRoute
+  '/advisor/decline/$inviteId': typeof AdvisorDeclineInviteIdRoute
   '/api/public/quickbooks/callback': typeof ApiPublicQuickbooksCallbackRoute
   '/api/public/xero/callback': typeof ApiPublicXeroCallbackRoute
 }
@@ -309,6 +318,7 @@ export interface FileRouteTypes {
     | '/teaser/$publicId'
     | '/app/'
     | '/advisor/accept/$inviteId'
+    | '/advisor/decline/$inviteId'
     | '/api/public/quickbooks/callback'
     | '/api/public/xero/callback'
   fileRoutesByTo: FileRoutesByTo
@@ -339,6 +349,7 @@ export interface FileRouteTypes {
     | '/teaser/$publicId'
     | '/app'
     | '/advisor/accept/$inviteId'
+    | '/advisor/decline/$inviteId'
     | '/api/public/quickbooks/callback'
     | '/api/public/xero/callback'
   id:
@@ -370,6 +381,7 @@ export interface FileRouteTypes {
     | '/teaser/$publicId'
     | '/app/'
     | '/advisor/accept/$inviteId'
+    | '/advisor/decline/$inviteId'
     | '/api/public/quickbooks/callback'
     | '/api/public/xero/callback'
   fileRoutesById: FileRoutesById
@@ -575,6 +587,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdvisorsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/advisor/decline/$inviteId': {
+      id: '/advisor/decline/$inviteId'
+      path: '/decline/$inviteId'
+      fullPath: '/advisor/decline/$inviteId'
+      preLoaderRoute: typeof AdvisorDeclineInviteIdRouteImport
+      parentRoute: typeof AdvisorRoute
+    }
     '/advisor/accept/$inviteId': {
       id: '/advisor/accept/$inviteId'
       path: '/accept/$inviteId'
@@ -601,10 +620,12 @@ declare module '@tanstack/react-router' {
 
 interface AdvisorRouteChildren {
   AdvisorAcceptInviteIdRoute: typeof AdvisorAcceptInviteIdRoute
+  AdvisorDeclineInviteIdRoute: typeof AdvisorDeclineInviteIdRoute
 }
 
 const AdvisorRouteChildren: AdvisorRouteChildren = {
   AdvisorAcceptInviteIdRoute: AdvisorAcceptInviteIdRoute,
+  AdvisorDeclineInviteIdRoute: AdvisorDeclineInviteIdRoute,
 }
 
 const AdvisorRouteWithChildren =
@@ -665,3 +686,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

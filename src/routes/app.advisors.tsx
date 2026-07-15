@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import { fmtCurrency } from "@/lib/format";
 import type { Database } from "@/integrations/supabase/types";
 import { COUNSEL_REVIEW_TEXT, VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
-import { recordProductEvent } from "@/lib/observability.functions";
+import { createAdvisorInvite, resendAdvisorInvite } from "@/lib/advisor-invites.functions";
 import { LoadErrorState, errorMessage } from "@/components/LoadErrorState";
 
 export const Route = createFileRoute("/app/advisors")({
@@ -60,6 +60,9 @@ type Invite = {
   invited_at: string;
   advisor_role: string | null;
   permission_level: string | null;
+  invite_email_last_sent_at: string | null;
+  invite_email_last_attempt_at: string | null;
+  invite_email_last_error: string | null;
 };
 type Comment = {
   id: string;
@@ -74,12 +77,12 @@ type FinancialAddBackRow = Database["public"]["Tables"]["financial_addbacks"]["R
 type FinancialAddBackEventRow = Database["public"]["Tables"]["financial_addback_events"]["Row"];
 type ValuationRow = Database["public"]["Tables"]["valuations"]["Row"];
 type ReportRow = Database["public"]["Tables"]["reports"]["Row"];
-type AdvisorInviteInsert = Database["public"]["Tables"]["advisor_invites"]["Insert"];
 type AdvisorInviteUpdate = Database["public"]["Tables"]["advisor_invites"]["Update"];
 
 function Advisors() {
   const { current } = useBusiness();
-  const recordEvent = useServerFn(recordProductEvent);
+  const createInvite = useServerFn(createAdvisorInvite);
+  const resendInvite = useServerFn(resendAdvisorInvite);
   const [invites, setInvites] = useState<Invite[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
   const [financials, setFinancials] = useState<FinancialYearRow[]>([]);
@@ -92,6 +95,7 @@ function Advisors() {
   const [role, setRole] = useState<string>("cpa");
   const [perm, setPerm] = useState<string>("comment");
   const [busy, setBusy] = useState(false);
+  const [resendingInviteId, setResendingInviteId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loadAttempt, setLoadAttempt] = useState(0);
@@ -217,39 +221,42 @@ function Advisors() {
     setEmailError(null);
     setBusy(true);
     try {
-      const payload: AdvisorInviteInsert = {
-        business_id: current.id,
-        advisor_email: normalizedEmail,
-        status: "pending",
-        advisor_role: role,
-        permission_level: perm,
-      };
-      const { data, error } = await supabase
-        .from("advisor_invites")
-        .insert(payload)
-        .select("id")
-        .single();
-      if (error) throw error;
-      await recordEvent({
+      const result = await createInvite({
         data: {
-          eventName: "advisor_invited",
-          area: "activation",
           businessId: current.id,
-          targetType: "advisor_invite",
-          targetId: data.id,
-          metadata: {
-            advisor_role: role,
-            permission_level: perm,
-          },
+          advisorEmail: normalizedEmail,
+          advisorRole: role as (typeof ADVISOR_ROLES)[number]["value"],
+          permissionLevel: perm as (typeof PERMISSIONS)[number]["value"],
         },
-      }).catch(() => undefined);
+      });
       setEmail("");
       await refresh();
-      toast.success(`Advisor invite record created for ${normalizedEmail}`);
+      if (result.delivery.status === "sent") {
+        toast.success(`Invitation emailed to ${normalizedEmail}`);
+      } else {
+        toast.error(`Invite created, but the email could not be sent: ${result.delivery.message}`);
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to invite");
     } finally {
       setBusy(false);
+    }
+  };
+
+  const resend = async (inviteId: string) => {
+    setResendingInviteId(inviteId);
+    try {
+      const result = await resendInvite({ data: { inviteId } });
+      await refresh();
+      if (result.status === "sent") {
+        toast.success("Advisor invitation email sent.");
+      } else {
+        toast.error(`Email could not be sent: ${result.message}`);
+      }
+    } catch (error) {
+      toast.error(errorMessage(error, "Could not resend advisor invitation."));
+    } finally {
+      setResendingInviteId(null);
     }
   };
 
@@ -300,8 +307,8 @@ function Advisors() {
         <h1 className="font-display text-3xl font-semibold text-primary">Advisor Review</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Invite your CPA, broker, attorney, consultant, or financial advisor to review assumptions,
-          planning reports, and valuation outputs. Email delivery is not automated yet, so copy and
-          share the acceptance link with each advisor yourself.
+          planning reports, and valuation outputs. Advisors receive a secure email link to accept
+          access using the invited email address.
         </p>
       </div>
 
@@ -398,7 +405,7 @@ function Advisors() {
           disabled={busy}
           className="inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90 disabled:opacity-60"
         >
-          <UserPlus className="h-4 w-4" /> Create invite
+          <UserPlus className="h-4 w-4" /> Send invite
         </button>
       </div>
 
@@ -421,6 +428,14 @@ function Advisors() {
                       {ADVISOR_ROLES.find((r) => r.value === i.advisor_role)?.label ?? "Advisor"} ·
                       Invited {new Date(i.invited_at).toLocaleDateString()}
                     </div>
+                    {i.status === "pending" && i.invite_email_last_error && (
+                      <div className="mt-1 text-xs text-destructive">Delivery needs attention</div>
+                    )}
+                    {i.status === "pending" && i.invite_email_last_sent_at && (
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        Email sent {new Date(i.invite_email_last_sent_at).toLocaleString()}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -436,13 +451,24 @@ function Advisors() {
                     ))}
                   </select>
                   {i.status === "pending" && (
-                    <button
-                      type="button"
-                      onClick={() => copyAccessLink(i.id)}
-                      className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-semibold text-foreground hover:bg-secondary"
-                    >
-                      <Copy className="h-3.5 w-3.5" /> Copy access link
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => resend(i.id)}
+                        disabled={resendingInviteId === i.id}
+                        className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-semibold text-foreground hover:bg-secondary disabled:opacity-60"
+                      >
+                        <Mail className="h-3.5 w-3.5" />
+                        {resendingInviteId === i.id ? "Sending…" : "Resend email"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => copyAccessLink(i.id)}
+                        className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs font-semibold text-foreground hover:bg-secondary"
+                      >
+                        <Copy className="h-3.5 w-3.5" /> Copy access link
+                      </button>
+                    </>
                   )}
                   <span
                     className={`text-xs font-semibold uppercase tracking-wider rounded-full px-2 py-0.5 ${

@@ -46,11 +46,17 @@ const publicTeaserSdeMigration = readFileSync(
   "supabase/migrations/20260714020000_fix_public_teaser_sde.sql",
   "utf8",
 );
+const advisorInviteDeliveryMigration = readFileSync(
+  "supabase/migrations/20260715011500_add_advisor_invite_delivery_tracking.sql",
+  "utf8",
+);
 const teaserRoute = readFileSync("src/routes/teaser.$publicId.tsx", "utf8");
 const dataRoomRoute = readFileSync("src/routes/app.data-room.tsx", "utf8");
 const advisorsRoute = readFileSync("src/routes/app.advisors.tsx", "utf8");
 const advisorAcceptanceRoute = readFileSync("src/routes/advisor.accept.$inviteId.tsx", "utf8");
+const advisorDeclineRoute = readFileSync("src/routes/advisor.decline.$inviteId.tsx", "utf8");
 const advisorRoute = readFileSync("src/routes/advisor.tsx", "utf8");
+const advisorInviteFunctions = readFileSync("src/lib/advisor-invites.functions.ts", "utf8");
 
 test("public teaser does not expose internal business ids", () => {
   assert.match(migration, /create or replace function public\.get_public_teaser/);
@@ -268,6 +274,20 @@ test("advisor acceptance securely links the invited account before access is gra
   assert.match(advisorAcceptanceRoute, /rpc\("accept_advisor_invite"/);
   assert.match(advisorRoute, /\.eq\("advisor_id", user\.id\)/);
   assert.match(advisorRoute, /\.eq\("status", "accepted"\)/);
+});
+
+test("advisor invitation emails are server-side, tracked, and rate limited", () => {
+  assert.match(advisorInviteFunctions, /process\.env\.RESEND_API_KEY/);
+  assert.match(advisorInviteFunctions, /https:\/\/api\.resend\.com\/emails/);
+  assert.match(advisorInviteFunctions, /invite_email_last_attempt_at/);
+  assert.match(advisorInviteFunctions, /60 \* 60 \* 1000/);
+  assert.match(advisorsRoute, /resendAdvisorInvite/);
+  assert.match(advisorsRoute, /Resend email/);
+  assert.doesNotMatch(advisorsRoute, /Email delivery is not automated yet/);
+  assert.match(advisorInviteDeliveryMigration, /create or replace function public\.decline_advisor_invite/);
+  assert.match(advisorInviteDeliveryMigration, /lower\(invite_row\.advisor_email\) <> caller_email/);
+  assert.match(advisorInviteDeliveryMigration, /grant execute on function public\.decline_advisor_invite\(uuid\) to authenticated/);
+  assert.match(advisorDeclineRoute, /rpc\("decline_advisor_invite"/);
 });
 
 test("owner advisor page shares an acceptance link instead of simulating advisor responses", () => {
