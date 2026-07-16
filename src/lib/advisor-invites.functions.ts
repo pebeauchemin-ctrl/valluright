@@ -3,7 +3,6 @@ import { getRequest, getRequestHost } from "@tanstack/react-start/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { Database } from "@/integrations/supabase/types";
 import { recordObservabilityEvent } from "@/lib/observability.server";
 import { withSupabaseAuth } from "@/lib/with-supabase-auth";
@@ -41,7 +40,10 @@ type InviteRecord = {
   permission_level: string;
   status: string;
   invite_email_last_attempt_at: string | null;
+  invite_email_last_error: string | null;
 };
+
+type AdminClient = SupabaseClient<Database>;
 
 function getOrigin() {
   const request = getRequest();
@@ -105,7 +107,11 @@ async function sendEmail({
     }),
   });
 
-  if (!response.ok) throw new Error(`Email provider rejected the invitation [${response.status}].`);
+  if (!response.ok) {
+    const providerMessage = await response.text().catch(() => "");
+    console.error(`Resend advisor invite failed [${response.status}]: ${providerMessage}`);
+    throw new Error(`Email provider rejected the invitation [${response.status}].`);
+  }
 }
 
 async function verifyOwner(
@@ -124,7 +130,16 @@ async function verifyOwner(
   return data;
 }
 
-async function deliverInvite({ invite, businessName, actorUserId }: {
+function assertInviteCanBeSent(invite: InviteRecord) {
+  if (!invite.invite_email_last_attempt_at || invite.invite_email_last_error) return;
+  const elapsed = Date.now() - new Date(invite.invite_email_last_attempt_at).getTime();
+  if (elapsed < 60 * 60 * 1000) {
+    throw new Error("This invitation was already sent within the last hour.");
+  }
+}
+
+async function deliverInvite({ supabaseAdmin, invite, businessName, actorUserId }: {
+  supabaseAdmin: AdminClient;
   invite: InviteRecord;
   businessName: string;
   actorUserId: string;
@@ -181,21 +196,67 @@ export const createAdvisorInvite = createServerFn({ method: "POST" })
   .middleware([withSupabaseAuth, requireSupabaseAuth])
   .inputValidator(inviteSchema)
   .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const business = await verifyOwner(data.businessId, context.userId, context.supabase);
+    const normalizedEmail = data.advisorEmail.trim().toLowerCase();
+
+    const inviteColumns = "id, business_id, advisor_email, advisor_role, permission_level, status, invite_email_last_attempt_at, invite_email_last_error";
+    const { data: existingInvite, error: existingError } = await supabaseAdmin
+      .from("advisor_invites")
+      .select(inviteColumns)
+      .eq("business_id", business.id)
+      .eq("advisor_email", normalizedEmail)
+      .maybeSingle();
+    if (existingError) throw new Error(existingError.message);
+    if (existingInvite) {
+      if (existingInvite.status === "accepted") {
+        throw new Error("This advisor has already accepted access to this business.");
+      }
+
+      const { data: updatedInvite, error: updateError } = await supabaseAdmin
+        .from("advisor_invites")
+        .update({
+          advisor_role: data.advisorRole,
+          permission_level: data.permissionLevel,
+          status: "pending",
+          invite_email_last_error: null,
+        })
+        .eq("id", existingInvite.id)
+        .select(inviteColumns)
+        .single();
+      if (updateError || !updatedInvite) {
+        throw new Error(updateError?.message ?? "Could not update advisor invitation.");
+      }
+      const invite = {
+        ...(updatedInvite as InviteRecord),
+        invite_email_last_attempt_at: existingInvite.invite_email_last_attempt_at,
+        invite_email_last_error: existingInvite.invite_email_last_error,
+      };
+      assertInviteCanBeSent(invite);
+      const delivery = await deliverInvite({
+        supabaseAdmin,
+        invite,
+        businessName: business.name,
+        actorUserId: context.userId,
+      });
+      return { inviteId: updatedInvite.id, delivery };
+    }
+
     const { data: invite, error } = await supabaseAdmin
       .from("advisor_invites")
       .insert({
         business_id: business.id,
-        advisor_email: data.advisorEmail.trim().toLowerCase(),
+        advisor_email: normalizedEmail,
         advisor_role: data.advisorRole,
         permission_level: data.permissionLevel,
         status: "pending",
       })
-      .select("id, business_id, advisor_email, advisor_role, permission_level, status, invite_email_last_attempt_at")
+      .select(inviteColumns)
       .single();
     if (error || !invite) throw new Error(error?.message ?? "Could not create advisor invitation.");
 
     const delivery = await deliverInvite({
+      supabaseAdmin,
       invite: invite as InviteRecord,
       businessName: business.name,
       actorUserId: context.userId,
@@ -207,9 +268,10 @@ export const resendAdvisorInvite = createServerFn({ method: "POST" })
   .middleware([withSupabaseAuth, requireSupabaseAuth])
   .inputValidator(resendSchema)
   .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: invite, error } = await supabaseAdmin
       .from("advisor_invites")
-      .select("id, business_id, advisor_email, advisor_role, permission_level, status, invite_email_last_attempt_at")
+      .select("id, business_id, advisor_email, advisor_role, permission_level, status, invite_email_last_attempt_at, invite_email_last_error")
       .eq("id", data.inviteId)
       .maybeSingle();
     if (error) throw new Error(error.message);
@@ -217,14 +279,10 @@ export const resendAdvisorInvite = createServerFn({ method: "POST" })
 
     const business = await verifyOwner(invite.business_id, context.userId, context.supabase);
     if (invite.status !== "pending") throw new Error("Only pending advisor invitations can be resent.");
-    if (invite.invite_email_last_attempt_at) {
-      const elapsed = Date.now() - new Date(invite.invite_email_last_attempt_at).getTime();
-      if (elapsed < 60 * 60 * 1000) {
-        throw new Error("This invitation was already sent or attempted within the last hour.");
-      }
-    }
+    assertInviteCanBeSent(invite as InviteRecord);
 
     return deliverInvite({
+      supabaseAdmin,
       invite: invite as InviteRecord,
       businessName: business.name,
       actorUserId: context.userId,
