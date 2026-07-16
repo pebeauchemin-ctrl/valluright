@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PRODUCT_ANALYTICS_PRIVACY_NOTE, productFunnelProgress } from "@/lib/product-analytics";
 import { getSupportAdminAccess, searchSupportAccounts } from "@/lib/support-admin.functions";
+import { openStripeBillingPortal } from "@/lib/billing.functions";
 import {
   SUPPORT_ACTIONS,
   SUPPORT_ADMIN_NOTICE,
@@ -98,6 +99,7 @@ type AnalyticsEvent = {
 };
 
 function Settings() {
+  const openBillingPortal = useServerFn(openStripeBillingPortal);
   const { user } = useAuth();
   const { current, refresh } = useBusiness();
   const [busy, setBusy] = useState(false);
@@ -313,6 +315,10 @@ function Settings() {
         <div className="text-sm">
           <span className="text-muted-foreground">Email:</span>{" "}
           <span className="font-medium">{user.email}</span>
+        </div>
+        <div className="flex flex-wrap gap-3 pt-2">
+          <Link to="/pricing" className="text-sm font-semibold text-accent hover:underline">View plans</Link>
+          <button type="button" onClick={async () => { try { const result = await openBillingPortal(); window.location.assign(result.url); } catch (error) { toast.error(error instanceof Error ? error.message : "Could not open billing settings."); } }} className="text-sm font-semibold text-accent hover:underline">Manage billing</button>
         </div>
       </div>
 

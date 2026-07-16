@@ -37,6 +37,7 @@ import { Route as AppBuyerRequestsRouteImport } from './routes/app.buyer-request
 import { Route as AppAdvisorsRouteImport } from './routes/app.advisors'
 import { Route as AdvisorAcceptInviteIdRouteImport } from './routes/advisor.accept.$inviteId'
 import { Route as ApiPublicXeroCallbackRouteImport } from './routes/api.public.xero.callback'
+import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api.public.stripe.webhook'
 import { Route as ApiPublicQuickbooksCallbackRouteImport } from './routes/api.public.quickbooks.callback'
 
 const TermsRoute = TermsRouteImport.update({
@@ -179,6 +180,11 @@ const ApiPublicXeroCallbackRoute = ApiPublicXeroCallbackRouteImport.update({
   path: '/api/public/xero/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
+  id: '/api/public/stripe/webhook',
+  path: '/api/public/stripe/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicQuickbooksCallbackRoute =
   ApiPublicQuickbooksCallbackRouteImport.update({
     id: '/api/public/quickbooks/callback',
@@ -215,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/app/': typeof AppIndexRoute
   '/advisor/accept/$inviteId': typeof AdvisorAcceptInviteIdRoute
   '/api/public/quickbooks/callback': typeof ApiPublicQuickbooksCallbackRoute
+  '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
   '/api/public/xero/callback': typeof ApiPublicXeroCallbackRoute
 }
 export interface FileRoutesByTo {
@@ -245,6 +252,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppIndexRoute
   '/advisor/accept/$inviteId': typeof AdvisorAcceptInviteIdRoute
   '/api/public/quickbooks/callback': typeof ApiPublicQuickbooksCallbackRoute
+  '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
   '/api/public/xero/callback': typeof ApiPublicXeroCallbackRoute
 }
 export interface FileRoutesById {
@@ -277,6 +285,7 @@ export interface FileRoutesById {
   '/app/': typeof AppIndexRoute
   '/advisor/accept/$inviteId': typeof AdvisorAcceptInviteIdRoute
   '/api/public/quickbooks/callback': typeof ApiPublicQuickbooksCallbackRoute
+  '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
   '/api/public/xero/callback': typeof ApiPublicXeroCallbackRoute
 }
 export interface FileRouteTypes {
@@ -310,6 +319,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/advisor/accept/$inviteId'
     | '/api/public/quickbooks/callback'
+    | '/api/public/stripe/webhook'
     | '/api/public/xero/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -340,6 +350,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/advisor/accept/$inviteId'
     | '/api/public/quickbooks/callback'
+    | '/api/public/stripe/webhook'
     | '/api/public/xero/callback'
   id:
     | '__root__'
@@ -371,6 +382,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/advisor/accept/$inviteId'
     | '/api/public/quickbooks/callback'
+    | '/api/public/stripe/webhook'
     | '/api/public/xero/callback'
   fileRoutesById: FileRoutesById
 }
@@ -388,6 +400,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   TeaserPublicIdRoute: typeof TeaserPublicIdRoute
   ApiPublicQuickbooksCallbackRoute: typeof ApiPublicQuickbooksCallbackRoute
+  ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
   ApiPublicXeroCallbackRoute: typeof ApiPublicXeroCallbackRoute
 }
 
@@ -589,6 +602,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicXeroCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/stripe/webhook': {
+      id: '/api/public/stripe/webhook'
+      path: '/api/public/stripe/webhook'
+      fullPath: '/api/public/stripe/webhook'
+      preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/quickbooks/callback': {
       id: '/api/public/quickbooks/callback'
       path: '/api/public/quickbooks/callback'
@@ -660,8 +680,18 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   TeaserPublicIdRoute: TeaserPublicIdRoute,
   ApiPublicQuickbooksCallbackRoute: ApiPublicQuickbooksCallbackRoute,
+  ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
   ApiPublicXeroCallbackRoute: ApiPublicXeroCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

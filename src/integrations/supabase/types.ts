@@ -1392,6 +1392,18 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: { id: string; user_id: string; stripe_customer_id: string | null; stripe_subscription_id: string | null; plan: string; status: string; cancel_at_period_end: boolean; current_period_end: string | null; created_at: string; updated_at: string }
+        Insert: { id?: string; user_id: string; stripe_customer_id?: string | null; stripe_subscription_id?: string | null; plan?: string; status?: string; cancel_at_period_end?: boolean; current_period_end?: string | null; created_at?: string; updated_at?: string }
+        Update: { user_id?: string; stripe_customer_id?: string | null; stripe_subscription_id?: string | null; plan?: string; status?: string; cancel_at_period_end?: boolean; current_period_end?: string | null; updated_at?: string }
+        Relationships: []
+      }
+      billing_webhook_events: {
+        Row: { stripe_event_id: string; event_type: string; received_at: string; processed_at: string | null; error_message: string | null }
+        Insert: { stripe_event_id: string; event_type: string; received_at?: string; processed_at?: string | null; error_message?: string | null }
+        Update: { event_type?: string; processed_at?: string | null; error_message?: string | null }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
