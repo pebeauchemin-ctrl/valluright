@@ -199,6 +199,30 @@ export type Database = {
           },
         ]
       }
+      billing_webhook_events: {
+        Row: {
+          error_message: string | null
+          event_type: string
+          processed_at: string | null
+          received_at: string
+          stripe_event_id: string
+        }
+        Insert: {
+          error_message?: string | null
+          event_type: string
+          processed_at?: string | null
+          received_at?: string
+          stripe_event_id: string
+        }
+        Update: {
+          error_message?: string | null
+          event_type?: string
+          processed_at?: string | null
+          received_at?: string
+          stripe_event_id?: string
+        }
+        Relationships: []
+      }
       businesses: {
         Row: {
           accounting_basis: string
@@ -1162,6 +1186,45 @@ export type Database = {
           },
         ]
       }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean
+          created_at: string
+          current_period_end: string | null
+          id: string
+          plan: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          plan?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          plan?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1402,18 +1465,6 @@ export type Database = {
           state?: string
           user_id?: string
         }
-        Relationships: []
-      }
-      subscriptions: {
-        Row: { id: string; user_id: string; stripe_customer_id: string | null; stripe_subscription_id: string | null; plan: string; status: string; cancel_at_period_end: boolean; current_period_end: string | null; created_at: string; updated_at: string }
-        Insert: { id?: string; user_id: string; stripe_customer_id?: string | null; stripe_subscription_id?: string | null; plan?: string; status?: string; cancel_at_period_end?: boolean; current_period_end?: string | null; created_at?: string; updated_at?: string }
-        Update: { user_id?: string; stripe_customer_id?: string | null; stripe_subscription_id?: string | null; plan?: string; status?: string; cancel_at_period_end?: boolean; current_period_end?: string | null; updated_at?: string }
-        Relationships: []
-      }
-      billing_webhook_events: {
-        Row: { stripe_event_id: string; event_type: string; received_at: string; processed_at: string | null; error_message: string | null }
-        Insert: { stripe_event_id: string; event_type: string; received_at?: string; processed_at?: string | null; error_message?: string | null }
-        Update: { event_type?: string; processed_at?: string | null; error_message?: string | null }
         Relationships: []
       }
     }
