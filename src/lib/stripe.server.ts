@@ -34,6 +34,7 @@ export async function createCheckout(customer: string, plan: BillingPlan, succes
   const env = priceEnv[plan]; const price = env ? process.env[env] : undefined;
   if (!price) throw new Error("This Stripe price is not configured yet.");
   const body = new URLSearchParams({ customer, success_url: successUrl, cancel_url: cancelUrl, "line_items[0][price]": price, "line_items[0][quantity]": "1", "metadata[plan]": plan, mode: plan === "one-time-report" ? "payment" : "subscription" });
+  if (plan !== "one-time-report") body.set("subscription_data[metadata][plan]", plan);
   const data = await stripe("checkout/sessions", body);
   if (!data.url) throw new Error("Stripe did not return a checkout page.");
   return data.url;
