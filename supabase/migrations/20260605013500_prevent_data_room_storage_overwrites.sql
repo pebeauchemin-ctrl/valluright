@@ -31,7 +31,4 @@ create policy "owners update own data room"
     and public.user_owns_business_path(name)
   );
 
-comment on policy "owners update own data room" on storage.objects is
-  'Allows overwrites only when the existing and resulting data-room object path belongs to the authenticated owner.';
-
 commit;
