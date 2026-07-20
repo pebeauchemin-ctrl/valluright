@@ -16,7 +16,7 @@ export const Route = createFileRoute("/auth")({
     mode: search.mode === "signup" || search.mode === "forgot" ? search.mode : undefined,
     plan: typeof search.plan === "string" ? search.plan : undefined,
     redirect:
-      typeof search.redirect === "string" && search.redirect.startsWith("/advisor")
+      typeof search.redirect === "string" && (search.redirect.startsWith("/advisor") || search.redirect.startsWith("/pricing"))
         ? search.redirect
         : undefined,
   }),
@@ -37,7 +37,7 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (user) window.location.assign(search.redirect ?? "/app");
+    if (user) window.location.assign(search.redirect ?? (selectedPlan ? `/pricing?checkout=${selectedPlan.slug}` : "/app"));
   }, [user, search.redirect]);
 
   useEffect(() => {
@@ -86,7 +86,7 @@ function AuthPage() {
           },
         }).catch(() => undefined);
       }
-      window.location.assign(search.redirect ?? "/app");
+      window.location.assign(search.redirect ?? (selectedPlan ? `/pricing?checkout=${selectedPlan.slug}` : "/app"));
     }
   };
 
