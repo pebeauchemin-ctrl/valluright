@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
+import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { startStripeCheckout } from "@/lib/billing.functions";
 import { ArrowRight, Check } from "lucide-react";
@@ -17,13 +18,16 @@ export const Route = createFileRoute("/pricing")({
       },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>) => ({ checkout: typeof search.checkout === "string" ? search.checkout : undefined }),
   component: PricingPage,
 });
 
 function PricingPage() {
   const { user } = useAuth();
+  const search = Route.useSearch();
   const checkout = useServerFn(startStripeCheckout);
   const begin = async (slug: string) => { if (!user) return; const result = await checkout({ data: { plan: slug as never } }); window.location.assign(result.url); };
+  useEffect(() => { if (user && search.checkout) void begin(search.checkout); }, [user, search.checkout]);
   return (
     <PublicPageShell
       eyebrow="Pricing"
