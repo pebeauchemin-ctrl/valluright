@@ -41,7 +41,7 @@ function AuthPage() {
   }, [user, search.redirect]);
 
   useEffect(() => {
-    if (search.mode === "signup" || (selectedPlan && mode === "signin")) setMode("signup");
+    if (search.mode === "signup") setMode("signup");
   }, [search.mode, selectedPlan, mode]);
 
   const switchMode = (m: Mode) => {
@@ -71,7 +71,7 @@ function AuthPage() {
     }
 
     const { error } =
-      mode === "signin" ? await signIn(email, password) : await signUp(email, password, fullName, selectedPlan && typeof window !== "undefined" ? `${window.location.origin}/pricing?checkout=${selectedPlan.slug}` : undefined);
+      mode === "signin" ? await signIn(email, password) : await signUp(email, password, fullName, selectedPlan && typeof window !== "undefined" ? `${window.location.origin}/auth?mode=signin&plan=${selectedPlan.slug}` : undefined);
     setBusy(false);
     if (error) {
       setError(error);
