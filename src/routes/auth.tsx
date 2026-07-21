@@ -71,7 +71,7 @@ function AuthPage() {
     }
 
     const { error } =
-      mode === "signin" ? await signIn(email, password) : await signUp(email, password, fullName);
+      mode === "signin" ? await signIn(email, password) : await signUp(email, password, fullName, selectedPlan && typeof window !== "undefined" ? `${window.location.origin}/pricing?checkout=${selectedPlan.slug}` : undefined);
     setBusy(false);
     if (error) {
       setError(error);
