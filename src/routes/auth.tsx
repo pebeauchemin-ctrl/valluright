@@ -86,7 +86,13 @@ function AuthPage() {
           },
         }).catch(() => undefined);
       }
-      window.location.assign(search.redirect ?? (selectedPlan ? `/pricing?checkout=${selectedPlan.slug}` : "/app"));
+      if (mode === "signup") {
+        setInfo(selectedPlan
+          ? "Confirm your email to proceed. Then sign in to continue securely to payment."
+          : "Confirm your email to finish creating your account.");
+        return;
+      }
+      window.location.assign(search.redirect ?? "/app");
     }
   };
 
