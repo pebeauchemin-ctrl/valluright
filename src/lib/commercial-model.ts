@@ -71,7 +71,7 @@ export const COMMERCIAL_PLANS: CommercialPlan[] = [
     features: [
       "Everything in Essentials",
       "Public buyer-safe teaser sharing",
-      "Data room with 5 GB included",
+      "Private data room",
       "PDF report exports",
       "Up to 3 advisor reviewers",
     ],
@@ -86,29 +86,13 @@ export const COMMERCIAL_PLANS: CommercialPlan[] = [
     who: "CPAs, brokers, and exit advisors",
     cta: "Start Advisor Partner preview",
     features: [
-      "Client workspace management",
-      "Advisor review workflow",
-      "Reusable report and teaser workflows",
-      "Up to 10 active client businesses per seat",
+      "Private data room, public teaser sharing, and PDF exports",
+      "Up to 3 advisor reviewers per business",
+      "Planned: client portfolio workspace",
+      "Planned: white-label reports",
     ],
-    limits: ["Additional client businesses priced later", "White-label reports remain a future add-on"],
+    limits: ["1 business per seat today", "Additional client businesses and white-label reports are planned"],
     buyerTeaser: "client_sharing",
-  },
-  {
-    slug: "one-time-report",
-    name: "One-time Report",
-    price: "$799",
-    sub: "one-time",
-    who: "Single planning report",
-    cta: "Start one-time report",
-    features: [
-      "One business valuation snapshot",
-      "Recommendations included",
-      "PDF export",
-      "30 days of edit access",
-    ],
-    limits: ["No subscription", "No public buyer teaser sharing", "No ongoing import refresh"],
-    buyerTeaser: "preview_only",
   },
 ];
 
