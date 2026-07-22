@@ -20,6 +20,30 @@ as $$
   )
 $$;
 
+drop policy if exists "owners upload to own data room" on storage.objects;
+drop policy if exists "owners update own data room" on storage.objects;
+
+create policy "owners upload to entitled data room"
+  on storage.objects for insert to authenticated
+  with check (
+    bucket_id = 'data-room'
+    and public.current_user_has_plan_entitlement('data_room')
+    and public.user_owns_business_path(name)
+  );
+
+create policy "owners update entitled data room"
+  on storage.objects for update to authenticated
+  using (
+    bucket_id = 'data-room'
+    and public.current_user_has_plan_entitlement('data_room')
+    and public.user_owns_business_path(name)
+  )
+  with check (
+    bucket_id = 'data-room'
+    and public.current_user_has_plan_entitlement('data_room')
+    and public.user_owns_business_path(name)
+  );
+
 create or replace function public.enforce_buyer_teaser_entitlement()
 returns trigger
 language plpgsql
