@@ -86,7 +86,7 @@ function PricingPage() {
           Free preview limits
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          {FREE_TRIAL_LIMITS.durationDays} days, {FREE_TRIAL_LIMITS.businesses} business,{" "}
+          {FREE_TRIAL_LIMITS.businesses} business,{" "}
           {FREE_TRIAL_LIMITS.scenarios} scenarios, {FREE_TRIAL_LIMITS.reports}. Buyer teaser is{" "}
           {FREE_TRIAL_LIMITS.buyerTeaser}.
         </p>
