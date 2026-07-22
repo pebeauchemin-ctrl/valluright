@@ -58,30 +58,6 @@ create trigger data_room_requires_paid_plan
   before insert or update on public.data_room_files
   for each row execute procedure public.enforce_data_room_entitlement();
 
-create or replace function public.enforce_advisor_review_entitlement()
-returns trigger
-language plpgsql
-security definer
-set search_path = public
-as $$
-begin
-  if not public.current_user_has_plan_entitlement('advisor_review') then
-    raise exception 'Advisor invitations require an active Exit Ready or Advisor Partner plan.';
-  end if;
-  return new;
-end;
-$$;
-
-drop trigger if exists advisor_review_requires_paid_plan on public.advisor_invites;
-create trigger advisor_review_requires_paid_plan
-  before insert or update on public.advisor_invites
-  for each row execute procedure public.enforce_advisor_review_entitlement();
-
-revoke all on function public.current_user_has_plan_entitlement(text) from public;
-revoke all on function public.enforce_buyer_teaser_entitlement() from public;
-revoke all on function public.enforce_data_room_entitlement() from public;
-revoke all on function public.enforce_advisor_review_entitlement() from public;
-
 notify pgrst, 'reload schema';
 
 commit;
