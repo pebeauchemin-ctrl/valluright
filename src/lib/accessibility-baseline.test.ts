@@ -83,7 +83,7 @@ assertIncludes(
   'aria-label="Open public teaser link in a new tab"',
   "Buyer teaser external link icon must be named",
 );
-assertIncludes(roadmap, "Move ${r.title} to roadmap phase", "Roadmap phase select must be named");
+assertIncludes(roadmap, "Move ${r.name} to roadmap phase", "Roadmap phase select must be named");
 
 for (const route of chartRoutes) {
   const source = read(route);
