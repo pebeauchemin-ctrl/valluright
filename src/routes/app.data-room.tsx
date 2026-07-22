@@ -5,6 +5,7 @@ import { useBusiness } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { LoadErrorState, errorMessage } from "@/components/LoadErrorState";
+import { usePlanEntitlements } from "@/lib/use-plan-entitlements";
 
 export const Route = createFileRoute("/app/data-room")({
   head: () => ({ meta: [{ title: "Data Room — ValuRight.ai" }] }),
@@ -38,6 +39,7 @@ type FileRow = {
 
 function DataRoom() {
   const { current } = useBusiness();
+  const entitlements = usePlanEntitlements();
   const [files, setFiles] = useState<FileRow[]>([]);
   const [uploading, setUploading] = useState(false);
   const [category, setCategory] = useState<Category>("financials");
@@ -82,6 +84,10 @@ function DataRoom() {
 
   const upload = async (f: File) => {
     if (!current) return;
+    if (!entitlements.has("data_room")) {
+      toast.error("The data room requires an active Exit Ready or Advisor Partner plan.");
+      return;
+    }
     setUploading(true);
     try {
       const safeName = f.name.replace(/[^\w. -]/g, "_");
@@ -174,11 +180,16 @@ function DataRoom() {
           />
           <button
             onClick={() => inputRef.current?.click()}
-            disabled={uploading}
+            disabled={uploading || entitlements.loading || !entitlements.has("data_room")}
             className="inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90 disabled:opacity-60"
           >
             <Upload className="h-4 w-4" /> {uploading ? "Uploading…" : "Upload file"}
           </button>
+          {!entitlements.loading && !entitlements.has("data_room") && (
+            <p className="w-full text-xs text-muted-foreground">
+              Uploads are available with an active Exit Ready or Advisor Partner plan.
+            </p>
+          )}
         </div>
       </div>
 
