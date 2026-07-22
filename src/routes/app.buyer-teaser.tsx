@@ -10,6 +10,7 @@ import { LoadErrorState, errorMessage } from "@/components/LoadErrorState";
 import { fmtCurrency } from "@/lib/format";
 import { recordProductEvent } from "@/lib/observability.functions";
 import { displayIndustryLabel } from "@/lib/industry-display";
+import { usePlanEntitlements } from "@/lib/use-plan-entitlements";
 
 const ASKING_PRICE_MAX = 1_000_000_000;
 
@@ -34,6 +35,7 @@ type BuyerSettingsState = {
 
 function BuyerTeaser() {
   const { current } = useBusiness();
+  const entitlements = usePlanEntitlements();
   const recordEvent = useServerFn(recordProductEvent);
   const [settings, setSettings] = useState<BuyerSettingsState>({
     is_published: false,
@@ -343,10 +345,23 @@ function BuyerTeaser() {
               <input
                 type="checkbox"
                 checked={settings.is_published}
-                onChange={(e) => setSettings((s) => ({ ...s, is_published: e.target.checked }))}
+                disabled={entitlements.loading}
+                onChange={(e) => {
+                  if (e.target.checked && !entitlements.has("buyer_teaser_public")) {
+                    toast.error("Publishing requires an active Exit Ready or Advisor Partner plan.");
+                    return;
+                  }
+                  setSettings((state) => ({ ...state, is_published: e.target.checked }));
+                }}
                 className="accent-[oklch(0.45_0.1_158)]"
               />
             </label>
+            {!entitlements.loading && !entitlements.has("buyer_teaser_public") && !settings.is_published && (
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                Public sharing is available with an active Exit Ready or Advisor Partner plan. You can
+                continue building a draft preview here.
+              </p>
+            )}
             {settings.is_published !== savedPublished && (
               <p className="rounded-md border border-border bg-secondary/40 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
                 Save changes to {settings.is_published ? "activate" : "remove"} the public teaser
