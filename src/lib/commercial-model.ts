@@ -38,7 +38,7 @@ export const FREE_TRIAL_LIMITS = {
   businesses: 1,
   advisors: 0,
   scenarios: 2,
-  reports: "watermarked preview only",
+  reports: "in-app report preview",
   buyerTeaser: "draft preview only; public sharing is gated to Exit Ready or Advisor Partner",
   dataRoomStorage: "not included",
 };
@@ -57,7 +57,7 @@ export const COMMERCIAL_PLANS: CommercialPlan[] = [
       "Health Score and recommendations",
       "Two active what-if scenarios",
     ],
-    limits: ["1 business", "Manual, CSV, Xero, and QuickBooks imports", "Watermarked report preview"],
+    limits: ["1 business", "Manual, CSV, Xero, and QuickBooks imports", "In-app report preview"],
     buyerTeaser: "preview_only",
   },
   {
@@ -72,8 +72,7 @@ export const COMMERCIAL_PLANS: CommercialPlan[] = [
       "Everything in Essentials",
       "Public buyer-safe teaser sharing",
       "Private data room",
-      "PDF report exports",
-      "Up to 3 advisor reviewers",
+      "Advisor reviewer invitations",
     ],
     limits: ["1 business", "Unlimited scenarios", "Buyer lead workflow included"],
     buyerTeaser: "public_sharing",
@@ -86,7 +85,7 @@ export const COMMERCIAL_PLANS: CommercialPlan[] = [
     who: "CPAs, brokers, and exit advisors",
     cta: "Start Advisor Partner preview",
     features: [
-      "Private data room, public teaser sharing, and PDF exports",
+      "Private data room and public teaser sharing",
       "Up to 3 advisor reviewers per business",
       "Planned: client portfolio workspace",
       "Planned: white-label reports",
