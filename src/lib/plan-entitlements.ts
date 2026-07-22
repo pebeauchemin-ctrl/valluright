@@ -1,4 +1,5 @@
-import type { BillingPlan } from "./stripe.server";
+export type BillingPlan = "free" | "essentials" | "exit-ready" | "advisor-partner" | "one-time-report";
+export type BillingStatus = "free" | "active" | "trialing" | "past_due" | "canceled" | "unpaid" | "incomplete" | "incomplete_expired";
 
 export type Entitlement =
   | "buyer_teaser_public"
@@ -23,10 +24,10 @@ const entitlements: Record<BillingPlan, readonly Entitlement[]> = {
   "one-time-report": ["one_time_report", "pdf_export"],
 };
 
-export function hasEntitlement(plan: BillingPlan, entitlement: Entitlement) {
-  return entitlements[plan].includes(entitlement);
+export function subscriptionIsActive(plan: BillingPlan, status: BillingStatus) {
+  return plan !== "free" && ["active", "trialing", "past_due"].includes(status);
 }
 
-export function planSupportsPublicTeaser(plan: BillingPlan) {
-  return hasEntitlement(plan, "buyer_teaser_public");
+export function hasEntitlement(plan: BillingPlan, status: BillingStatus, entitlement: Entitlement) {
+  return subscriptionIsActive(plan, status) && entitlements[plan].includes(entitlement);
 }
