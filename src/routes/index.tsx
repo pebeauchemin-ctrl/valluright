@@ -193,7 +193,7 @@ function Landing() {
               Plans for every stage
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Start with a {FREE_TRIAL_LIMITS.durationDays}-day preview. Upgrade when you're ready
+              Start with the free preview. Upgrade when you're ready
               to prepare for sale or share buyer-facing materials.
             </p>
           </div>
