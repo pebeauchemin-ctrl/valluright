@@ -34,9 +34,6 @@ export const TARGET_CUSTOMER_SEGMENTS = [
 
 export const FREE_TRIAL_LIMITS = {
   name: "Free Preview",
-  businesses: 1,
-  advisors: 0,
-  scenarios: 2,
   reports: "in-app report preview",
   buyerTeaser: "draft preview only; public sharing is gated to Exit Ready or Advisor Partner",
   dataRoomStorage: "not included",
@@ -54,9 +51,9 @@ export const COMMERCIAL_PLANS: CommercialPlan[] = [
       "Ongoing value dashboard",
       "All six valuation methods",
       "Health Score and recommendations",
-      "Two active what-if scenarios",
+      "What-if scenario modeling",
     ],
-    limits: ["1 business", "Manual, CSV, Xero, and QuickBooks imports", "In-app report preview"],
+    limits: ["Manual, CSV, Xero, and QuickBooks imports", "In-app report preview"],
     buyerTeaser: "preview_only",
   },
   {
@@ -73,7 +70,7 @@ export const COMMERCIAL_PLANS: CommercialPlan[] = [
       "Private data room",
       "Advisor reviewer invitations",
     ],
-    limits: ["1 business", "Unlimited scenarios", "Buyer lead workflow included"],
+    limits: ["Buyer lead workflow included"],
     buyerTeaser: "public_sharing",
   },
   {
@@ -89,7 +86,7 @@ export const COMMERCIAL_PLANS: CommercialPlan[] = [
       "Planned: client portfolio workspace",
       "Planned: white-label reports",
     ],
-    limits: ["1 business per seat today", "Additional client businesses and white-label reports are planned"],
+    limits: ["Additional client-business management and white-label reports are planned"],
     buyerTeaser: "client_sharing",
   },
 ];
