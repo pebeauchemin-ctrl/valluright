@@ -34,7 +34,6 @@ export const TARGET_CUSTOMER_SEGMENTS = [
 
 export const FREE_TRIAL_LIMITS = {
   name: "Free Preview",
-  durationDays: 14,
   businesses: 1,
   advisors: 0,
   scenarios: 2,
