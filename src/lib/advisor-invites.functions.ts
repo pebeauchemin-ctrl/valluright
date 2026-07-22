@@ -6,6 +6,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
 import { recordObservabilityEvent } from "@/lib/observability.server";
 import { withSupabaseAuth } from "@/lib/with-supabase-auth";
+import { requireBusinessEntitlement } from "@/lib/plan-entitlements.server";
 
 const inviteSchema = z.object({
   businessId: z.string().uuid(),
@@ -198,6 +199,12 @@ export const createAdvisorInvite = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const business = await verifyOwner(data.businessId, context.userId, context.supabase);
+    await requireBusinessEntitlement({
+      supabase: context.supabase,
+      userId: context.userId,
+      businessId: business.id,
+      entitlement: "advisor_review",
+    });
     const normalizedEmail = data.advisorEmail.trim().toLowerCase();
 
     const inviteColumns = "id, business_id, advisor_email, advisor_role, permission_level, status, invite_email_last_attempt_at, invite_email_last_error";
@@ -278,6 +285,12 @@ export const resendAdvisorInvite = createServerFn({ method: "POST" })
     if (!invite) throw new Error("Advisor invitation not found.");
 
     const business = await verifyOwner(invite.business_id, context.userId, context.supabase);
+    await requireBusinessEntitlement({
+      supabase: context.supabase,
+      userId: context.userId,
+      businessId: business.id,
+      entitlement: "advisor_review",
+    });
     if (invite.status !== "pending") throw new Error("Only pending advisor invitations can be resent.");
     assertInviteCanBeSent(invite as InviteRecord);
 
