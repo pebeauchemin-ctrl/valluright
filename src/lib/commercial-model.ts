@@ -92,14 +92,11 @@ export const COMMERCIAL_PLANS: CommercialPlan[] = [
 ];
 
 export const BILLING_EVENTS = [
-  "trial_started",
-  "trial_expired",
   "subscription_started",
   "subscription_plan_changed",
   "payment_failed",
   "payment_recovered",
   "subscription_cancelled",
-  "one_time_report_purchased",
 ] as const;
 
 export function buyerTeaserPolicy(plan: CommercialPlan) {
