@@ -410,7 +410,7 @@ function Settings() {
           </div>
           {!subscriptionLoading && subscription?.plan !== "free" && (
             <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
-              {planLabel(subscription.plan)}
+              {planLabel(subscription?.plan)}
             </span>
           )}
         </div>
