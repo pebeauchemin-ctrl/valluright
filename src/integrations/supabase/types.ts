@@ -1473,6 +1473,10 @@ export type Database = {
     }
     Functions: {
       accept_advisor_invite: { Args: { _invite_id: string }; Returns: Json }
+      current_user_has_plan_entitlement: {
+        Args: { _entitlement: string }
+        Returns: boolean
+      }
       decline_advisor_invite: { Args: { _invite_id: string }; Returns: Json }
       get_public_teaser: { Args: { _public_id: string }; Returns: Json }
       has_role: {
