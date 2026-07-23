@@ -14,6 +14,7 @@ RETURNS text LANGUAGE sql IMMUTABLE SET search_path = public AS $$
 $$;
 
 -- Add UPDATE policy on storage.objects for data-room mirroring INSERT
+DROP POLICY IF EXISTS "owners update own data room" ON storage.objects;
 CREATE POLICY "owners update own data room"
 ON storage.objects FOR UPDATE TO authenticated
 USING (bucket_id = 'data-room' AND public.user_owns_business_path(name))

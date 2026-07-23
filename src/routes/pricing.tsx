@@ -32,7 +32,7 @@ function PricingPage() {
     <PublicPageShell
       eyebrow="Pricing"
       title="Start with a free preview, upgrade when sharing matters"
-      description="ValuRight is launching with a hybrid model: owner self-serve first, advisor-led workflows for CPAs, brokers, and exit planners, and clear buyer teaser gates before billing is added."
+      description="Every plan uses the same feature definitions. Paid sharing, data room access, and advisor invitations are enforced by the active subscription."
     >
       <div className="grid gap-6 md:grid-cols-2">
         {COMMERCIAL_PLANS.map((plan) => (
@@ -86,9 +86,8 @@ function PricingPage() {
           Free preview limits
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          {FREE_TRIAL_LIMITS.durationDays} days, {FREE_TRIAL_LIMITS.businesses} business,{" "}
-          {FREE_TRIAL_LIMITS.scenarios} scenarios, {FREE_TRIAL_LIMITS.reports}. Buyer teaser is{" "}
-          {FREE_TRIAL_LIMITS.buyerTeaser}.
+          Includes {FREE_TRIAL_LIMITS.reports}. Buyer teaser is {FREE_TRIAL_LIMITS.buyerTeaser}.
+          Data room storage is {FREE_TRIAL_LIMITS.dataRoomStorage}.
         </p>
         <Link
           to="/auth"

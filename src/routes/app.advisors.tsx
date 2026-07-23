@@ -21,6 +21,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { COUNSEL_REVIEW_TEXT, VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 import { createAdvisorInvite, resendAdvisorInvite } from "@/lib/advisor-invites.functions";
 import { LoadErrorState, errorMessage } from "@/components/LoadErrorState";
+import { usePlanEntitlements } from "@/lib/use-plan-entitlements";
 
 export const Route = createFileRoute("/app/advisors")({
   head: () => ({ meta: [{ title: "Advisors — ValuRight.ai" }] }),
@@ -81,6 +82,7 @@ type AdvisorInviteUpdate = Database["public"]["Tables"]["advisor_invites"]["Upda
 
 function Advisors() {
   const { current } = useBusiness();
+  const entitlements = usePlanEntitlements();
   const createInvite = useServerFn(createAdvisorInvite);
   const resendInvite = useServerFn(resendAdvisorInvite);
   const [invites, setInvites] = useState<Invite[]>([]);
@@ -311,6 +313,12 @@ function Advisors() {
           access using the invited email address.
         </p>
       </div>
+
+      {!entitlements.loading && !entitlements.has("advisor_review") && (
+        <div className="rounded-lg border border-border bg-secondary/40 p-4 text-sm leading-relaxed text-muted-foreground">
+          Advisor invitations are available with an active Exit Ready or Advisor Partner plan.
+        </div>
+      )}
 
       <div className="rounded-lg border border-border bg-secondary/40 p-4 text-xs leading-relaxed text-muted-foreground">
         <span className="font-semibold text-foreground">Advisor review context. </span>
