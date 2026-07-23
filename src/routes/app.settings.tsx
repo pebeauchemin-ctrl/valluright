@@ -6,6 +6,9 @@ import {
   AlertTriangle,
   CheckCircle2,
   Circle,
+  CreditCard,
+  ExternalLink,
+  Loader2,
   Search,
   ShieldCheck,
   Save,
@@ -98,6 +101,33 @@ type AnalyticsEvent = {
   severity: string;
 };
 
+type SubscriptionSummary = {
+  plan: string;
+  status: string;
+  cancel_at_period_end: boolean;
+  current_period_end: string | null;
+  stripe_customer_id: string | null;
+};
+
+const PLAN_LABELS: Record<string, string> = {
+  essentials: "Essentials",
+  "exit-ready": "Exit Ready",
+  "advisor-partner": "Advisor Partner",
+  free: "Free Preview",
+};
+
+function planLabel(plan: string | null | undefined) {
+  return PLAN_LABELS[plan ?? "free"] ?? "Free Preview";
+}
+
+function formatBillingDate(value: string | null) {
+  if (!value) return "Not available";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? "Not available"
+    : new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(date);
+}
+
 function Settings() {
   const openBillingPortal = useServerFn(openStripeBillingPortal);
   const { user } = useAuth();
@@ -144,6 +174,9 @@ function Settings() {
   const [supportResults, setSupportResults] = useState<SupportAccountSummary[]>([]);
   const [selectedSupportAccount, setSelectedSupportAccount] =
     useState<SupportAccountSummary | null>(null);
+  const [subscription, setSubscription] = useState<SubscriptionSummary | null>(null);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
+  const [openingBillingPortal, setOpeningBillingPortal] = useState(false);
 
   // Hydrate from current business
   useEffect(() => {
@@ -212,6 +245,35 @@ function Settings() {
       cancelled = true;
     };
   }, [checkSupportAdminAccess]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!user) {
+      setSubscription(null);
+      setSubscriptionLoading(false);
+      return;
+    }
+
+    setSubscriptionLoading(true);
+    supabase
+      .from("subscriptions")
+      .select("plan, status, cancel_at_period_end, current_period_end, stripe_customer_id")
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) {
+          toast.error("Could not load billing details.");
+          setSubscription(null);
+        } else {
+          setSubscription(data as SubscriptionSummary | null);
+        }
+        setSubscriptionLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   if (!user) return null;
 
@@ -283,10 +345,23 @@ function Settings() {
     }
   };
 
+  const manageBilling = async () => {
+    setOpeningBillingPortal(true);
+    try {
+      const result = await openBillingPortal();
+      window.location.assign(result.url);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not open billing settings.");
+      setOpeningBillingPortal(false);
+    }
+  };
+
   const subtypes = BUSINESS_SUBTYPES[businessCategory] ?? [];
   const funnelProgress = productFunnelProgress(analyticsEvents);
   const completedFunnelSteps = funnelProgress.filter((step) => step.completed).length;
   const lastAnalyticsEvent = analyticsEvents[analyticsEvents.length - 1] ?? null;
+  const billingNeedsAttention = ["past_due", "unpaid", "incomplete"].includes(subscription?.status ?? "");
+  const billingHasEnded = ["canceled", "incomplete_expired"].includes(subscription?.status ?? "");
   const healthScoreDefaultedInputs = current
     ? [
         current.owner_hours_per_week == null ? "owner hours" : null,
@@ -318,9 +393,96 @@ function Settings() {
         </div>
         <div className="flex flex-wrap gap-3 pt-2">
           <Link to="/pricing" className="text-sm font-semibold text-accent hover:underline">View plans</Link>
-          <button type="button" onClick={async () => { try { const result = await openBillingPortal(); window.location.assign(result.url); } catch (error) { toast.error(error instanceof Error ? error.message : "Could not open billing settings."); } }} className="text-sm font-semibold text-accent hover:underline">Manage billing</button>
         </div>
       </div>
+
+
+      <section className="rounded-xl border border-border bg-card p-6" aria-labelledby="billing-heading">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5 text-accent" />
+              <h2 id="billing-heading" className="font-display font-semibold text-primary">Billing</h2>
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              View your plan and manage payment details securely through Stripe.
+            </p>
+          </div>
+          {!subscriptionLoading && subscription?.plan !== "free" && (
+            <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
+              {planLabel(subscription.plan)}
+            </span>
+          )}
+        </div>
+
+        {subscriptionLoading ? (
+          <div className="mt-5 flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" /> Loading billing details
+          </div>
+        ) : !subscription || subscription.plan === "free" ? (
+          <div className="mt-5 rounded-lg border border-border bg-secondary/30 p-4">
+            <div className="text-sm font-semibold text-foreground">Free Preview</div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              You are using the free tier. Upgrade to publish a buyer teaser, use the Data Room, or invite advisors.
+            </p>
+            <Link
+              to="/pricing"
+              className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90"
+            >
+              View plans <ExternalLink className="h-4 w-4" />
+            </Link>
+          </div>
+        ) : (
+          <div className="mt-5 space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <BillingDetail label="Current plan" value={planLabel(subscription.plan)} />
+              <BillingDetail
+                label={subscription.cancel_at_period_end ? "Access ends" : "Next renewal"}
+                value={formatBillingDate(subscription.current_period_end)}
+              />
+            </div>
+
+            {billingNeedsAttention ? (
+              <div className="flex gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                <div>
+                  <div className="font-semibold text-foreground">Payment needs attention</div>
+                  <p className="mt-1 text-muted-foreground">
+                    Update your payment method in Stripe to keep your paid access active.
+                  </p>
+                </div>
+              </div>
+            ) : subscription.cancel_at_period_end ? (
+              <div className="rounded-lg border border-border bg-secondary/30 p-4 text-sm text-muted-foreground">
+                Your subscription is set to cancel. Paid features remain available through {formatBillingDate(subscription.current_period_end)}, then your account returns to the Free Preview tier.
+              </div>
+            ) : billingHasEnded ? (
+              <div className="rounded-lg border border-border bg-secondary/30 p-4 text-sm text-muted-foreground">
+                This subscription has ended. Choose a plan to restore paid features.
+              </div>
+            ) : (
+              <div className="rounded-lg border border-border bg-secondary/30 p-4 text-sm text-muted-foreground">
+                Your subscription is active. You can update payment details, download receipts, or cancel from the Stripe billing portal.
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={manageBilling}
+                disabled={openingBillingPortal}
+                className="inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90 disabled:opacity-60"
+              >
+                {openingBillingPortal ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
+                Manage subscription
+              </button>
+              <Link to="/pricing" className="inline-flex items-center rounded-md border border-border px-4 py-2 text-sm font-semibold text-foreground hover:bg-secondary">
+                Compare plans
+              </Link>
+            </div>
+          </div>
+        )}
+      </section>
 
       <div className="rounded-xl border border-border bg-card p-6">
         <h2 className="font-display font-semibold text-primary">Legal and trust</h2>
@@ -925,6 +1087,15 @@ function formatAnalyticsDate(value: string | null) {
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(value));
+}
+
+function BillingDetail({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-border bg-secondary/30 px-4 py-3">
+      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="mt-1 text-sm font-semibold text-foreground">{value}</div>
+    </div>
+  );
 }
 
 function Field({
