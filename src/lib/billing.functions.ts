@@ -17,7 +17,7 @@ export const startStripeCheckout = createServerFn({ method: "POST" }).middleware
   if (!paidPlans.has(data.plan)) throw new Error("Choose a paid plan.");
   const customer = await customerFor(context.userId, String(context.claims.email || ""));
   const origin = process.env.APP_URL || "https://valuright.ai";
-  return { url: await createCheckout(customer, data.plan, `${origin}/app/settings?billing=success`, `${origin}/pricing?billing=cancelled`) };
+  return { url: await createCheckout(customer, context.userId, data.plan, `${origin}/app/settings?billing=success`, `${origin}/pricing?billing=cancelled`) };
 });
 export const openStripeBillingPortal = createServerFn({ method: "POST" }).middleware([withSupabaseAuth, requireSupabaseAuth]).handler(async ({ context }) => {
   const customer = await customerFor(context.userId, String(context.claims.email || ""));

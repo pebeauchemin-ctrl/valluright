@@ -30,11 +30,29 @@ export async function createStripeCustomer(userId: string, email?: string | null
   return data.id;
 }
 
-export async function createCheckout(customer: string, plan: BillingPlan, successUrl: string, cancelUrl: string) {
+export async function createCheckout(
+  customer: string,
+  userId: string,
+  plan: BillingPlan,
+  successUrl: string,
+  cancelUrl: string,
+) {
   const env = priceEnv[plan]; const price = env ? process.env[env] : undefined;
   if (!price) throw new Error("This Stripe price is not configured yet.");
-  const body = new URLSearchParams({ customer, success_url: successUrl, cancel_url: cancelUrl, "line_items[0][price]": price, "line_items[0][quantity]": "1", "metadata[plan]": plan, mode: plan === "one-time-report" ? "payment" : "subscription" });
-  if (plan !== "one-time-report") body.set("subscription_data[metadata][plan]", plan);
+  const body = new URLSearchParams({
+    customer,
+    success_url: successUrl,
+    cancel_url: cancelUrl,
+    "line_items[0][price]": price,
+    "line_items[0][quantity]": "1",
+    "metadata[plan]": plan,
+    "metadata[supabase_user_id]": userId,
+    mode: plan === "one-time-report" ? "payment" : "subscription",
+  });
+  if (plan !== "one-time-report") {
+    body.set("subscription_data[metadata][plan]", plan);
+    body.set("subscription_data[metadata][supabase_user_id]", userId);
+  }
   const data = await stripe("checkout/sessions", body);
   if (!data.url) throw new Error("Stripe did not return a checkout page.");
   return data.url;
