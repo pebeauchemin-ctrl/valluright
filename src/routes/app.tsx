@@ -39,14 +39,15 @@ function AppLayout() {
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
-    // If onboarding isn't complete, force the user back to /app/onboarding
-    // from any other /app/* page. Skip the onboarding route itself.
+    // Require a business before business-specific pages, while keeping Settings
+    // available so new customers can review their subscription before onboarding.
     if (
       !authLoading &&
       !bizLoading &&
       user &&
       businesses.length === 0 &&
-      location.pathname !== "/app/onboarding"
+      location.pathname !== "/app/onboarding" &&
+      location.pathname !== "/app/settings"
     ) {
       navigate({ to: "/app/onboarding" });
     }
