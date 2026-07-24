@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { getStripeSubscription } from "@/lib/stripe.server";
 
 type StripeEvent = { id: string; type: string; data: { object: Record<string, unknown> } };
 function plan(value: unknown) { return ["essentials", "exit-ready", "advisor-partner", "one-time-report"].includes(String(value)) ? String(value) : "free"; }
@@ -50,7 +51,14 @@ export const Route = createFileRoute("/api/public/stripe/webhook")({ server: { h
   const eventPlan = knownPlan(metadata.plan);
   if (eventPlan) values.plan = eventPlan;
   if (subscription) values.stripe_subscription_id = subscription;
-  if (event.type.startsWith("customer.subscription")) {
+  if (isCompletedCheckout && subscription) {
+    const stripeSubscription = await getStripeSubscription(subscription);
+    values.status = stripeSubscription.status || "active";
+    values.cancel_at_period_end = Boolean(stripeSubscription.cancel_at_period_end);
+    values.current_period_end = stripeSubscription.current_period_end
+      ? new Date(stripeSubscription.current_period_end * 1000).toISOString()
+      : null;
+  } else if (event.type.startsWith("customer.subscription")) {
     values.cancel_at_period_end = Boolean(object.cancel_at_period_end);
     values.current_period_end = object.current_period_end
       ? new Date(Number(object.current_period_end) * 1000).toISOString()
