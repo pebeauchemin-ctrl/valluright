@@ -23,8 +23,11 @@ export const Route = createFileRoute("/api/public/stripe/webhook")({ server: { h
   if (!(await validSignature(raw, request.headers.get("stripe-signature")))) return new Response("Invalid signature", { status: 400 });
   const event = JSON.parse(raw) as StripeEvent;
   const inserted = await (supabaseAdmin as any).from("billing_webhook_events").insert({ stripe_event_id: event.id, event_type: event.type });
-  if (inserted.error?.code === "23505") return new Response("Already processed", { status: 200 });
-  if (inserted.error) return new Response("Webhook storage error", { status: 500 });
+  // Reprocess duplicate deliveries safely. Older deployments could mark an event
+  // complete before its subscription update succeeded, so a resend must repair it.
+  if (inserted.error && inserted.error.code !== "23505") {
+    return new Response("Webhook storage error", { status: 500 });
+  }
   const object = event.data.object;
   const metadata = (object.metadata as Record<string, string> | undefined) ?? {};
   const customer = String(object.customer || "");
