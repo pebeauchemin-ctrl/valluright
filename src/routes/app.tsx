@@ -46,6 +46,7 @@ function AppLayout() {
       !bizLoading &&
       user &&
       businesses.length === 0 &&
+      location.pathname.startsWith("/app") &&
       location.pathname !== "/app/onboarding" &&
       location.pathname !== "/app/settings"
     ) {
