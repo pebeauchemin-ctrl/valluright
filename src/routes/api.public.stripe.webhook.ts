@@ -3,6 +3,10 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 type StripeEvent = { id: string; type: string; data: { object: Record<string, unknown> } };
 function plan(value: unknown) { return ["essentials", "exit-ready", "advisor-partner", "one-time-report"].includes(String(value)) ? String(value) : "free"; }
+function knownPlan(value: unknown) {
+  const valueAsPlan = plan(value);
+  return valueAsPlan === "free" ? null : valueAsPlan;
+}
 
 async function validSignature(body: string, signature: string | null) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -22,13 +26,45 @@ export const Route = createFileRoute("/api/public/stripe/webhook")({ server: { h
   if (inserted.error?.code === "23505") return new Response("Already processed", { status: 200 });
   if (inserted.error) return new Response("Webhook storage error", { status: 500 });
   const object = event.data.object;
+  const metadata = (object.metadata as Record<string, string> | undefined) ?? {};
   const customer = String(object.customer || "");
-  const subscription = object.id && event.type.startsWith("customer.subscription") ? String(object.id) : null;
-  const status = event.type === "customer.subscription.deleted" ? "canceled" : event.type === "invoice.payment_failed" ? "past_due" : String(object.status || "active");
-  const userId = (object.metadata as Record<string, string> | undefined)?.supabase_user_id;
-  const values = { stripe_customer_id: customer || null, stripe_subscription_id: subscription, plan: plan((object.metadata as Record<string, string> | undefined)?.plan), status, cancel_at_period_end: Boolean(object.cancel_at_period_end), current_period_end: object.current_period_end ? new Date(Number(object.current_period_end) * 1000).toISOString() : null };
-  if (userId) await (supabaseAdmin as any).from("subscriptions").upsert({ user_id: userId, ...values }, { onConflict: "user_id" });
-  else if (customer) await (supabaseAdmin as any).from("subscriptions").update(values).eq("stripe_customer_id", customer);
-  await (supabaseAdmin as any).from("billing_webhook_events").update({ processed_at: new Date().toISOString() }).eq("stripe_event_id", event.id);
+  const subscription = event.type.startsWith("customer.subscription")
+    ? String(object.id || "")
+    : String(object.subscription || "");
+  const userId = metadata.supabase_user_id;
+  const isCompletedCheckout = event.type === "checkout.session.completed";
+  const status = event.type === "customer.subscription.deleted"
+    ? "canceled"
+    : event.type === "invoice.payment_failed"
+      ? "past_due"
+      : isCompletedCheckout
+        ? "active"
+        : String(object.status || "active");
+  const values: Record<string, unknown> = {
+    stripe_customer_id: customer || null,
+    status,
+  };
+  const eventPlan = knownPlan(metadata.plan);
+  if (eventPlan) values.plan = eventPlan;
+  if (subscription) values.stripe_subscription_id = subscription;
+  if (event.type.startsWith("customer.subscription")) {
+    values.cancel_at_period_end = Boolean(object.cancel_at_period_end);
+    values.current_period_end = object.current_period_end
+      ? new Date(Number(object.current_period_end) * 1000).toISOString()
+      : null;
+  }
+
+  const subscriptionWrite = userId
+    ? await (supabaseAdmin as any).from("subscriptions").upsert({ user_id: userId, ...values }, { onConflict: "user_id" })
+    : customer
+      ? await (supabaseAdmin as any).from("subscriptions").update(values).eq("stripe_customer_id", customer)
+      : { error: null };
+  if (subscriptionWrite.error) {
+    await (supabaseAdmin as any).from("billing_webhook_events").update({ error_message: subscriptionWrite.error.message }).eq("stripe_event_id", event.id);
+    return new Response("Subscription update error", { status: 500 });
+  }
+
+  const completed = await (supabaseAdmin as any).from("billing_webhook_events").update({ processed_at: new Date().toISOString() }).eq("stripe_event_id", event.id);
+  if (completed.error) return new Response("Webhook completion error", { status: 500 });
   return new Response("ok", { status: 200 });
 } } } });
