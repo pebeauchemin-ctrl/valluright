@@ -22,6 +22,20 @@ async function stripe(path: string, body: URLSearchParams) {
   return data;
 }
 
+export async function getStripeSubscription(subscriptionId: string) {
+  const response = await fetch(`https://api.stripe.com/v1/subscriptions/${subscriptionId}`, {
+    headers: { Authorization: `Bearer ${key()}` },
+  });
+  const data = await response.json() as {
+    error?: { message?: string };
+    status?: string;
+    cancel_at_period_end?: boolean;
+    current_period_end?: number;
+  };
+  if (!response.ok) throw new Error(data.error?.message || "Stripe request failed.");
+  return data;
+}
+
 export async function createStripeCustomer(userId: string, email?: string | null) {
   const body = new URLSearchParams({ "metadata[supabase_user_id]": userId });
   if (email) body.set("email", email);
