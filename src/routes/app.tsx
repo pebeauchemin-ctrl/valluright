@@ -21,6 +21,7 @@ import {
 import { BrandLogo } from "@/components/BrandLogo";
 import { useAuth } from "@/lib/auth";
 import { useBusiness } from "@/lib/business";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/app")({
   head: () => ({ meta: [{ title: "Dashboard — ValuRight.ai" }] }),
@@ -33,18 +34,55 @@ function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [businessMenuOpen, setBusinessMenuOpen] = useState(false);
+  const [hasAdvisorAccess, setHasAdvisorAccess] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!user) {
+      setHasAdvisorAccess(false);
+      return;
+    }
+
+    setHasAdvisorAccess(null);
+    supabase
+      .from("advisor_invites")
+      .select("id")
+      .eq("advisor_id", user.id)
+      .eq("status", "accepted")
+      .limit(1)
+      .then(({ data }) => {
+        if (!cancelled) setHasAdvisorAccess(Boolean(data?.length));
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth" });
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
+    if (
+      !authLoading &&
+      !bizLoading &&
+      hasAdvisorAccess &&
+      businesses.length === 0 &&
+      location.pathname.startsWith("/app")
+    ) {
+      navigate({ to: "/advisor" });
+      return;
+    }
+
     // Require a business before business-specific pages, while keeping Settings
     // available so new customers can review their subscription before onboarding.
     if (
       !authLoading &&
       !bizLoading &&
       user &&
+      hasAdvisorAccess === false &&
       businesses.length === 0 &&
       location.pathname.startsWith("/app") &&
       location.pathname !== "/app/onboarding" &&
@@ -52,9 +90,17 @@ function AppLayout() {
     ) {
       navigate({ to: "/app/onboarding" });
     }
-  }, [authLoading, bizLoading, user, businesses, location.pathname, navigate]);
+  }, [
+    authLoading,
+    bizLoading,
+    user,
+    businesses,
+    hasAdvisorAccess,
+    location.pathname,
+    navigate,
+  ]);
 
-  if (authLoading || !user) {
+  if (authLoading || !user || hasAdvisorAccess === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-sm text-muted-foreground">Loading…</div>
@@ -62,7 +108,7 @@ function AppLayout() {
     );
   }
 
-  const navItems: ReadonlyArray<{
+  const navItems: Array<{
     to: string;
     label: string;
     icon: typeof LayoutDashboard;
@@ -82,6 +128,10 @@ function AppLayout() {
     { to: "/app/advisors", label: "Advisors", icon: Users },
     { to: "/app/settings", label: "Settings", icon: SettingsIcon },
   ];
+
+  if (hasAdvisorAccess) {
+    navItems.push({ to: "/advisor", label: "Advisor workspace", icon: Users });
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-secondary/40 lg:flex-row">
