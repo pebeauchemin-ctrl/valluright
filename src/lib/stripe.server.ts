@@ -31,6 +31,12 @@ export async function getStripeSubscription(subscriptionId: string) {
     status?: string;
     cancel_at_period_end?: boolean;
     current_period_end?: number;
+    items?: {
+      data?: Array<{
+        billed_until?: number;
+        current_period_end?: number;
+      }>;
+    };
   };
   if (!response.ok) throw new Error(data.error?.message || "Stripe request failed.");
   return data;

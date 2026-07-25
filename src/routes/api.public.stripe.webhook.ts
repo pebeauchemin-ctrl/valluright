@@ -55,8 +55,11 @@ export const Route = createFileRoute("/api/public/stripe/webhook")({ server: { h
     const stripeSubscription = await getStripeSubscription(subscription);
     values.status = stripeSubscription.status || "active";
     values.cancel_at_period_end = Boolean(stripeSubscription.cancel_at_period_end);
-    values.current_period_end = stripeSubscription.current_period_end
-      ? new Date(stripeSubscription.current_period_end * 1000).toISOString()
+    const currentPeriodEnd = stripeSubscription.current_period_end
+      ?? stripeSubscription.items?.data?.[0]?.current_period_end
+      ?? stripeSubscription.items?.data?.[0]?.billed_until;
+    values.current_period_end = currentPeriodEnd
+      ? new Date(currentPeriodEnd * 1000).toISOString()
       : null;
   } else if (event.type.startsWith("customer.subscription")) {
     values.cancel_at_period_end = Boolean(object.cancel_at_period_end);
