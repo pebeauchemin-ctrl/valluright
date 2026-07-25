@@ -51,7 +51,7 @@ export const Route = createFileRoute("/api/public/stripe/webhook")({ server: { h
   const eventPlan = knownPlan(metadata.plan);
   if (eventPlan) values.plan = eventPlan;
   if (subscription) values.stripe_subscription_id = subscription;
-  if (isCompletedCheckout && subscription) {
+  if (subscription) {
     const stripeSubscription = await getStripeSubscription(subscription);
     values.status = stripeSubscription.status || "active";
     values.cancel_at_period_end = Boolean(stripeSubscription.cancel_at_period_end);
