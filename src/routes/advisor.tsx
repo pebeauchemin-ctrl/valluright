@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { BarChart3, FileText, MessageSquare, Shield, UserCheck } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { useAuth } from "@/lib/auth";
@@ -50,7 +50,7 @@ function AdvisorWorkspace() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     setLoadError(null);
@@ -108,21 +108,26 @@ function AdvisorWorkspace() {
     setComments((commentRows.data ?? []) as Comment[]);
     setSelectedId((previous) => previous ?? accepted[0]?.business_id ?? null);
     setLoading(false);
-  };
+  }, [user]);
 
   useEffect(() => {
     if (!user) {
       setLoading(false);
       return;
     }
-    refresh().catch((error) => {
-      setLoadError(
-        error instanceof Error ? error.message : "Could not load your advisor workspace.",
-      );
-      setLoading(false);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+    const reloadWorkspace = () => {
+      refresh().catch((error) => {
+        setLoadError(
+          error instanceof Error ? error.message : "Could not refresh your advisor workspace.",
+        );
+        setLoading(false);
+      });
+    };
+
+    reloadWorkspace();
+    window.addEventListener("focus", reloadWorkspace);
+    return () => window.removeEventListener("focus", reloadWorkspace);
+  }, [user, refresh]);
 
   const selectedInvite = invites.find((invite) => invite.business_id === selectedId) ?? null;
   const selectedBusiness = businesses.find((business) => business.id === selectedId) ?? null;
@@ -148,6 +153,12 @@ function AdvisorWorkspace() {
     });
     setSaving(false);
     if (error) {
+      if (/advisor access|approval permission|permission denied/i.test(error.message)) {
+        setReviewStatus("comment");
+        refresh().catch(() => undefined);
+        toast.error("Your access level was changed by the owner. The workspace has been refreshed.");
+        return;
+      }
       toast.error(error.message);
       return;
     }
@@ -484,7 +495,7 @@ function permissionLabel(permission: string | null | undefined) {
       {
         view_only: "View only",
         comment: "Comment",
-        edit_assumptions: "Comment and input review",
+        edit_assumptions: "Comment",
         approve: "Comment and review",
       } as Record<string, string>
     )[permission ?? ""] ?? "View only"
