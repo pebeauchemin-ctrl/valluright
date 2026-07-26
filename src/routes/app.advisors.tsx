@@ -41,11 +41,6 @@ const PERMISSIONS = [
   { value: "view_only", label: "View only", desc: "Read the report, no edits or comments." },
   { value: "comment", label: "Comment only", desc: "Read and leave comments on assumptions." },
   {
-    value: "edit_assumptions",
-    label: "Review inputs",
-    desc: "Review inputs and leave comments. Direct financial editing remains owner-only.",
-  },
-  {
     value: "approve",
     label: "Record review status",
     desc: "Comment, edit, and record internal review status. This does not make the output a certified appraisal or professional opinion.",

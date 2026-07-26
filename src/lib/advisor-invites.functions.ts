@@ -29,7 +29,7 @@ const ADVISOR_ROLE_LABELS: Record<string, string> = {
 const PERMISSION_LABELS: Record<string, string> = {
   view_only: "View only",
   comment: "Comment only",
-  edit_assumptions: "Review inputs",
+  edit_assumptions: "Comment only",
   approve: "Record review status",
 };
 
