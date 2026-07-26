@@ -54,12 +54,13 @@ function AdvisorWorkspace() {
     if (!user) return;
     setLoading(true);
     setLoadError(null);
-    const { data: inviteRows, error: inviteError } = await supabase
-      .from("advisor_invites")
-      .select("id, business_id, advisor_role, permission_level, status, invited_at")
-      .eq("advisor_id", user.id)
-      .eq("status", "accepted")
-      .order("invited_at", { ascending: false });
+    const { data: inviteRows, error: inviteError } = await (
+      supabase as unknown as {
+        rpc: (
+          fn: "get_my_advisor_invites",
+        ) => Promise<{ data: Invite[] | null; error: Error | null }>;
+      }
+    ).rpc("get_my_advisor_invites");
     if (inviteError) throw inviteError;
 
     const accepted = (inviteRows ?? []) as Invite[];
