@@ -45,12 +45,14 @@ function AppLayout() {
     }
 
     setHasAdvisorAccess(null);
-    supabase
-      .from("advisor_invites")
-      .select("id")
-      .eq("advisor_id", user.id)
-      .eq("status", "accepted")
-      .limit(1)
+    (
+      supabase as unknown as {
+        rpc: (
+          fn: "get_my_advisor_invites",
+        ) => Promise<{ data: Array<{ id: string }> | null }>;
+      }
+    )
+      .rpc("get_my_advisor_invites")
       .then(({ data }) => {
         if (!cancelled) setHasAdvisorAccess(Boolean(data?.length));
       });
