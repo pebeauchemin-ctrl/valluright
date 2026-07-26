@@ -1478,6 +1478,17 @@ export type Database = {
         Returns: boolean
       }
       decline_advisor_invite: { Args: { _invite_id: string }; Returns: Json }
+      get_my_advisor_invites: {
+        Args: never
+        Returns: {
+          advisor_role: string
+          business_id: string
+          id: string
+          invited_at: string
+          permission_level: string
+          status: Database["public"]["Enums"]["advisor_invite_status"]
+        }[]
+      }
       get_public_teaser: { Args: { _public_id: string }; Returns: Json }
       has_role: {
         Args: {
