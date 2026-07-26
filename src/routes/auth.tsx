@@ -70,8 +70,18 @@ function AuthPage() {
       return;
     }
 
+    const emailRedirectTo =
+      typeof window === "undefined"
+        ? undefined
+        : selectedPlan
+          ? `${window.location.origin}/auth?mode=signin&plan=${selectedPlan.slug}`
+          : search.redirect
+            ? `${window.location.origin}${search.redirect}`
+            : undefined;
     const { error } =
-      mode === "signin" ? await signIn(email, password) : await signUp(email, password, fullName, selectedPlan && typeof window !== "undefined" ? `${window.location.origin}/auth?mode=signin&plan=${selectedPlan.slug}` : undefined);
+      mode === "signin"
+        ? await signIn(email, password)
+        : await signUp(email, password, fullName, emailRedirectTo);
     setBusy(false);
     if (error) {
       setError(error);
@@ -87,9 +97,13 @@ function AuthPage() {
         }).catch(() => undefined);
       }
       if (mode === "signup") {
-        setInfo(selectedPlan
-          ? "Confirm your email to proceed. Then sign in to continue securely to payment."
-          : "Confirm your email to finish creating your account.");
+        setInfo(
+          selectedPlan
+            ? "Confirm your email to proceed. Then sign in to continue securely to payment."
+            : search.redirect?.startsWith("/advisor/accept/")
+              ? "Confirm your email to accept the advisor invitation."
+              : "Confirm your email to finish creating your account.",
+        );
         return;
       }
       window.location.assign(search.redirect ?? "/app");
