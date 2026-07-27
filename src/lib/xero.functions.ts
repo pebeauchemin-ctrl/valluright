@@ -6,6 +6,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { withSupabaseAuth } from "@/lib/with-supabase-auth";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { requireUserEntitlement } from "@/lib/plan-entitlements.server";
 import {
   buildAuthorizeUrl,
   fetchYearSummary,
@@ -36,6 +37,11 @@ export const startXeroConnect = createServerFn({ method: "POST" })
   .middleware([withSupabaseAuth, requireSupabaseAuth])
   .inputValidator(z.object({ businessId: z.string().uuid().nullable().optional() }))
   .handler(async ({ data, context }) => {
+    await requireUserEntitlement({
+      supabase: supabaseAdmin,
+      userId: context.userId,
+      entitlement: "accounting_import",
+    });
     const redirectUri = XERO_REDIRECT_URI;
     console.info("Starting Xero OAuth", { host: getOrigin(), redirectUri });
     const state = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
@@ -73,6 +79,11 @@ export const disconnectXeroConnection = createServerFn({ method: "POST" })
   .middleware([withSupabaseAuth, requireSupabaseAuth])
   .inputValidator(z.object({ connectionId: z.string().uuid() }))
   .handler(async ({ data, context }) => {
+    await requireUserEntitlement({
+      supabase: supabaseAdmin,
+      userId: context.userId,
+      entitlement: "accounting_import",
+    });
     const { data: conn, error } = await supabaseAdmin
       .from("xero_connections")
       .select("id, business_id, tenant_id")
@@ -160,6 +171,11 @@ export const importXeroFinancials = createServerFn({ method: "POST" })
         lastSyncedAt: string;
       };
     }> => {
+      await requireUserEntitlement({
+        supabase: supabaseAdmin,
+        userId: context.userId,
+        entitlement: "accounting_import",
+      });
       let connectionId: string | null = null;
       let businessId: string | null = null;
       let importLogId: string | null = null;
