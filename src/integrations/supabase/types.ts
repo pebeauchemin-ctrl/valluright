@@ -1473,6 +1473,18 @@ export type Database = {
     }
     Functions: {
       accept_advisor_invite: { Args: { _invite_id: string }; Returns: Json }
+      advisor_permission_rank: {
+        Args: { _permission_level: string }
+        Returns: number
+      }
+      can_advisor_access: {
+        Args: {
+          _business_id: string
+          _minimum_permission?: string
+          _user_id: string
+        }
+        Returns: boolean
+      }
       current_user_has_plan_entitlement: {
         Args: { _entitlement: string }
         Returns: boolean
