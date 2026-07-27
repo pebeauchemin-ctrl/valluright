@@ -272,8 +272,8 @@ test("advisor acceptance securely links the invited account before access is gra
     /grant execute on function public\.accept_advisor_invite\(uuid\) to authenticated/,
   );
   assert.match(advisorAcceptanceRoute, /rpc\("accept_advisor_invite"/);
-  assert.match(advisorRoute, /\.eq\("advisor_id", user\.id\)/);
-  assert.match(advisorRoute, /\.eq\("status", "accepted"\)/);
+  assert.match(advisorRoute, /rpc\("get_my_advisor_invites"/);
+  assert.doesNotMatch(advisorRoute, /\.eq\("advisor_id", user\.id\)/);
 });
 
 test("advisor invitation emails are server-side, tracked, and rate limited", () => {
