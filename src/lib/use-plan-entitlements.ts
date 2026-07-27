@@ -20,6 +20,7 @@ export function usePlanEntitlements() {
   const [subscription, setSubscription] = useState<SubscriptionState>({
     plan: "free",
     status: "free",
+    currentPeriodEnd: null,
     loading: true,
   });
 
@@ -58,10 +59,10 @@ export function usePlanEntitlements() {
     ...subscription,
     has: (entitlement: Entitlement) =>
       hasEntitlement(
-      subscription.plan,
-      subscription.status,
-      entitlement,
-      subscription.currentPeriodEnd,
-    ),
+        subscription.plan,
+        subscription.status,
+        entitlement,
+        subscription.currentPeriodEnd,
+      ),
   };
 }
