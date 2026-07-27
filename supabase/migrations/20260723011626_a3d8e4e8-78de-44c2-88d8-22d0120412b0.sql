@@ -22,6 +22,8 @@ $$;
 
 drop policy if exists "owners upload to own data room" on storage.objects;
 drop policy if exists "owners update own data room" on storage.objects;
+drop policy if exists "owners upload to entitled data room" on storage.objects;
+drop policy if exists "owners update entitled data room" on storage.objects;
 
 create policy "owners upload to entitled data room"
   on storage.objects for insert to authenticated
