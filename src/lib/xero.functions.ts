@@ -79,11 +79,6 @@ export const disconnectXeroConnection = createServerFn({ method: "POST" })
   .middleware([withSupabaseAuth, requireSupabaseAuth])
   .inputValidator(z.object({ connectionId: z.string().uuid() }))
   .handler(async ({ data, context }) => {
-    await requireUserEntitlement({
-      supabase: supabaseAdmin,
-      userId: context.userId,
-      entitlement: "accounting_import",
-    });
     const { data: conn, error } = await supabaseAdmin
       .from("xero_connections")
       .select("id, business_id, tenant_id")
@@ -334,6 +329,11 @@ export const refreshXeroTenants = createServerFn({ method: "POST" })
   .middleware([withSupabaseAuth, requireSupabaseAuth])
   .inputValidator(z.object({ tenantId: z.string().min(1) }))
   .handler(async ({ data, context }) => {
+    await requireUserEntitlement({
+      supabase: supabaseAdmin,
+      userId: context.userId,
+      entitlement: "accounting_import",
+    });
     const { data: conn, error } = await supabaseAdmin
       .from("xero_connections")
       .select("id, business_id, access_token, refresh_token, expires_at")
