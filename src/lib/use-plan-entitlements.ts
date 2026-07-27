@@ -11,6 +11,7 @@ import {
 type SubscriptionState = {
   plan: BillingPlan;
   status: BillingStatus;
+  currentPeriodEnd: string | null;
   loading: boolean;
 };
 
@@ -27,13 +28,13 @@ export function usePlanEntitlements() {
 
     async function load() {
       if (!user) {
-        if (!cancelled) setSubscription({ plan: "free", status: "free", loading: false });
+        if (!cancelled) setSubscription({ plan: "free", status: "free", currentPeriodEnd: null, loading: false });
         return;
       }
 
       const { data } = await supabase
         .from("subscriptions")
-        .select("plan, status")
+        .select("plan, status, current_period_end")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -41,6 +42,7 @@ export function usePlanEntitlements() {
         setSubscription({
           plan: (data?.plan as BillingPlan | undefined) ?? "free",
           status: (data?.status as BillingStatus | undefined) ?? "free",
+          currentPeriodEnd: data?.current_period_end ?? null,
           loading: false,
         });
       }
@@ -55,6 +57,11 @@ export function usePlanEntitlements() {
   return {
     ...subscription,
     has: (entitlement: Entitlement) =>
-      hasEntitlement(subscription.plan, subscription.status, entitlement),
+      hasEntitlement(
+      subscription.plan,
+      subscription.status,
+      entitlement,
+      subscription.currentPeriodEnd,
+    ),
   };
 }
