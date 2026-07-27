@@ -7,6 +7,53 @@ import {
   type Entitlement,
 } from "@/lib/plan-entitlements";
 
+const planRequirement: Partial<Record<Entitlement, string>> = {
+  accounting_import: "Essentials, Exit Ready, or Advisor Partner",
+  buyer_teaser_public: "Exit Ready or Advisor Partner",
+  data_room: "Exit Ready or Advisor Partner",
+  advisor_review: "Exit Ready or Advisor Partner",
+};
+
+async function subscriptionHasEntitlement(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  entitlement: Entitlement,
+) {
+  const { data: subscription, error } = await supabase
+    .from("subscriptions")
+    .select("plan, status, current_period_end")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+
+  return hasEntitlement(
+    (subscription?.plan as BillingPlan | undefined) ?? "free",
+    (subscription?.status as BillingStatus | undefined) ?? "free",
+    entitlement,
+    subscription?.current_period_end,
+  );
+}
+
+function entitlementError(entitlement: Entitlement) {
+  const plan = planRequirement[entitlement] ?? "a paid";
+  return new Error(`This feature requires an active ${plan} plan.`);
+}
+
+export async function requireUserEntitlement({
+  supabase,
+  userId,
+  entitlement,
+}: {
+  supabase: SupabaseClient<Database>;
+  userId: string;
+  entitlement: Entitlement;
+}) {
+  if (!(await subscriptionHasEntitlement(supabase, userId, entitlement))) {
+    throw entitlementError(entitlement);
+  }
+}
+
 export async function requireBusinessEntitlement({
   supabase,
   userId,
@@ -28,18 +75,7 @@ export async function requireBusinessEntitlement({
   if (businessError) throw new Error(businessError.message);
   if (!business) throw new Error("Only the business owner can use this feature.");
 
-  const { data: subscription, error: subscriptionError } = await supabase
-    .from("subscriptions")
-    .select("plan, status")
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (subscriptionError) throw new Error(subscriptionError.message);
-
-  const plan = (subscription?.plan as BillingPlan | undefined) ?? "free";
-  const status = (subscription?.status as BillingStatus | undefined) ?? "free";
-
-  if (!hasEntitlement(plan, status, entitlement)) {
-    throw new Error("This feature requires an active Exit Ready or Advisor Partner plan.");
+  if (!(await subscriptionHasEntitlement(supabase, userId, entitlement))) {
+    throw entitlementError(entitlement);
   }
 }
