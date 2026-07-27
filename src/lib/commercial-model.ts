@@ -34,9 +34,10 @@ export const TARGET_CUSTOMER_SEGMENTS = [
 
 export const FREE_TRIAL_LIMITS = {
   name: "Free Preview",
-  reports: "in-app report preview",
+  reports: "in-app report preview and browser print",
   buyerTeaser: "draft preview only; public sharing is gated to Exit Ready or Advisor Partner",
   dataRoomStorage: "not included",
+  accountingIntegrations: "not included",
 };
 
 export const COMMERCIAL_PLANS: CommercialPlan[] = [
@@ -53,7 +54,10 @@ export const COMMERCIAL_PLANS: CommercialPlan[] = [
       "Health Score and recommendations",
       "What-if scenario modeling",
     ],
-    limits: ["Manual, CSV, Xero, and QuickBooks imports", "In-app report preview"],
+    limits: [
+      "Secure Xero and QuickBooks accounting integrations",
+      "Manual CSV imports and in-app report preview",
+    ],
     buyerTeaser: "preview_only",
   },
   {
