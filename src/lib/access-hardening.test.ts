@@ -57,6 +57,7 @@ const advisorAcceptanceRoute = readFileSync("src/routes/advisor.accept.$inviteId
 const advisorDeclineRoute = readFileSync("src/routes/advisor.decline.$inviteId.tsx", "utf8");
 const advisorRoute = readFileSync("src/routes/advisor.tsx", "utf8");
 const advisorInviteFunctions = readFileSync("src/lib/advisor-invites.functions.ts", "utf8");
+const settingsRoute = readFileSync("src/routes/app.settings.tsx", "utf8");
 
 test("public teaser does not expose internal business ids", () => {
   assert.match(migration, /create or replace function public\.get_public_teaser/);
@@ -338,4 +339,13 @@ test("advisor permissions are explicit and enforced before comments", () => {
   assert.match(migration, /create or replace function public\.can_advisor_access/);
   assert.match(migration, /public\.can_advisor_access\(business_id, auth\.uid\(\), 'comment'\)/);
   assert.match(migration, /drop policy if exists "advisors can update their invites"/);
+});
+
+test("settings renders the free billing panel when no subscription row exists", () => {
+  assert.match(
+    settingsRoute,
+    /!subscriptionLoading && subscription && subscription\.plan !== "free"/,
+  );
+  assert.doesNotMatch(settingsRoute, /subscription\?\.plan !== "free"/);
+  assert.match(settingsRoute, /!subscription \|\| subscription\.plan === "free"/);
 });

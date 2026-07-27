@@ -396,7 +396,6 @@ function Settings() {
         </div>
       </div>
 
-
       <section className="rounded-xl border border-border bg-card p-6" aria-labelledby="billing-heading">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -408,9 +407,9 @@ function Settings() {
               View your plan and manage payment details securely through Stripe.
             </p>
           </div>
-          {!subscriptionLoading && subscription?.plan !== "free" && (
+          {!subscriptionLoading && subscription && subscription.plan !== "free" && (
             <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
-              {planLabel(subscription?.plan)}
+              {planLabel(subscription.plan)}
             </span>
           )}
         </div>
