@@ -67,6 +67,7 @@ export type Database = {
           id: string
           is_approval: boolean
           review_status: string
+          section_key: string
         }
         Insert: {
           author_id: string
@@ -76,6 +77,7 @@ export type Database = {
           id?: string
           is_approval?: boolean
           review_status?: string
+          section_key?: string
         }
         Update: {
           author_id?: string
@@ -85,6 +87,7 @@ export type Database = {
           id?: string
           is_approval?: boolean
           review_status?: string
+          section_key?: string
         }
         Relationships: [
           {
@@ -1514,7 +1517,12 @@ export type Database = {
         Returns: boolean
       }
       record_advisor_review: {
-        Args: { _body: string; _business_id: string; _review_status?: string }
+        Args: {
+          _body: string
+          _business_id: string
+          _review_status?: string
+          _section_key?: string
+        }
         Returns: string
       }
       revenue_band: { Args: { _revenue: number }; Returns: string }
