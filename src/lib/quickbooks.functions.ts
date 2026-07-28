@@ -3,6 +3,7 @@ import { getRequest, getRequestHost } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { requireUserEntitlement } from "@/lib/plan-entitlements.server";
 import { withSupabaseAuth } from "@/lib/with-supabase-auth";
 import { decryptToken, encryptToken, isEncryptedToken } from "@/lib/token-crypto.server";
 import { recordSecurityAuditEvent } from "@/lib/security-audit.server";
@@ -28,6 +29,11 @@ export const startQuickBooksConnect = createServerFn({ method: "POST" })
   .middleware([withSupabaseAuth, requireSupabaseAuth])
   .inputValidator(z.object({ businessId: z.string().uuid().nullable().optional() }))
   .handler(async ({ data, context }) => {
+    await requireUserEntitlement({
+      supabase: supabaseAdmin,
+      userId: context.userId,
+      entitlement: "accounting_import",
+    });
     const origin = getOrigin();
     const redirectUri = `${origin}/api/public/quickbooks/callback`;
     const state = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
@@ -103,6 +109,11 @@ export const refreshQuickBooksConnection = createServerFn({ method: "POST" })
   .middleware([withSupabaseAuth, requireSupabaseAuth])
   .inputValidator(z.object({ connectionId: z.string().uuid() }))
   .handler(async ({ data, context }) => {
+    await requireUserEntitlement({
+      supabase: supabaseAdmin,
+      userId: context.userId,
+      entitlement: "accounting_import",
+    });
     let importLogId: string | null = null;
     const { data: conn, error } = await supabaseAdmin
       .from("quickbooks_connections")

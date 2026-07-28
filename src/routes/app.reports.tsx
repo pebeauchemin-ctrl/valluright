@@ -27,7 +27,6 @@ import {
   type DataQualityReview,
 } from "@/lib/data-quality";
 import { displayIndustryLabel } from "@/lib/industry-display";
-import { usePlanEntitlements } from "@/lib/use-plan-entitlements";
 
 export const Route = createFileRoute("/app/reports")({
   head: () => ({ meta: [{ title: "Reports — ValuRight.ai" }] }),
@@ -163,7 +162,6 @@ function toReportValuation(
 
 function Reports() {
   const { current } = useBusiness();
-  const entitlements = usePlanEntitlements();
   const recordEvent = useServerFn(recordProductEvent);
   const [bundle, setBundle] = useState<Bundle | null>(null);
   const [open, setOpen] = useState<ReportKey | null>(null);
@@ -367,10 +365,6 @@ function Reports() {
                 </button>
                 <button
                   onClick={() => {
-                    if (!entitlements.has("pdf_export")) {
-                      toast.error("PDF exports require an active Exit Ready or Advisor Partner plan.");
-                      return;
-                    }
                     setOpen(r.key);
                     setPrintOnOpen(true);
                     recordEvent({
@@ -385,7 +379,6 @@ function Reports() {
                     }).catch(() => undefined);
                     toast.info(`Opening print dialog for ${r.title}. Choose "Save as PDF".`);
                   }}
-                  disabled={entitlements.loading || !entitlements.has("pdf_export")}
                   className="inline-flex items-center justify-center gap-1.5 rounded-md border border-border px-3 py-2 text-sm font-semibold hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Download className="h-4 w-4" /> Print / PDF
