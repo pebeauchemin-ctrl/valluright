@@ -56,6 +56,10 @@ const advisorsRoute = readFileSync("src/routes/app.advisors.tsx", "utf8");
 const advisorAcceptanceRoute = readFileSync("src/routes/advisor.accept.$inviteId.tsx", "utf8");
 const advisorDeclineRoute = readFileSync("src/routes/advisor.decline.$inviteId.tsx", "utf8");
 const advisorRoute = readFileSync("src/routes/advisor.tsx", "utf8");
+const advisorWorkpaperMigration = readFileSync(
+  "supabase/migrations/20260728013000_advisor_review_workpaper.sql",
+  "utf8",
+);
 const advisorInviteFunctions = readFileSync("src/lib/advisor-invites.functions.ts", "utf8");
 const settingsRoute = readFileSync("src/routes/app.settings.tsx", "utf8");
 
