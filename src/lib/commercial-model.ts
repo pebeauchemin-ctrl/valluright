@@ -8,7 +8,7 @@ export type CommercialPlan = {
   highlighted?: boolean;
   features: string[];
   limits: string[];
-  buyerTeaser: "preview_only" | "public_sharing" | "client_sharing";
+  buyerTeaser: "preview_only" | "public_sharing";
 };
 
 export const TARGET_CUSTOMER_SEGMENTS = [
@@ -77,22 +77,6 @@ export const COMMERCIAL_PLANS: CommercialPlan[] = [
     limits: ["Buyer lead workflow included"],
     buyerTeaser: "public_sharing",
   },
-  {
-    slug: "advisor-partner",
-    name: "Advisor Partner",
-    price: "$349",
-    sub: "/seat / month",
-    who: "CPAs, brokers, and exit advisors",
-    cta: "Start Advisor Partner preview",
-    features: [
-      "Private data room and public teaser sharing",
-      "Up to 3 advisor reviewers per business",
-      "Planned: client portfolio workspace",
-      "Planned: white-label reports",
-    ],
-    limits: ["Additional client-business management and white-label reports are planned"],
-    buyerTeaser: "client_sharing",
-  },
 ];
 
 export const BILLING_EVENTS = [
@@ -105,7 +89,6 @@ export const BILLING_EVENTS = [
 
 export function buyerTeaserPolicy(plan: CommercialPlan) {
   if (plan.buyerTeaser === "public_sharing") return "Public teaser sharing included";
-  if (plan.buyerTeaser === "client_sharing") return "Client teaser sharing included";
   return "Draft preview only";
 }
 
