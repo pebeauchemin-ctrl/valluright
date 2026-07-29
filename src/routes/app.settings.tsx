@@ -117,7 +117,6 @@ type SubscriptionSummary = {
 const PLAN_LABELS: Record<string, string> = {
   essentials: "Essentials",
   "exit-ready": "Exit Ready",
-  "advisor-partner": "Advisor Partner",
   free: "Free Preview",
 };
 
