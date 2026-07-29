@@ -2,13 +2,11 @@ export type BillingPlan =
   | "free"
   | "essentials"
   | "exit-ready"
-  | "advisor-partner"
   | "one-time-report";
 
 const priceEnv: Partial<Record<BillingPlan, string>> = {
   essentials: "STRIPE_PRICE_ESSENTIALS",
   "exit-ready": "STRIPE_PRICE_EXIT_READY",
-  "advisor-partner": "STRIPE_PRICE_ADVISOR_PARTNER",
   "one-time-report": "STRIPE_PRICE_ONE_TIME_REPORT",
 };
 
@@ -21,6 +19,9 @@ export function planFromStripePrice(priceId: string | null | undefined): Billing
     if (process.env[environmentName] === priceId) return plan;
   }
 
+  // Advisor Partner is retired. Map its historic price to Exit Ready so an old
+  // subscription webhook cannot downgrade a customer to the free tier.
+  if (process.env.STRIPE_PRICE_ADVISOR_PARTNER === priceId) return "exit-ready";
   return null;
 }
 
