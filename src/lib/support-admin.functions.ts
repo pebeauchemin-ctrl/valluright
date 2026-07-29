@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { withSupabaseAuth } from "@/lib/with-supabase-auth";
+import { COMMERCIAL_PLANS } from "@/lib/commercial-model";
 import {
   buildOnboardingStatus,
   sanitizeSupportMetadata,
@@ -282,3 +283,130 @@ function emptySingle<T>() {
 function throwIfError(error: { message: string } | null | undefined) {
   if (error) throw new Error(error.message);
 }
+
+
+export type AdminBillingOverview = {
+  metrics: {
+    activeByPlan: Array<{ plan: string; count: number }>;
+    mrr: number;
+    freeAccounts: number;
+    pastDueAccounts: number;
+    canceledThisMonth: number;
+    oneTimePurchasesThisMonth: number;
+  };
+  subscriptions: Array<{
+    userId: string;
+    email: string | null;
+    plan: string;
+    status: string;
+    currentPeriodEnd: string | null;
+    startedAt: string;
+    cancelAtPeriodEnd: boolean;
+    stripeCustomerUrl: string | null;
+  }>;
+  webhookEvents: Array<{
+    eventType: string;
+    receivedAt: string;
+    processedAt: string | null;
+    errorMessage: string | null;
+  }>;
+};
+
+const ACTIVE_BILLING_STATUSES = new Set(["active", "trialing"]);
+const MONTHLY_PLAN_PRICES = Object.fromEntries(
+  COMMERCIAL_PLANS.map((plan) => [plan.slug, Number(plan.price.replace(/[^0-9.]/g, ""))]),
+) as Record<string, number>;
+
+function startOfCurrentMonth() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+}
+
+function stripeDashboardCustomerUrl(customerId: string | null) {
+  if (!customerId) return null;
+  const base = process.env.STRIPE_SECRET_KEY?.startsWith("sk_test_")
+    ? "https://dashboard.stripe.com/test"
+    : "https://dashboard.stripe.com";
+  return `${base}/customers/${customerId}`;
+}
+
+export const getAdminBillingOverview = createServerFn({ method: "GET" })
+  .middleware([withSupabaseAuth, requireSupabaseAuth])
+  .handler(async ({ context }): Promise<AdminBillingOverview> => {
+    if (!(await currentUserIsAdmin(context.userId))) {
+      throw new Response("Forbidden", { status: 403 });
+    }
+
+    const [subscriptionsResult, webhookEventsResult, users] = await Promise.all([
+      supabaseAdmin
+        .from("subscriptions")
+        .select(
+          "user_id, plan, status, current_period_end, created_at, updated_at, cancel_at_period_end, stripe_customer_id",
+        )
+        .order("updated_at", { ascending: false }),
+      supabaseAdmin
+        .from("billing_webhook_events")
+        .select("event_type, received_at, processed_at, error_message")
+        .order("received_at", { ascending: false })
+        .limit(20),
+      listUsersForSupport(),
+    ]);
+
+    throwIfError(subscriptionsResult.error);
+    throwIfError(webhookEventsResult.error);
+
+    const usersById = new Map(users.map((user) => [user.id, user]));
+    const subscriptions = subscriptionsResult.data ?? [];
+    const monthlySubscribers = subscriptions.filter(
+      (subscription) =>
+        ACTIVE_BILLING_STATUSES.has(subscription.status) &&
+        subscription.plan !== "free",
+    );
+    const planCounts = new Map<string, number>();
+    for (const subscription of monthlySubscribers) {
+      planCounts.set(subscription.plan, (planCounts.get(subscription.plan) ?? 0) + 1);
+    }
+
+    return {
+      metrics: {
+        activeByPlan: [...planCounts.entries()].map(([plan, count]) => ({ plan, count })),
+        mrr: monthlySubscribers.reduce(
+          (total, subscription) => total + (MONTHLY_PLAN_PRICES[subscription.plan] ?? 0),
+          0,
+        ),
+        freeAccounts: Math.max(
+          0,
+          users.length -
+            new Set(
+              subscriptions
+                .filter((subscription) => subscription.plan !== "free")
+                .map((subscription) => subscription.user_id),
+            ).size,
+        ),
+        pastDueAccounts: subscriptions.filter((subscription) =>
+          ["past_due", "unpaid", "incomplete"].includes(subscription.status),
+        ).length,
+        canceledThisMonth: subscriptions.filter(
+          (subscription) =>
+            subscription.status === "canceled" && subscription.updated_at >= startOfCurrentMonth(),
+        ).length,
+        oneTimePurchasesThisMonth: 0,
+      },
+      subscriptions: subscriptions.map((subscription) => ({
+        userId: subscription.user_id,
+        email: usersById.get(subscription.user_id)?.email ?? null,
+        plan: subscription.plan,
+        status: subscription.status,
+        currentPeriodEnd: subscription.current_period_end,
+        startedAt: subscription.created_at,
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+        stripeCustomerUrl: stripeDashboardCustomerUrl(subscription.stripe_customer_id),
+      })),
+      webhookEvents: (webhookEventsResult.data ?? []).map((event) => ({
+        eventType: event.event_type,
+        receivedAt: event.received_at,
+        processedAt: event.processed_at,
+        errorMessage: event.error_message,
+      })),
+    };
+  });
