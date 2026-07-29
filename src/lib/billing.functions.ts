@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { createCheckout, createPortal, createStripeCustomer, type BillingPlan } from "@/lib/stripe.server";
 
-const paidPlans = new Set<BillingPlan>(["essentials", "exit-ready", "advisor-partner"]);
+const paidPlans = new Set<BillingPlan>(["essentials", "exit-ready"]);
 async function customerFor(userId: string, email?: string | null) {
   const { data } = await (supabaseAdmin as any).from("subscriptions").select("stripe_customer_id").eq("user_id", userId).maybeSingle();
   if (data?.stripe_customer_id) return data.stripe_customer_id;
