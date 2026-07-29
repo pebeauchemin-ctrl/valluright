@@ -2,7 +2,6 @@ export type BillingPlan =
   | "free"
   | "essentials"
   | "exit-ready"
-  | "advisor-partner"
   | "one-time-report";
 
 export type BillingStatus =
@@ -29,12 +28,6 @@ const entitlements: Record<BillingPlan, readonly Entitlement[]> = {
   free: [],
   essentials: ["accounting_import"],
   "exit-ready": [
-    "accounting_import",
-    "buyer_teaser_public",
-    "data_room",
-    "advisor_review",
-  ],
-  "advisor-partner": [
     "accounting_import",
     "buyer_teaser_public",
     "data_room",
