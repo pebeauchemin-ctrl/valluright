@@ -19,7 +19,12 @@ import { useBusiness } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PRODUCT_ANALYTICS_PRIVACY_NOTE, productFunnelProgress } from "@/lib/product-analytics";
-import { getSupportAdminAccess, searchSupportAccounts } from "@/lib/support-admin.functions";
+import {
+  getAdminBillingOverview,
+  getSupportAdminAccess,
+  searchSupportAccounts,
+  type AdminBillingOverview,
+} from "@/lib/support-admin.functions";
 import { openStripeBillingPortal } from "@/lib/billing.functions";
 import {
   SUPPORT_ACTIONS,
@@ -168,12 +173,15 @@ function Settings() {
   const [analyticsEvents, setAnalyticsEvents] = useState<AnalyticsEvent[]>([]);
   const checkSupportAdminAccess = useServerFn(getSupportAdminAccess);
   const searchSupportAdminAccounts = useServerFn(searchSupportAccounts);
+  const loadAdminBillingOverview = useServerFn(getAdminBillingOverview);
   const [isSupportAdmin, setIsSupportAdmin] = useState(false);
   const [supportQuery, setSupportQuery] = useState("");
   const [supportSearching, setSupportSearching] = useState(false);
   const [supportResults, setSupportResults] = useState<SupportAccountSummary[]>([]);
   const [selectedSupportAccount, setSelectedSupportAccount] =
     useState<SupportAccountSummary | null>(null);
+  const [adminBilling, setAdminBilling] = useState<AdminBillingOverview | null>(null);
+  const [adminBillingLoading, setAdminBillingLoading] = useState(false);
   const [subscription, setSubscription] = useState<SubscriptionSummary | null>(null);
   const [subscriptionLoading, setSubscriptionLoading] = useState(true);
   const [openingBillingPortal, setOpeningBillingPortal] = useState(false);
@@ -245,6 +253,30 @@ function Settings() {
       cancelled = true;
     };
   }, [checkSupportAdminAccess]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!isSupportAdmin) {
+      setAdminBilling(null);
+      return;
+    }
+
+    setAdminBillingLoading(true);
+    loadAdminBillingOverview()
+      .then((overview) => {
+        if (!cancelled) setAdminBilling(overview);
+      })
+      .catch(() => {
+        if (!cancelled) toast.error("Could not load the admin billing overview.");
+      })
+      .finally(() => {
+        if (!cancelled) setAdminBillingLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isSupportAdmin, loadAdminBillingOverview]);
 
   useEffect(() => {
     let cancelled = false;
@@ -561,15 +593,18 @@ function Settings() {
       )}
 
       {isSupportAdmin && (
-        <SupportAdminPanel
-          query={supportQuery}
-          setQuery={setSupportQuery}
-          searching={supportSearching}
-          results={supportResults}
-          selected={selectedSupportAccount}
-          setSelected={setSelectedSupportAccount}
-          onSearch={runSupportSearch}
-        />
+        <>
+          <AdminBillingPanel overview={adminBilling} loading={adminBillingLoading} />
+          <SupportAdminPanel
+            query={supportQuery}
+            setQuery={setSupportQuery}
+            searching={supportSearching}
+            results={supportResults}
+            selected={selectedSupportAccount}
+            setSelected={setSelectedSupportAccount}
+            onSearch={runSupportSearch}
+          />
+        </>
       )}
 
       {current && (
@@ -1229,4 +1264,162 @@ function Choice({
       </div>
     </div>
   );
+}
+
+function AdminBillingPanel({
+  overview,
+  loading,
+}: {
+  overview: AdminBillingOverview | null;
+  loading: boolean;
+}) {
+  if (loading && !overview) {
+    return (
+      <section className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground">
+        Loading billing overview...
+      </section>
+    );
+  }
+  if (!overview) return null;
+
+  const paymentProblems = overview.subscriptions.filter((subscription) =>
+    ["past_due", "unpaid", "incomplete"].includes(subscription.status),
+  );
+  const anomalyEvents = overview.webhookEvents.filter(
+    (event) => event.errorMessage || !event.processedAt,
+  );
+
+  return (
+    <section className="rounded-xl border border-accent/30 bg-card p-6">
+      <div>
+        <div className="flex items-center gap-2">
+          <CreditCard className="h-4 w-4 text-accent" />
+          <h2 className="font-display font-semibold text-primary">Admin billing overview</h2>
+        </div>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Read-only subscription health. Use Stripe for refunds, cards, invoices, and disputes.
+        </p>
+      </div>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <BillingDetail label="Monthly recurring revenue" value={formatAdminCurrency(overview.metrics.mrr)} />
+        <BillingDetail label="Past due / unpaid" value={String(overview.metrics.pastDueAccounts)} />
+        <BillingDetail label="Free accounts" value={String(overview.metrics.freeAccounts)} />
+        <BillingDetail label="Canceled this month" value={String(overview.metrics.canceledThisMonth)} />
+      </div>
+
+      <div className="mt-4 rounded-lg border border-border bg-secondary/30 p-4">
+        <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Active subscriptions by plan
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {overview.metrics.activeByPlan.length > 0 ? (
+            overview.metrics.activeByPlan.map((item) => (
+              <span key={item.plan} className="rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
+                {planLabel(item.plan)}: {item.count}
+              </span>
+            ))
+          ) : (
+            <span className="text-sm text-muted-foreground">No active paid subscriptions.</span>
+          )}
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          One-time report purchases this month: {overview.metrics.oneTimePurchasesThisMonth}. This product is not currently offered.
+        </p>
+      </div>
+
+      <div className="mt-5 overflow-x-auto rounded-lg border border-border">
+        <table className="w-full min-w-[760px] text-left text-sm">
+          <thead className="bg-secondary/50 text-xs uppercase tracking-wide text-muted-foreground">
+            <tr>
+              <th className="px-4 py-3 font-semibold">Customer</th>
+              <th className="px-4 py-3 font-semibold">Plan</th>
+              <th className="px-4 py-3 font-semibold">Status</th>
+              <th className="px-4 py-3 font-semibold">Renews</th>
+              <th className="px-4 py-3 font-semibold">Started</th>
+              <th className="px-4 py-3 font-semibold">Stripe</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {overview.subscriptions.map((subscription) => (
+              <tr key={subscription.userId} className="bg-card">
+                <td className="px-4 py-3">{subscription.email ?? "Email unavailable"}</td>
+                <td className="px-4 py-3">{planLabel(subscription.plan)}</td>
+                <td className="px-4 py-3">
+                  <span className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                    ["past_due", "unpaid", "incomplete"].includes(subscription.status)
+                      ? "bg-destructive/10 text-destructive"
+                      : "bg-accent-soft text-accent"
+                  }`}>
+                    {subscription.status.replace(/_/g, " ")}
+                    {subscription.cancelAtPeriodEnd ? " (cancels)" : ""}
+                  </span>
+                </td>
+                <td className="px-4 py-3">{formatBillingDate(subscription.currentPeriodEnd)}</td>
+                <td className="px-4 py-3">{formatBillingDate(subscription.startedAt)}</td>
+                <td className="px-4 py-3">
+                  {subscription.stripeCustomerUrl ? (
+                    <a
+                      href={subscription.stripeCustomerUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 font-semibold text-accent hover:underline"
+                    >
+                      Open <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  ) : (
+                    <span className="text-muted-foreground">Not linked</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+            {overview.subscriptions.length === 0 && (
+              <tr>
+                <td className="px-4 py-5 text-muted-foreground" colSpan={6}>
+                  No subscription records yet.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {(paymentProblems.length > 0 || anomalyEvents.length > 0) && (
+        <div className="mt-5 grid gap-3 lg:grid-cols-2">
+          <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
+            <div className="font-semibold text-destructive">Payment problems</div>
+            <div className="mt-2 space-y-1 text-sm">
+              {paymentProblems.length > 0 ? (
+                paymentProblems.map((subscription) => (
+                  <div key={subscription.userId}>
+                    {subscription.email ?? "Email unavailable"} · {subscription.status.replace(/_/g, " ")}
+                  </div>
+                ))
+              ) : (
+                <div className="text-muted-foreground">No past-due subscriptions.</div>
+              )}
+            </div>
+          </div>
+          <div className="rounded-lg border border-gold/40 bg-gold/10 p-4">
+            <div className="font-semibold text-foreground">Webhook attention</div>
+            <div className="mt-2 space-y-1 text-sm text-muted-foreground">
+              {anomalyEvents.slice(0, 5).map((event) => (
+                <div key={`${event.eventType}-${event.receivedAt}`}>
+                  {event.eventType} · {event.errorMessage ?? "Not processed"} · {formatBillingDate(event.receivedAt)}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function formatAdminCurrency(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(value);
 }
