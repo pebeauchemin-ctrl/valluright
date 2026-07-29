@@ -9,7 +9,7 @@ import {
 type StripeEvent = { id: string; type: string; data: { object: Record<string, unknown> } };
 
 function knownPlan(value: unknown): BillingPlan | null {
-  return ["essentials", "exit-ready", "advisor-partner", "one-time-report"].includes(String(value))
+  return ["essentials", "exit-ready", "one-time-report"].includes(String(value))
     ? (String(value) as BillingPlan)
     : null;
 }
