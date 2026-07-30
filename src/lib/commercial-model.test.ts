@@ -25,12 +25,8 @@ assert.equal(exitReady.buyerTeaser, "public_sharing");
 assert.equal(buyerTeaserPolicy(exitReady), "Public teaser sharing included");
 assert.equal(commercialPlanBySlug("exit-ready")?.name, "Exit Ready");
 assert.equal(commercialPlanBySlug("missing"), null);
-
-const advisorPartner = COMMERCIAL_PLANS.find((plan) => plan.name === "Advisor Partner");
-assert.ok(advisorPartner);
-assert.equal(advisorPartner.slug, "advisor-partner");
-assert.equal(advisorPartner.buyerTeaser, "client_sharing");
-assert.ok(advisorPartner.features.some((feature) => feature.startsWith("Planned:")));
+assert.equal(commercialPlanBySlug("advisor-partner"), null);
+assert.equal(COMMERCIAL_PLANS.length, 2);
 
 const essentials = COMMERCIAL_PLANS.find((plan) => plan.name === "Essentials");
 assert.ok(essentials);

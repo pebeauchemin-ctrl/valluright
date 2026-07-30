@@ -22,6 +22,7 @@ alter table public.advisor_comments
   );
 
 drop function if exists public.record_advisor_review(uuid, text, text);
+drop function if exists public.record_advisor_review(uuid, text, text, text);
 
 create function public.record_advisor_review(
   _business_id uuid,
