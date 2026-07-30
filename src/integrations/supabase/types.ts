@@ -859,6 +859,39 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_preferences: {
+        Row: {
+          created_at: string
+          email: string
+          marketing_opt_in: boolean
+          marketing_opt_in_at: string | null
+          marketing_unsubscribed_at: string | null
+          unsubscribe_token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          marketing_opt_in?: boolean
+          marketing_opt_in_at?: string | null
+          marketing_unsubscribed_at?: string | null
+          unsubscribe_token?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          marketing_opt_in?: boolean
+          marketing_opt_in_at?: string | null
+          marketing_unsubscribed_at?: string | null
+          unsubscribe_token?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1538,6 +1571,7 @@ export type Database = {
         }
         Returns: string
       }
+      unsubscribe_from_marketing: { Args: { _token: string }; Returns: boolean }
       update_buyer_access_request_status: {
         Args: {
           _note?: string
