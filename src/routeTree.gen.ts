@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SecurityRouteImport } from './routes/security'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -41,6 +42,11 @@ import { Route as ApiPublicXeroCallbackRouteImport } from './routes/api.public.x
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api.public.stripe.webhook'
 import { Route as ApiPublicQuickbooksCallbackRouteImport } from './routes/api.public.quickbooks.callback'
 
+const UnsubscribeRoute = UnsubscribeRouteImport.update({
+  id: '/unsubscribe',
+  path: '/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -210,6 +216,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/app/advisors': typeof AppAdvisorsRoute
   '/app/buyer-requests': typeof AppBuyerRequestsRoute
   '/app/buyer-teaser': typeof AppBuyerTeaserRoute
@@ -242,6 +249,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/app/advisors': typeof AppAdvisorsRoute
   '/app/buyer-requests': typeof AppBuyerRequestsRoute
   '/app/buyer-teaser': typeof AppBuyerTeaserRoute
@@ -276,6 +284,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/app/advisors': typeof AppAdvisorsRoute
   '/app/buyer-requests': typeof AppBuyerRequestsRoute
   '/app/buyer-teaser': typeof AppBuyerTeaserRoute
@@ -311,6 +320,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/security'
     | '/terms'
+    | '/unsubscribe'
     | '/app/advisors'
     | '/app/buyer-requests'
     | '/app/buyer-teaser'
@@ -343,6 +353,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/security'
     | '/terms'
+    | '/unsubscribe'
     | '/app/advisors'
     | '/app/buyer-requests'
     | '/app/buyer-teaser'
@@ -376,6 +387,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/security'
     | '/terms'
+    | '/unsubscribe'
     | '/app/advisors'
     | '/app/buyer-requests'
     | '/app/buyer-teaser'
@@ -410,6 +422,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SecurityRoute: typeof SecurityRoute
   TermsRoute: typeof TermsRoute
+  UnsubscribeRoute: typeof UnsubscribeRoute
   TeaserPublicIdRoute: typeof TeaserPublicIdRoute
   ApiPublicQuickbooksCallbackRoute: typeof ApiPublicQuickbooksCallbackRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
@@ -418,6 +431,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/unsubscribe': {
+      id: '/unsubscribe'
+      path: '/unsubscribe'
+      fullPath: '/unsubscribe'
+      preLoaderRoute: typeof UnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -699,6 +719,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SecurityRoute: SecurityRoute,
   TermsRoute: TermsRoute,
+  UnsubscribeRoute: UnsubscribeRoute,
   TeaserPublicIdRoute: TeaserPublicIdRoute,
   ApiPublicQuickbooksCallbackRoute: ApiPublicQuickbooksCallbackRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
