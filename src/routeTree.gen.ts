@@ -13,6 +13,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SecurityRouteImport } from './routes/security'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as MethodologyRouteImport } from './routes/methodology'
 import { Route as DemoRouteImport } from './routes/demo'
@@ -59,6 +60,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UnsubscribeRoute = UnsubscribeRouteImport.update({
+  id: '/unsubscribe',
+  path: '/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingRoute = PricingRouteImport.update({
@@ -207,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/methodology': typeof MethodologyRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/reset-password': typeof ResetPasswordRoute
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
@@ -239,6 +246,7 @@ export interface FileRoutesByTo {
   '/methodology': typeof MethodologyRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/reset-password': typeof ResetPasswordRoute
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
@@ -273,6 +281,7 @@ export interface FileRoutesById {
   '/methodology': typeof MethodologyRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/reset-password': typeof ResetPasswordRoute
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
@@ -308,6 +317,7 @@ export interface FileRouteTypes {
     | '/methodology'
     | '/pricing'
     | '/privacy'
+    | '/unsubscribe'
     | '/reset-password'
     | '/security'
     | '/terms'
@@ -340,6 +350,7 @@ export interface FileRouteTypes {
     | '/methodology'
     | '/pricing'
     | '/privacy'
+    | '/unsubscribe'
     | '/reset-password'
     | '/security'
     | '/terms'
@@ -373,6 +384,7 @@ export interface FileRouteTypes {
     | '/methodology'
     | '/pricing'
     | '/privacy'
+    | '/unsubscribe'
     | '/reset-password'
     | '/security'
     | '/terms'
@@ -407,6 +419,7 @@ export interface RootRouteChildren {
   MethodologyRoute: typeof MethodologyRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
+  UnsubscribeRoute: typeof UnsubscribeRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SecurityRoute: typeof SecurityRoute
   TermsRoute: typeof TermsRoute
@@ -444,6 +457,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/unsubscribe': {
+      id: '/unsubscribe'
+      path: '/unsubscribe'
+      fullPath: '/unsubscribe'
+      preLoaderRoute: typeof UnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -696,6 +716,7 @@ const rootRouteChildren: RootRouteChildren = {
   MethodologyRoute: MethodologyRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
+  UnsubscribeRoute: UnsubscribeRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SecurityRoute: SecurityRoute,
   TermsRoute: TermsRoute,
