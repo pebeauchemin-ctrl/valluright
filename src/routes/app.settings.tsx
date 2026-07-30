@@ -439,7 +439,7 @@ function Settings() {
           marketing_opt_in_at: string | null;
           marketing_unsubscribed_at: string | null;
         }) => {
-          eq: (column: string, value: string) => Promise<{ error: { message: string } | null>;
+          eq: (column: string, value: string) => Promise<{ error: { message: string } | null }>;
         };
       };
 
