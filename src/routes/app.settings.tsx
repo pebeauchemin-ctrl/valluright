@@ -114,6 +114,12 @@ type SubscriptionSummary = {
   stripe_customer_id: string | null;
 };
 
+type MarketingPreference = {
+  marketing_opt_in: boolean;
+  marketing_opt_in_at: string | null;
+  marketing_unsubscribed_at: string | null;
+};
+
 const PLAN_LABELS: Record<string, string> = {
   essentials: "Essentials",
   "exit-ready": "Exit Ready",
@@ -184,6 +190,9 @@ function Settings() {
   const [subscription, setSubscription] = useState<SubscriptionSummary | null>(null);
   const [subscriptionLoading, setSubscriptionLoading] = useState(true);
   const [openingBillingPortal, setOpeningBillingPortal] = useState(false);
+  const [marketingPreference, setMarketingPreference] = useState<MarketingPreference | null>(null);
+  const [marketingLoading, setMarketingLoading] = useState(true);
+  const [marketingSaving, setMarketingSaving] = useState(false);
 
   // Hydrate from current business
   useEffect(() => {
@@ -306,6 +315,40 @@ function Settings() {
     };
   }, [user]);
 
+  useEffect(() => {
+    let cancelled = false;
+    if (!user) {
+      setMarketingPreference(null);
+      setMarketingLoading(false);
+      return;
+    }
+
+    const preferences = supabase.from("marketing_preferences" as never) as unknown as {
+      select: (columns: string) => {
+        maybeSingle: () => Promise<{ data: MarketingPreference | null; error: { message: string } | null }>;
+      };
+    };
+
+    setMarketingLoading(true);
+    preferences
+      .select("marketing_opt_in, marketing_opt_in_at, marketing_unsubscribed_at")
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) {
+          toast.error("Could not load email preferences.");
+          setMarketingPreference(null);
+        } else {
+          setMarketingPreference(data);
+        }
+        setMarketingLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
   if (!user) return null;
 
   const saveBasics = async () => {
@@ -387,6 +430,42 @@ function Settings() {
     }
   };
 
+  const saveMarketingPreference = async (marketingOptIn: boolean) => {
+    setMarketingSaving(true);
+    try {
+      const preferences = supabase.from("marketing_preferences" as never) as unknown as {
+        update: (values: {
+          marketing_opt_in: boolean;
+          marketing_opt_in_at: string | null;
+          marketing_unsubscribed_at: string | null;
+        }) => {
+          eq: (column: string, value: string) => Promise<{ error: { message: string } | null>;
+        };
+      };
+
+      const now = new Date().toISOString();
+      const { error } = await preferences
+        .update({
+          marketing_opt_in: marketingOptIn,
+          marketing_opt_in_at: marketingOptIn ? now : null,
+          marketing_unsubscribed_at: marketingOptIn ? null : now,
+        })
+        .eq("user_id", user.id);
+      if (error) throw new Error(error.message);
+
+      setMarketingPreference({
+        marketing_opt_in: marketingOptIn,
+        marketing_opt_in_at: marketingOptIn ? now : null,
+        marketing_unsubscribed_at: marketingOptIn ? null : now,
+      });
+      toast.success(marketingOptIn ? "Marketing emails enabled." : "Marketing emails disabled.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not save email preferences.");
+    } finally {
+      setMarketingSaving(false);
+    }
+  };
+
   const subtypes = BUSINESS_SUBTYPES[businessCategory] ?? [];
   const funnelProgress = productFunnelProgress(analyticsEvents);
   const completedFunnelSteps = funnelProgress.filter((step) => step.completed).length;
@@ -426,6 +505,29 @@ function Settings() {
           <Link to="/pricing" className="text-sm font-semibold text-accent hover:underline">View plans</Link>
         </div>
       </div>
+
+      <section className="rounded-xl border border-border bg-card p-6" aria-labelledby="email-preferences-heading">
+        <h2 id="email-preferences-heading" className="font-display font-semibold text-primary">Email preferences</h2>
+        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+          Choose whether ValuRight can send occasional planning tips, product updates, and exit-readiness resources. Account, security, and billing emails are always sent when needed.
+        </p>
+        <label className="mt-5 flex items-start justify-between gap-5 rounded-lg border border-border bg-secondary/30 p-4">
+          <span>
+            <span className="block text-sm font-semibold text-foreground">Receive ValuRight marketing emails</span>
+            <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
+              You can unsubscribe at any time. This setting does not change important service emails.
+            </span>
+          </span>
+          <input
+            type="checkbox"
+            checked={marketingPreference?.marketing_opt_in ?? false}
+            disabled={marketingLoading || marketingSaving}
+            onChange={(event) => void saveMarketingPreference(event.target.checked)}
+            className="mt-0.5 h-4 w-4 shrink-0 accent-[oklch(0.45_0.1_158)] disabled:opacity-60"
+            aria-label="Receive ValuRight marketing emails"
+          />
+        </label>
+      </section>
 
       <section className="rounded-xl border border-border bg-card p-6" aria-labelledby="billing-heading">
         <div className="flex flex-wrap items-start justify-between gap-4">
