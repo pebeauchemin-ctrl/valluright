@@ -6,10 +6,12 @@ import {
   type PlanComparisonCell,
 } from "@/lib/commercial-model";
 
-const columns = [
+type ComparisonPlanSlug = "free" | "essentials" | "exit-ready";
+
+const columns: Array<{ slug: ComparisonPlanSlug; name: string }> = [
   { slug: "free", name: FREE_TRIAL_LIMITS.name },
-  ...COMMERCIAL_PLANS.map((plan) => ({ slug: plan.slug, name: plan.name })),
-] as const;
+  ...COMMERCIAL_PLANS.map((plan) => ({ slug: plan.slug as Exclude<ComparisonPlanSlug, "free">, name: plan.name })),
+];
 
 function Cell({ value }: { value: PlanComparisonCell }) {
   if (value === "included") {
