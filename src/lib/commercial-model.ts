@@ -11,6 +11,17 @@ export type CommercialPlan = {
   buyerTeaser: "preview_only" | "public_sharing";
 };
 
+export type PlanComparisonCell = "included" | "not_included" | "draft_only";
+
+export type PlanComparisonRow = {
+  group: string;
+  feature: string;
+  advisorNote?: string;
+  free: PlanComparisonCell;
+  essentials: PlanComparisonCell;
+  "exit-ready": PlanComparisonCell;
+};
+
 export const TARGET_CUSTOMER_SEGMENTS = [
   {
     name: "Owner self-serve",
@@ -35,7 +46,7 @@ export const TARGET_CUSTOMER_SEGMENTS = [
 export const FREE_TRIAL_LIMITS = {
   name: "Free Preview",
   reports: "in-app report preview and browser print",
-  buyerTeaser: "draft preview only; public sharing is gated to Exit Ready or Advisor Partner",
+  buyerTeaser: "draft preview only; public sharing is gated to Exit Ready",
   dataRoomStorage: "not included",
   accountingIntegrations: "not included",
 };
@@ -76,6 +87,73 @@ export const COMMERCIAL_PLANS: CommercialPlan[] = [
     ],
     limits: ["Buyer lead workflow included"],
     buyerTeaser: "public_sharing",
+  },
+];
+
+export const PLAN_COMPARISON_ROWS: PlanComparisonRow[] = [
+  {
+    group: "Valuation",
+    feature: "Value dashboard and all six valuation methods",
+    free: "included",
+    essentials: "included",
+    "exit-ready": "included",
+  },
+  {
+    group: "Valuation",
+    feature: "Health Score, recommendations, and what-if scenarios",
+    free: "included",
+    essentials: "included",
+    "exit-ready": "included",
+  },
+  {
+    group: "Financials",
+    feature: "Manual entry and CSV financial import",
+    free: "included",
+    essentials: "included",
+    "exit-ready": "included",
+  },
+  {
+    group: "Financials",
+    feature: "Secure QuickBooks and Xero integrations",
+    free: "not_included",
+    essentials: "included",
+    "exit-ready": "included",
+  },
+  {
+    group: "Reporting",
+    feature: "In-app report preview and browser print",
+    free: "included",
+    essentials: "included",
+    "exit-ready": "included",
+  },
+  {
+    group: "Sharing with buyers",
+    feature: "Build and preview a buyer-safe teaser",
+    free: "draft_only",
+    essentials: "draft_only",
+    "exit-ready": "included",
+  },
+  {
+    group: "Sharing with buyers",
+    feature: "Publish a shareable buyer teaser and manage buyer leads",
+    free: "not_included",
+    essentials: "not_included",
+    "exit-ready": "included",
+  },
+  {
+    group: "Sharing with buyers",
+    feature: "Private data room",
+    free: "not_included",
+    essentials: "not_included",
+    "exit-ready": "included",
+  },
+  {
+    group: "Advisor review",
+    feature: "Invite a CPA, broker, or attorney to review",
+    advisorNote: "Always free for the invited advisor",
+    free: "not_included",
+    essentials: "not_included",
+    "exit-ready": "included",
   },
 ];
 
