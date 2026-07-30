@@ -20,7 +20,7 @@ function PrivacyPage() {
       eyebrow="Privacy"
       title="Privacy Policy"
       description="ValuRight.ai works with sensitive business and financial information. This page explains what we collect, why we use it, and how customers can control it."
-      updated="June 17, 2026"
+      updated="July 30, 2026"
     >
       <LegalSection title="Information we collect">
         <p>
@@ -65,6 +65,20 @@ function PrivacyPage() {
         <p>
           Valuation results depend on user-provided data and assumptions. Incorrect or incomplete
           inputs can materially affect outputs.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="Marketing communications and choices">
+        <p>
+          We send marketing emails only when a customer has chosen to receive them or when another
+          valid legal basis applies. Marketing messages may include exit-planning education, product
+          updates, and resources related to the customer’s use of ValuRight.ai.
+        </p>
+        <p>
+          Customers can opt in during account creation, change their choice at any time in Settings,
+          or use the unsubscribe link included in each marketing email. Unsubscribing from marketing
+          does not stop necessary account, security, billing, password-reset, or advisor-invitation
+          emails.
         </p>
       </LegalSection>
 

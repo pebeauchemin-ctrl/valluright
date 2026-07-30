@@ -32,6 +32,7 @@ function AuthPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -81,7 +82,7 @@ function AuthPage() {
     const { error } =
       mode === "signin"
         ? await signIn(email, password)
-        : await signUp(email, password, fullName, emailRedirectTo);
+        : await signUp(email, password, fullName, marketingOptIn, emailRedirectTo);
     setBusy(false);
     if (error) {
       setError(error);
@@ -199,6 +200,22 @@ function AuthPage() {
                   </div>
                 )}
               </div>
+            )}
+            {mode === "signup" && (
+              <label className="flex items-start gap-3 rounded-lg border border-border bg-secondary/30 p-3 text-sm text-muted-foreground">
+                <input
+                  type="checkbox"
+                  checked={marketingOptIn}
+                  onChange={(event) => setMarketingOptIn(event.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-[oklch(0.45_0.1_158)]"
+                />
+                <span>
+                  Send me occasional ValuRight planning tips, product updates, and helpful exit-readiness resources. You can unsubscribe at any time. See our{" "}
+                  <Link to="/privacy" className="font-semibold text-accent hover:underline">
+                    Privacy Policy
+                  </Link>.
+                </span>
+              </label>
             )}
             {error && (
               <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
