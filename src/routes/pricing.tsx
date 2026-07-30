@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth";
 import { startStripeCheckout } from "@/lib/billing.functions";
 import { ArrowRight, Check } from "lucide-react";
 import { PublicPageShell } from "@/components/PublicPageShell";
+import { PlanComparisonMatrix } from "@/components/PlanComparisonMatrix";
 import { COMMERCIAL_PLANS, FREE_TRIAL_LIMITS, buyerTeaserPolicy } from "@/lib/commercial-model";
 
 export const Route = createFileRoute("/pricing")({
@@ -14,7 +15,7 @@ export const Route = createFileRoute("/pricing")({
       {
         name: "description",
         content:
-          "ValuRight.ai pricing plans for business owners, exit preparation, advisors, and one-time valuation reports.",
+          "ValuRight.ai pricing plans for business owners preparing a business for sale.",
       },
     ],
   }),
@@ -26,15 +27,23 @@ function PricingPage() {
   const { user } = useAuth();
   const search = Route.useSearch();
   const checkout = useServerFn(startStripeCheckout);
-  const begin = async (slug: string) => { if (!user) return; const result = await checkout({ data: { plan: slug as never } }); window.location.assign(result.url); };
-  useEffect(() => { if (user && search.checkout) void begin(search.checkout); }, [user, search.checkout]);
+  const begin = async (slug: string) => {
+    if (!user) return;
+    const result = await checkout({ data: { plan: slug as never } });
+    window.location.assign(result.url);
+  };
+
+  useEffect(() => {
+    if (user && search.checkout) void begin(search.checkout);
+  }, [user, search.checkout]);
+
   return (
     <PublicPageShell
       eyebrow="Pricing"
       title="Start with a free preview, upgrade when sharing matters"
-      description="Every plan uses the same feature definitions. Paid sharing, data room access, and advisor invitations are enforced by the active subscription."
+      description="Every paid capability shown below is tied to the active subscription. Invited advisors access their owner’s review workspace for free."
     >
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="mx-auto grid max-w-3xl gap-6 md:grid-cols-2">
         {COMMERCIAL_PLANS.map((plan) => (
           <div
             key={plan.name}
@@ -72,22 +81,32 @@ function PricingPage() {
             <div className="mt-5 rounded-lg border border-border bg-secondary/40 px-3 py-2 text-xs font-semibold text-muted-foreground">
               Buyer teaser: {buyerTeaserPolicy(plan)}
             </div>
-            {user ? <button onClick={() => begin(plan.slug)} className={`mt-5 inline-flex w-full items-center justify-center gap-1.5 rounded-md px-4 py-2.5 text-sm font-semibold transition ${
+            {user ? (
+              <button onClick={() => begin(plan.slug)} className={`mt-5 inline-flex w-full items-center justify-center gap-1.5 rounded-md px-4 py-2.5 text-sm font-semibold transition ${
                 plan.highlighted
                   ? "bg-accent text-accent-foreground hover:bg-accent/90"
                   : "border border-border bg-card text-foreground hover:border-accent hover:text-accent"
-              }`}>{plan.cta} <ArrowRight className="h-4 w-4" /></button> : <Link to="/auth" search={{ mode: "signup", plan: plan.slug }} className={`mt-5 inline-flex w-full items-center justify-center gap-1.5 rounded-md px-4 py-2.5 text-sm font-semibold transition ${plan.highlighted ? "bg-accent text-accent-foreground hover:bg-accent/90" : "border border-border bg-card text-foreground hover:border-accent hover:text-accent"}`}>{plan.cta} <ArrowRight className="h-4 w-4" /></Link>}
+              }`}>
+                {plan.cta} <ArrowRight className="h-4 w-4" />
+              </button>
+            ) : (
+              <Link to="/auth" search={{ mode: "signup", plan: plan.slug }} className={`mt-5 inline-flex w-full items-center justify-center gap-1.5 rounded-md px-4 py-2.5 text-sm font-semibold transition ${
+                plan.highlighted
+                  ? "bg-accent text-accent-foreground hover:bg-accent/90"
+                  : "border border-border bg-card text-foreground hover:border-accent hover:text-accent"
+              }`}>
+                {plan.cta} <ArrowRight className="h-4 w-4" />
+              </Link>
+            )}
           </div>
         ))}
       </div>
 
       <div className="mt-10 rounded-xl border border-border bg-secondary/40 p-6">
-        <h2 className="font-display text-xl font-semibold text-primary">
-          Free preview limits
-        </h2>
+        <h2 className="font-display text-xl font-semibold text-primary">Free preview</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           Includes {FREE_TRIAL_LIMITS.reports}. Buyer teaser is {FREE_TRIAL_LIMITS.buyerTeaser}.
-          Data room storage is {FREE_TRIAL_LIMITS.dataRoomStorage}.
+          Data room storage and accounting integrations are not included.
         </p>
         <Link
           to="/auth"
@@ -96,6 +115,8 @@ function PricingPage() {
           Get started <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
+
+      <PlanComparisonMatrix className="mt-14" />
     </PublicPageShell>
   );
 }
