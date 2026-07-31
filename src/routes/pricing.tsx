@@ -110,6 +110,7 @@ function PricingPage() {
         </p>
         <Link
           to="/auth"
+          search={{ mode: "signup" }}
           className="mt-5 inline-flex items-center gap-1.5 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition hover:bg-accent/90"
         >
           Get started <ArrowRight className="h-4 w-4" />

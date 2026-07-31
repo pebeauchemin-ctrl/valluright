@@ -472,6 +472,8 @@ function Settings() {
   const lastAnalyticsEvent = analyticsEvents[analyticsEvents.length - 1] ?? null;
   const billingNeedsAttention = ["past_due", "unpaid", "incomplete"].includes(subscription?.status ?? "");
   const billingHasEnded = ["canceled", "incomplete_expired"].includes(subscription?.status ?? "");
+  const isFreePreview = !subscription || subscription.plan === "free";
+  const freePreviewMarketingOff = isFreePreview && !marketingLoading && !marketingPreference?.marketing_opt_in;
   const healthScoreDefaultedInputs = current
     ? [
         current.owner_hours_per_week == null ? "owner hours" : null,
@@ -527,6 +529,17 @@ function Settings() {
             aria-label="Receive ValuRight marketing emails"
           />
         </label>
+        {freePreviewMarketingOff && (
+          <div className="mt-4 rounded-lg border border-gold/40 bg-gold/10 p-4 text-sm text-foreground">
+            <div className="font-semibold">Free Preview is marketing-supported</div>
+            <p className="mt-1 text-muted-foreground">
+              New Free Preview accounts require marketing enrollment. Existing accounts are not changed automatically. Choose a paid plan if you prefer to keep marketing emails off.
+            </p>
+            <Link to="/pricing" className="mt-3 inline-flex font-semibold text-accent hover:underline">
+              Compare paid plans
+            </Link>
+          </div>
+        )}
       </section>
 
       <section className="rounded-xl border border-border bg-card p-6" aria-labelledby="billing-heading">

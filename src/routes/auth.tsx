@@ -79,10 +79,16 @@ function AuthPage() {
           : search.redirect
             ? `${window.location.origin}${search.redirect}`
             : undefined;
+    if (mode === "signup" && !selectedPlan && !marketingOptIn) {
+      setBusy(false);
+      setError("Free Preview is marketing-supported. Check the email enrollment box to create a free account, or choose a paid plan.");
+      return;
+    }
+
     const { error } =
       mode === "signin"
         ? await signIn(email, password)
-        : await signUp(email, password, fullName, marketingOptIn, emailRedirectTo);
+        : await signUp(email, password, fullName, marketingOptIn, emailRedirectTo, selectedPlan?.slug);
     setBusy(false);
     if (error) {
       setError(error);
@@ -103,7 +109,7 @@ function AuthPage() {
             ? "Confirm your email to proceed. Then sign in to continue securely to payment."
             : search.redirect?.startsWith("/advisor/accept/")
               ? "Confirm your email to accept the advisor invitation."
-              : "Confirm your email to finish creating your account.",
+              : "Confirm your email to finish creating your Free Preview account.",
         );
         return;
       }
@@ -123,7 +129,7 @@ function AuthPage() {
       : mode === "signup"
         ? selectedPlan
           ? `Create your account to start the ${selectedPlan.name} flow. Billing is not charged yet.`
-          : "Start your first valuation in minutes."
+          : "Start your free, marketing-supported valuation account."
         : "Enter your email and we'll send you a link to choose a new password.";
   const cta =
     mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link";
@@ -157,12 +163,15 @@ function AuthPage() {
 
           <h1 className="font-display text-3xl font-semibold text-primary">{heading}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{subheading}</p>
-          {selectedPlan && mode === "signup" && (
+          {mode === "signup" && (
             <div className="mt-4 rounded-lg border border-accent/30 bg-accent-soft px-4 py-3 text-sm">
-              <div className="font-semibold text-primary">{selectedPlan.name}</div>
+              <div className="font-semibold text-primary">
+                {selectedPlan ? selectedPlan.name : "Free Preview - marketing-supported"}
+              </div>
               <div className="mt-1 text-muted-foreground">
-                {selectedPlan.price}
-                <span className="text-xs"> {selectedPlan.sub}</span> · {selectedPlan.who}
+                {selectedPlan
+                  ? `${selectedPlan.price}${selectedPlan.sub ? ` ${selectedPlan.sub}` : ""} - ${selectedPlan.who}`
+                  : "Free access requires enrollment in occasional ValuRight product and planning emails. Paid plans do not."}
               </div>
             </div>
           )}
@@ -210,7 +219,10 @@ function AuthPage() {
                   className="mt-0.5 h-4 w-4 shrink-0 accent-[oklch(0.45_0.1_158)]"
                 />
                 <span>
-                  Send me occasional ValuRight planning tips, product updates, and helpful exit-readiness resources. You can unsubscribe at any time. See our{" "}
+                  {selectedPlan
+                    ? "Send me occasional ValuRight planning tips, product updates, and helpful exit-readiness resources."
+                    : "I agree to receive occasional ValuRight planning tips, product updates, and helpful exit-readiness resources as part of Free Preview access."}{" "}
+                  You can unsubscribe at any time. See our{" "}
                   <Link to="/privacy" className="font-semibold text-accent hover:underline">
                     Privacy Policy
                   </Link>.
@@ -232,7 +244,7 @@ function AuthPage() {
               disabled={busy}
               className="w-full rounded-md bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition disabled:opacity-60"
             >
-              {busy ? "Please wait…" : cta}
+              {busy ? "Please wait…" : mode === "signup" && !selectedPlan ? "Create Free Preview account" : cta}
             </button>
           </form>
 
