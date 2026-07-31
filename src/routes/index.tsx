@@ -107,7 +107,7 @@ function Landing() {
           </div>
           <div className="mx-auto grid max-w-3xl gap-6 md:grid-cols-2">{COMMERCIAL_PLANS.map((plan) => <Plan key={plan.name} {...plan} />)}</div>
           <PlanComparisonMatrix className="mt-16" />
-          <div className="mt-8 text-center"><Link to="/pricing" className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:underline">See full pricing <ArrowRight className="h-4 w-4" /></Link></div>
+          <div className="mt-8 text-center"><Link to="/pricing" search={{}} className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:underline">See full pricing <ArrowRight className="h-4 w-4" /></Link></div>
         </div>
       </section>
 
