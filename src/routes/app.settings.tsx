@@ -396,9 +396,19 @@ function Settings() {
   const deleteBusiness = async () => {
     if (!current) return;
     if (!confirm(`Delete "${current.name}"? This permanently removes all data.`)) return;
-    await supabase.from("businesses").delete().eq("id", current.id);
-    await refresh();
-    toast.success("Business deleted");
+
+    setBusy(true);
+    try {
+      const { error } = await supabase.from("businesses").delete().eq("id", current.id);
+      if (error) throw error;
+
+      await refresh();
+      toast.success("Business deleted");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Business could not be deleted.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const runSupportSearch = async () => {
