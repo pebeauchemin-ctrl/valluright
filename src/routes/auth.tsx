@@ -175,15 +175,6 @@ function AuthPage() {
               </div>
             </div>
           )}
-          {selectedPlan && mode === "signup" && (
-            <div className="mt-4 rounded-lg border border-accent/30 bg-accent-soft px-4 py-3 text-sm">
-              <div className="font-semibold text-primary">{selectedPlan.name}</div>
-              <div className="mt-1 text-muted-foreground">
-                {selectedPlan.price}
-                <span className="text-xs"> {selectedPlan.sub}</span> · {selectedPlan.who}
-              </div>
-            </div>
-          )}
 
           <form onSubmit={submit} className="mt-8 space-y-4">
             {mode === "signup" && (
