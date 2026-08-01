@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { COUNSEL_REVIEW_TEXT, VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 import { recordProductEvent } from "@/lib/observability.functions";
 import { LoadErrorState, errorMessage } from "@/components/LoadErrorState";
+import { usePlanEntitlements } from "@/lib/use-plan-entitlements";
 
 type ScenarioRow = {
   id: string;
@@ -51,6 +52,7 @@ export const Route = createFileRoute("/app/scenarios")({
 
 function Scenarios() {
   const { current } = useBusiness();
+  const { has: hasEntitlement, loading: entitlementsLoading } = usePlanEntitlements();
   const {
     hireManager: scenarioHireManager,
     marginUplift: scenarioMarginUplift,
@@ -215,6 +217,10 @@ function Scenarios() {
 
   async function saveScenario() {
     if (!current) return;
+    if (!entitlementsLoading && !hasEntitlement("accounting_import") && saved.length >= 2) {
+      toast.error("Free Preview includes two scenarios per business. Upgrade to Essentials for unlimited scenarios.");
+      return;
+    }
     if (!name.trim()) {
       toast.error("Give your scenario a name.");
       return;
