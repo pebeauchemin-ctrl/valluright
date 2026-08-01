@@ -1599,6 +1599,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      user_has_paid_workspace_plan: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       user_owns_business_path: {
         Args: { _object_name: string }
         Returns: boolean
