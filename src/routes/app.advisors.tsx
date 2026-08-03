@@ -311,7 +311,7 @@ function Advisors() {
 
       {!entitlements.loading && !entitlements.has("advisor_review") && (
         <div className="rounded-lg border border-border bg-secondary/40 p-4 text-sm leading-relaxed text-muted-foreground">
-          Advisor invitations are available with an active Exit Ready or Advisor Partner plan.
+          Advisor invitations are available with an active Exit Ready plan.
         </div>
       )}
 
