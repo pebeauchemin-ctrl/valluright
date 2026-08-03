@@ -85,7 +85,7 @@ function DataRoom() {
   const upload = async (f: File) => {
     if (!current) return;
     if (!entitlements.has("data_room")) {
-      toast.error("The data room requires an active Exit Ready or Advisor Partner plan.");
+      toast.error("The data room requires an active Exit Ready plan.");
       return;
     }
     setUploading(true);
@@ -187,7 +187,7 @@ function DataRoom() {
           </button>
           {!entitlements.loading && !entitlements.has("data_room") && (
             <p className="w-full text-xs text-muted-foreground">
-              Uploads are available with an active Exit Ready or Advisor Partner plan.
+              Uploads are available with an active Exit Ready plan.
             </p>
           )}
         </div>

@@ -348,7 +348,7 @@ function BuyerTeaser() {
                 disabled={entitlements.loading}
                 onChange={(e) => {
                   if (e.target.checked && !entitlements.has("buyer_teaser_public")) {
-                    toast.error("Publishing requires an active Exit Ready or Advisor Partner plan.");
+                    toast.error("Publishing requires an active Exit Ready plan.");
                     return;
                   }
                   setSettings((state) => ({ ...state, is_published: e.target.checked }));
@@ -358,7 +358,7 @@ function BuyerTeaser() {
             </label>
             {!entitlements.loading && !entitlements.has("buyer_teaser_public") && !settings.is_published && (
               <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                Public sharing is available with an active Exit Ready or Advisor Partner plan. You can
+                Public sharing is available with an active Exit Ready plan. You can
                 continue building a draft preview here.
               </p>
             )}
