@@ -8,10 +8,10 @@ import {
 } from "@/lib/plan-entitlements";
 
 const planRequirement: Partial<Record<Entitlement, string>> = {
-  accounting_import: "Essentials, Exit Ready, or Advisor Partner",
-  buyer_teaser_public: "Exit Ready or Advisor Partner",
-  data_room: "Exit Ready or Advisor Partner",
-  advisor_review: "Exit Ready or Advisor Partner",
+  accounting_import: "Essentials or Exit Ready",
+  buyer_teaser_public: "Exit Ready",
+  data_room: "Exit Ready",
+  advisor_review: "Exit Ready",
 };
 
 async function subscriptionHasEntitlement(
