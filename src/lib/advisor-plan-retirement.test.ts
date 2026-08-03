@@ -15,3 +15,18 @@ test("Advisor Partner cannot be purchased as a current plan", () => {
   assert.match(billingMigration, /set plan = 'exit-ready'/);
   assert.match(billingMigration, /s\.plan in \('essentials', 'exit-ready'\)/);
 });
+
+
+test("upgrade messages only name live plans", () => {
+  const entitlementMessages = readFileSync("src/lib/plan-entitlements.server.ts", "utf8");
+  const advisorsPage = readFileSync("src/routes/app.advisors.tsx", "utf8");
+  const dataRoomPage = readFileSync("src/routes/app.data-room.tsx", "utf8");
+  const buyerTeaserPage = readFileSync("src/routes/app.buyer-teaser.tsx", "utf8");
+
+  for (const source of [entitlementMessages, advisorsPage, dataRoomPage, buyerTeaserPage]) {
+    assert.doesNotMatch(source, /Advisor Partner/);
+  }
+
+  assert.match(entitlementMessages, /Essentials or Exit Ready/);
+  assert.match(entitlementMessages, /Exit Ready/);
+});
