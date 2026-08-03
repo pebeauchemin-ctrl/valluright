@@ -19,6 +19,8 @@ import {
   type Valuation,
 } from "@/lib/valuation";
 import { normalizeMultipleAssumptions } from "@/lib/multiple-assumptions";
+import { subscriptionIsActive } from "@/lib/plan-entitlements";
+import { usePlanEntitlements } from "@/lib/use-plan-entitlements";
 import {
   accountingBasisLabel,
   adjustConfidenceForDataQuality,
@@ -162,6 +164,12 @@ function toReportValuation(
 
 function Reports() {
   const { current } = useBusiness();
+  const subscription = usePlanEntitlements();
+  const showFreePreviewWatermark = !subscriptionIsActive(
+    subscription.plan,
+    subscription.status,
+    subscription.currentPeriodEnd,
+  );
   const recordEvent = useServerFn(recordProductEvent);
   const [bundle, setBundle] = useState<Bundle | null>(null);
   const [open, setOpen] = useState<ReportKey | null>(null);
@@ -271,13 +279,13 @@ function Reports() {
   };
 
   useEffect(() => {
-    if (!open || !bundle || !printOnOpen) return;
+    if (!open || !bundle || !printOnOpen || subscription.loading) return;
     const timeout = window.setTimeout(() => {
       window.print();
       setPrintOnOpen(false);
     }, 350);
     return () => window.clearTimeout(timeout);
-  }, [bundle, open, printOnOpen]);
+  }, [bundle, open, printOnOpen, subscription.loading]);
 
   if (!current)
     return <div className="p-12 text-sm text-muted-foreground">No business selected.</div>;
@@ -390,7 +398,12 @@ function Reports() {
       </div>
 
       {open && bundle && (
-        <ReportPreview reportKey={open} bundle={bundle} onClose={() => setOpen(null)} />
+        <ReportPreview
+          reportKey={open}
+          bundle={bundle}
+          showFreePreviewWatermark={showFreePreviewWatermark}
+          onClose={() => setOpen(null)}
+        />
       )}
     </div>
   );
@@ -399,10 +412,12 @@ function Reports() {
 function ReportPreview({
   reportKey,
   bundle,
+  showFreePreviewWatermark,
   onClose,
 }: {
   reportKey: ReportKey;
   bundle: Bundle;
+  showFreePreviewWatermark: boolean;
   onClose: () => void;
 }) {
   const r = REPORTS.find((x) => x.key === reportKey)!;
@@ -432,7 +447,8 @@ function ReportPreview({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-stretch justify-center overflow-y-auto print:bg-white print:static print:overflow-visible">
-      <div className="my-3 w-full max-w-4xl bg-white text-neutral-900 shadow-2xl sm:my-6 sm:rounded-lg print:my-0 print:max-w-none print:rounded-none print:shadow-none">
+      <div className="relative my-3 w-full max-w-4xl overflow-hidden bg-white text-neutral-900 shadow-2xl sm:my-6 sm:rounded-lg print:my-0 print:max-w-none print:rounded-none print:shadow-none">
+        {showFreePreviewWatermark && <FreePreviewWatermark />}
         <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-2 border-b border-neutral-200 bg-white px-4 py-3 print:hidden sm:px-5">
           <div className="min-w-0 text-sm font-medium">{r.title} — Preview</div>
           <div className="flex flex-wrap gap-2">
@@ -453,6 +469,11 @@ function ReportPreview({
 
         <div className="space-y-8 p-4 font-sans sm:p-10 print:p-12">
           <header className="border-b border-neutral-200 pb-6">
+            {showFreePreviewWatermark && (
+              <div className="mb-4 border-y border-amber-300 bg-amber-50 px-3 py-2 text-center text-[10px] font-bold tracking-[0.16em] text-amber-900 print:border-amber-400 print:bg-amber-50">
+                FREE PREVIEW - VALURIGHT.AI - NOT FOR DISTRIBUTION
+              </div>
+            )}
             <div className="text-[10px] uppercase tracking-[0.2em] text-neutral-500">{r.title}</div>
             <h1 className="mt-2 font-display text-3xl font-semibold text-neutral-900">
               {reportKey === "buyer"
@@ -682,6 +703,26 @@ function ReportPreview({
 
           <ValuationDisclaimer variant="print" />
         </div>
+      </div>
+    </div>
+  );
+}
+
+function FreePreviewWatermark() {
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 z-20 overflow-hidden opacity-[0.14] print:opacity-[0.18]"
+    >
+      <div className="absolute inset-[-20%] flex flex-wrap content-center justify-center gap-x-16 gap-y-20 -rotate-[24deg]">
+        {Array.from({ length: 28 }, (_, index) => (
+          <span
+            key={index}
+            className="whitespace-nowrap text-sm font-bold tracking-[0.18em] text-neutral-700"
+          >
+            FREE PREVIEW - VALURIGHT.AI
+          </span>
+        ))}
       </div>
     </div>
   );
