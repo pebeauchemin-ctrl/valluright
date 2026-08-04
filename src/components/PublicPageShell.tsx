@@ -25,7 +25,7 @@ export function PublicPageShell({
             <BrandLogo size={40} withTagline />
           </Link>
           <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
-            <Link to="/pricing" search={{}} className="hover:text-foreground transition">
+            <Link to="/pricing" search={{ checkout: undefined }} className="hover:text-foreground transition">
               Pricing
             </Link>
             <Link to="/security" className="hover:text-foreground transition">
