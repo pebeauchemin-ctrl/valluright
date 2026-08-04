@@ -43,7 +43,43 @@ function PricingPage() {
       title="Start with a free preview, upgrade when sharing matters"
       description="Every paid capability shown below is tied to the active subscription. Invited advisors access their owner’s review workspace for free."
     >
-      <div className="mx-auto grid max-w-3xl gap-6 md:grid-cols-2">
+      <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-3">\n        <div className="rounded-xl border border-border bg-card p-6">
+          <h2 className="font-display text-xl font-semibold text-primary">Free Preview</h2>
+          <p className="mt-1 text-xs text-muted-foreground">Explore your exit-readiness baseline</p>
+          <div className="mt-4 flex items-baseline gap-1">
+            <span className="font-display text-4xl font-semibold text-primary">$0</span>
+            <span className="text-sm text-muted-foreground">No credit card required</span>
+          </div>
+          <ul className="mt-5 space-y-2 text-sm text-foreground">
+            <li className="flex gap-2">
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+              <span>Value dashboard and all six valuation methods</span>
+            </li>
+            <li className="flex gap-2">
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+              <span>Health Score, recommendations, and what-if scenarios</span>
+            </li>
+            <li className="flex gap-2">
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+              <span>Manual entry and CSV financial import</span>
+            </li>
+            <li className="flex gap-2">
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+              <span>In-app report preview and browser print</span>
+            </li>
+          </ul>
+          <div className="mt-5 rounded-lg border border-border bg-secondary/40 px-3 py-2 text-xs font-semibold text-muted-foreground">
+            Buyer teaser: {FREE_TRIAL_LIMITS.buyerTeaser}
+          </div>
+          <Link
+            to="/auth"
+            search={{ mode: "signup" }}
+            className="mt-5 inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent"
+          >
+            Start free <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+
         {COMMERCIAL_PLANS.map((plan) => (
           <div
             key={plan.name}
@@ -102,20 +138,6 @@ function PricingPage() {
         ))}
       </div>
 
-      <div className="mt-10 rounded-xl border border-border bg-secondary/40 p-6">
-        <h2 className="font-display text-xl font-semibold text-primary">Free preview</h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Includes {FREE_TRIAL_LIMITS.reports}. Buyer teaser is {FREE_TRIAL_LIMITS.buyerTeaser}.
-          Data room storage and accounting integrations are not included.
-        </p>
-        <Link
-          to="/auth"
-          search={{ mode: "signup" }}
-          className="mt-5 inline-flex items-center gap-1.5 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition hover:bg-accent/90"
-        >
-          Get started <ArrowRight className="h-4 w-4" />
-        </Link>
-      </div>
 
       <PlanComparisonMatrix className="mt-14" />
     </PublicPageShell>
