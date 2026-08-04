@@ -514,7 +514,7 @@ function Settings() {
           <span className="font-medium">{user.email}</span>
         </div>
         <div className="flex flex-wrap gap-3 pt-2">
-          <Link to="/pricing" search={{}} className="text-sm font-semibold text-accent hover:underline">View plans</Link>
+          <Link to="/pricing" search={{ checkout: undefined }} className="text-sm font-semibold text-accent hover:underline">View plans</Link>
         </div>
       </div>
 
@@ -545,7 +545,7 @@ function Settings() {
             <p className="mt-1 text-muted-foreground">
               New Free Preview accounts require marketing enrollment. Existing accounts are not changed automatically. Choose a paid plan if you prefer to keep marketing emails off.
             </p>
-            <Link to="/pricing" search={{}} className="mt-3 inline-flex font-semibold text-accent hover:underline">
+            <Link to="/pricing" search={{ checkout: undefined }} className="mt-3 inline-flex font-semibold text-accent hover:underline">
               Compare paid plans
             </Link>
           </div>
@@ -581,7 +581,7 @@ function Settings() {
               You are using the free tier. Upgrade to publish a buyer teaser, use the Data Room, or invite advisors.
             </p>
             <Link
-              to="/pricing" search={{}}
+              to="/pricing" search={{ checkout: undefined }}
               className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90"
             >
               View plans <ExternalLink className="h-4 w-4" />
@@ -631,7 +631,7 @@ function Settings() {
                 {openingBillingPortal ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
                 Manage subscription
               </button>
-              <Link to="/pricing" search={{}} className="inline-flex items-center rounded-md border border-border px-4 py-2 text-sm font-semibold text-foreground hover:bg-secondary">
+              <Link to="/pricing" search={{ checkout: undefined }} className="inline-flex items-center rounded-md border border-border px-4 py-2 text-sm font-semibold text-foreground hover:bg-secondary">
                 Compare plans
               </Link>
             </div>
