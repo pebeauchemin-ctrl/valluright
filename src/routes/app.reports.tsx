@@ -10,7 +10,7 @@ import { LoadErrorState, errorMessage } from "@/components/LoadErrorState";
 import type { Database } from "@/integrations/supabase/types";
 import { useServerFn } from "@tanstack/react-start";
 import { recordProductEvent } from "@/lib/observability.functions";
-import { buildValuationInsert } from "@/lib/valuation-persistence";
+import { persistValuationSnapshot } from "@/lib/valuation-persistence";
 import {
   computeHealthScore,
   valueBusiness,
