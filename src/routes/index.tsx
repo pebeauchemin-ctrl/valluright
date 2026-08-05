@@ -105,7 +105,7 @@ function Landing() {
             <h2 className="mt-2 font-display text-4xl font-semibold text-primary">Plans for every stage</h2>
             <p className="mt-3 text-muted-foreground">Start with the free preview. Upgrade when you need accounting integrations or buyer-facing materials.</p>
           </div>
-          <div className="mx-auto grid max-w-3xl gap-6 md:grid-cols-2">{COMMERCIAL_PLANS.map((plan) => <Plan key={plan.name} {...plan} />)}</div>
+          <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-3"><FreePreviewPlan />{COMMERCIAL_PLANS.map((plan) => <Plan key={plan.name} {...plan} />)}</div>
           <PlanComparisonMatrix className="mt-16" />
           <div className="mt-8 text-center"><Link to="/pricing" search={{ checkout: undefined }} className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:underline">See full pricing <ArrowRight className="h-4 w-4" /></Link></div>
         </div>
@@ -142,6 +142,22 @@ function Step({ n, title, desc }: { n: string; title: string; desc: string }) {
 
 function Feature({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
   return <div className="rounded-xl border border-border bg-card p-6 hover:shadow-md transition"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-soft text-accent">{icon}</div><h3 className="mt-4 font-display text-lg font-semibold text-primary">{title}</h3><p className="mt-2 text-sm text-muted-foreground leading-relaxed">{desc}</p></div>;
+}
+
+
+function FreePreviewPlan() {
+  return <div className="rounded-xl border border-border bg-card p-6">
+    <h3 className="font-display text-xl font-semibold text-primary">Free Preview</h3>
+    <p className="mt-1 text-xs text-muted-foreground">Explore your exit-readiness baseline</p>
+    <div className="mt-4 flex items-baseline gap-1"><span className="font-display text-3xl font-semibold text-primary">$0</span><span className="text-sm text-muted-foreground">No credit card required</span></div>
+    <ul className="mt-5 space-y-2 text-sm text-foreground">
+      <li className="flex items-start gap-2"><span className="mt-1 h-1.5 w-1.5 rounded-full bg-accent shrink-0" />All six valuation methods</li>
+      <li className="flex items-start gap-2"><span className="mt-1 h-1.5 w-1.5 rounded-full bg-accent shrink-0" />Health Score and recommendations</li>
+      <li className="flex items-start gap-2"><span className="mt-1 h-1.5 w-1.5 rounded-full bg-accent shrink-0" />What-if scenario modeling</li>
+      <li className="flex items-start gap-2"><span className="mt-1 h-1.5 w-1.5 rounded-full bg-accent shrink-0" />Manual entry and CSV financial import</li>
+    </ul>
+    <Link to="/auth" search={{ mode: "signup" }} className="mt-5 inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent">Start free <ArrowRight className="h-4 w-4" /></Link>
+  </div>;
 }
 
 function Plan({ slug, name, price, sub, who, cta, features, highlighted }: { slug: string; name: string; price: string; sub: string; who: string; cta: string; features: string[]; highlighted?: boolean; }) {
