@@ -326,7 +326,7 @@ function AdvisorWorkspace() {
                     <Calculator className="h-5 w-5" /> Valuation methodology
                   </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Methods included in the latest saved valuation. Exact blend weights are not stored with the result, so selected methods are identified instead.
+                    Methods saved with the latest valuation, including applied inputs, factors, blend weights, confidence, and sources.
                   </p>
                   <MethodTable methods={businessMethods} />
                 </section>
@@ -336,7 +336,7 @@ function AdvisorWorkspace() {
                     <FileText className="h-5 w-5" /> Normalization and add-backs
                   </h2>
                   <p className="mt-1 text-sm text-muted-foreground">Itemized adjustments should be buyer-acceptable and non-recurring before reliance.</p>
-                  <AddBackTable addBacks={businessAddBacks} events={businessEvents} />
+                  <AddBackTable addBacks={businessAddBacks} events={businessEvents} financials={businessFinancials} />
                 </section>
 
                 <section className="rounded-xl border border-border bg-card p-6">
@@ -415,40 +415,128 @@ function FinancialBridge({ financials }: { financials: Financial[] }) {
 }
 
 function MethodTable({ methods }: { methods: MethodResult[] }) {
-  if (methods.length === 0) return <p className="mt-4 text-sm text-muted-foreground">No method-level results are available for this valuation.</p>;
+  if (methods.length === 0) {
+    return <p className="mt-4 text-sm text-muted-foreground">No method-level results are available for this valuation.</p>;
+  }
+
   return (
     <div className="mt-5 overflow-x-auto">
-      <table className="w-full min-w-[760px] text-sm">
-        <thead><tr className="border-b border-border text-left text-xs uppercase tracking-wider text-muted-foreground">
-          <th className="pb-3 pr-4 font-medium">Method</th><th className="px-3 pb-3 text-right font-medium">Input</th><th className="px-3 pb-3 text-right font-medium">Range</th><th className="pb-3 pl-3 font-medium">Review note</th>
-        </tr></thead>
-        <tbody>{methods.map((method) => <tr key={method.id} className="border-b border-border/60 last:border-0 align-top">
-          <td className="py-3 pr-4 font-medium text-foreground">
-            <div>{method.method}</div>
-            <span className={"mt-1 inline-block rounded-full px-2 py-0.5 text-xs " + (method.is_selected ? "bg-accent-soft text-accent" : "bg-secondary text-muted-foreground")}>{method.is_selected ? "Included in range" : "Reference method"}</span>
-          </td>
-          <td className="px-3 py-3 text-right tabular-nums">{method.multiple_or_rate == null ? "Not recorded" : Number(method.multiple_or_rate).toFixed(2) + "x / rate"}</td>
-          <td className="px-3 py-3 text-right tabular-nums">{currencyRange(method.value_low, method.value_high)}</td>
-          <td className="py-3 pl-3 text-muted-foreground">{method.notes || "No method note recorded."}</td>
-        </tr>)}</tbody>
+      <table className="w-full min-w-[900px] text-sm">
+        <thead>
+          <tr className="border-b border-border text-left text-xs uppercase tracking-wider text-muted-foreground">
+            <th className="pb-3 pr-4 font-medium">Method</th>
+            <th className="px-3 pb-3 text-right font-medium">Input</th>
+            <th className="px-3 pb-3 text-right font-medium">Applied factor</th>
+            <th className="px-3 pb-3 text-right font-medium">Weight</th>
+            <th className="px-3 pb-3 text-right font-medium">Range</th>
+            <th className="pb-3 pl-3 font-medium">Source / review note</th>
+          </tr>
+        </thead>
+        <tbody>
+          {methods.map((method) => {
+            const details = jsonRecord(method.details);
+            const inputUsed = numberDetail(details.input_used);
+            const inputLabel = stringDetail(details.input_label);
+            const capRate = numberDetail(details.cap_rate_used);
+            const source = stringDetail(details.multiple_source);
+            const confidence = stringDetail(details.multiple_confidence) ?? stringDetail(details.confidence);
+            const reasoning = stringDetail(details.reasoning);
+            const factor = capRate ?? method.multiple_or_rate;
+            const factorLabel = capRate != null
+              ? (capRate * 100).toFixed(2) + "% cap rate"
+              : factor == null
+                ? "Not recorded"
+                : Number(factor).toFixed(2) + "x";
+            const weight = method.weight == null ? null : Number(method.weight);
+
+            return (
+              <tr key={method.id} className="border-b border-border/60 last:border-0 align-top">
+                <td className="py-3 pr-4 font-medium text-foreground">
+                  <div>{stringDetail(details.label) ?? method.method}</div>
+                  <span className={"mt-1 inline-block rounded-full px-2 py-0.5 text-xs " + (method.is_selected ? "bg-accent-soft text-accent" : "bg-secondary text-muted-foreground")}>
+                    {method.is_selected ? "Included in range" : "Reference method"}
+                  </span>
+                </td>
+                <td className="px-3 py-3 text-right tabular-nums">
+                  {inputUsed == null ? "Not recorded" : (inputLabel ? inputLabel + ": " : "") + currency(inputUsed, true)}
+                </td>
+                <td className="px-3 py-3 text-right tabular-nums">{factorLabel}</td>
+                <td className="px-3 py-3 text-right tabular-nums">{weight == null ? "Not recorded" : weight > 0 ? String(Math.round(weight * 100)) + "%" : "Reference only"}</td>
+                <td className="px-3 py-3 text-right tabular-nums">{currencyRange(method.value_low, method.value_high)}</td>
+                <td className="py-3 pl-3 text-muted-foreground">
+                  <div>{[source, confidence ? confidence + " confidence" : null].filter(Boolean).join(" · ") || "No source recorded."}</div>
+                  {(method.notes || reasoning) && <div className="mt-1 text-xs">{method.notes || reasoning}</div>}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
       </table>
     </div>
   );
 }
 
-function AddBackTable({ addBacks, events }: { addBacks: AddBack[]; events: AddBackEvent[] }) {
-  if (addBacks.length === 0) return <p className="mt-4 text-sm text-muted-foreground">No itemized add-backs have been recorded.</p>;
+function AddBackTable({
+  addBacks,
+  events,
+  financials,
+}: {
+  addBacks: AddBack[];
+  events: AddBackEvent[];
+  financials: Financial[];
+}) {
+  const itemizedByYear = addBacks.reduce((totals, addBack) => {
+    totals.set(addBack.year, (totals.get(addBack.year) ?? 0) + amount(addBack.amount));
+    return totals;
+  }, new Map<number, number>());
+
+  const unitemized = financials
+    .map((financial) => ({
+      year: financial.year,
+      amount: amount(financial.addbacks) - (itemizedByYear.get(financial.year) ?? 0),
+    }))
+    .filter((item) => Math.abs(item.amount) > 0.01);
+
+  if (addBacks.length === 0 && unitemized.length === 0) {
+    return <p className="mt-4 text-sm text-muted-foreground">No add-backs were recorded for this valuation.</p>;
+  }
+
   return (
     <div className="mt-5 overflow-x-auto">
       <table className="w-full min-w-[720px] text-sm">
-        <thead><tr className="border-b border-border text-left text-xs uppercase tracking-wider text-muted-foreground">
-          <th className="pb-3 pr-4 font-medium">Year</th><th className="pb-3 pr-4 font-medium">Category</th><th className="pb-3 pr-4 font-medium">Recurrence</th><th className="pb-3 pr-4 font-medium">Note</th><th className="pb-3 text-right font-medium">Amount</th>
-        </tr></thead>
-        <tbody>{addBacks.map((addBack) => <tr key={addBack.id} className="border-b border-border/60 last:border-0">
-          <td className="py-3 pr-4">{addBack.year}</td><td className="py-3 pr-4 font-medium">{addBack.category}</td>
-          <td className="py-3 pr-4"><span className={"rounded-full px-2 py-0.5 text-xs " + (addBack.is_recurring ? "bg-amber-100 text-amber-800" : "bg-accent-soft text-accent")}>{addBack.is_recurring ? "Recurring - review" : "One-time"}</span></td>
-          <td className="py-3 pr-4 text-muted-foreground">{addBack.note || "No note recorded."}</td><td className="py-3 text-right tabular-nums">{fmtCurrency(addBack.amount)}</td>
-        </tr>)}</tbody>
+        <thead>
+          <tr className="border-b border-border text-left text-xs uppercase tracking-wider text-muted-foreground">
+            <th className="pb-3 pr-4 font-medium">Year</th>
+            <th className="pb-3 pr-4 font-medium">Category</th>
+            <th className="pb-3 pr-4 font-medium">Recurrence</th>
+            <th className="pb-3 pr-4 font-medium">Note</th>
+            <th className="pb-3 text-right font-medium">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {addBacks.map((addBack) => (
+            <tr key={addBack.id} className="border-b border-border/60 last:border-0">
+              <td className="py-3 pr-4">{addBack.year}</td>
+              <td className="py-3 pr-4 font-medium">{addBack.category}</td>
+              <td className="py-3 pr-4">
+                <span className={"rounded-full px-2 py-0.5 text-xs " + (addBack.is_recurring ? "bg-amber-100 text-amber-800" : "bg-accent-soft text-accent")}>
+                  {addBack.is_recurring ? "Recurring - review" : "One-time"}
+                </span>
+              </td>
+              <td className="py-3 pr-4 text-muted-foreground">{addBack.note || "No note recorded."}</td>
+              <td className="py-3 text-right tabular-nums">{fmtCurrency(addBack.amount)}</td>
+            </tr>
+          ))}
+          {unitemized.map((item) => (
+            <tr key={"unitemized-" + item.year} className="border-b border-border/60 last:border-0">
+              <td className="py-3 pr-4">{item.year}</td>
+              <td className="py-3 pr-4 font-medium">Unitemized adjustment</td>
+              <td className="py-3 pr-4"><span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800">Needs review</span></td>
+              <td className="py-3 pr-4 text-muted-foreground">Included in the financial-year add-backs total but not documented as an individual item.</td>
+              <td className="py-3 text-right tabular-nums">{fmtCurrency(item.amount)}</td>
+            </tr>
+          ))}
+        </tbody>
       </table>
       {events.length > 0 && <p className="mt-4 text-xs text-muted-foreground">Latest add-back activity: {events.slice(0, 3).map((event) => event.action + " (" + event.year + ")").join(", ")}.</p>}
     </div>
@@ -509,9 +597,40 @@ function buildFlags(business: Business | null, financials: Financial[], valuatio
 
 function healthEntries(value: Json | null | undefined): [string, string][] {
   if (!value || typeof value !== "object" || Array.isArray(value)) return [];
-  return Object.entries(value as Record<string, unknown>)
-    .filter((entry) => typeof entry[1] === "number" || typeof entry[1] === "string")
-    .map((entry) => [entry[0].replace(/_/g, " "), typeof entry[1] === "number" ? String(entry[1]) + "/100" : String(entry[1])]);
+
+  return Object.entries(value as Record<string, unknown>).flatMap(([key, raw]) => {
+    const label = key.replace(/_/g, " ");
+    if (typeof raw === "number") return [[label, String(raw) + "/100"]];
+    if (typeof raw === "string") return [[label, raw]];
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return [];
+
+    const detail = raw as Record<string, unknown>;
+    const score = numberDetail(detail.score);
+    const maximum = numberDetail(detail.max);
+    const driver = stringDetail(detail.driver) ?? stringDetail(detail.detail);
+    const threshold = stringDetail(detail.threshold);
+    const values = [
+      score == null ? "Not scored" : String(score) + "/" + String(maximum ?? 100),
+      driver,
+      threshold ? "Threshold: " + threshold : null,
+    ].filter(Boolean);
+
+    return values.length ? [[label, values.join(" - ")]] : [];
+  });
+}
+
+function jsonRecord(value: Json | null | undefined): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {};
+}
+
+function stringDetail(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value : null;
+}
+
+function numberDetail(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
 function categoryLabel(value: string | null | undefined) {
