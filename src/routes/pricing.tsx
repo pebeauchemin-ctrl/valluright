@@ -43,7 +43,7 @@ function PricingPage() {
       title="Start with a free preview, upgrade when sharing matters"
       description="Every paid capability shown below is tied to the active subscription. Invited advisors access their owner’s review workspace for free."
     >
-      <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-3">\n        <div className="rounded-xl border border-border bg-card p-6">
+      <div className="mx-auto flex max-w-5xl flex-col gap-6 md:flex-row md:items-stretch [&>*]:min-w-0 [&>*]:flex-1">\n        <div className="rounded-xl border border-border bg-card p-6">
           <h2 className="font-display text-xl font-semibold text-primary">Free Preview</h2>
           <p className="mt-1 text-xs text-muted-foreground">Explore your exit-readiness baseline</p>
           <div className="mt-4 flex items-baseline gap-1">
