@@ -22,7 +22,7 @@ import {
   type MethodResult,
   type MultipleAssumption,
 } from "@/lib/valuation";
-import { buildValuationInsert } from "@/lib/valuation-persistence";
+import { persistValuationSnapshot } from "@/lib/valuation-persistence";
 import { normalizeMultipleAssumptions } from "@/lib/multiple-assumptions";
 import { fmtCurrency, fmtPct } from "@/lib/format";
 import { MethodDetailDialog, MethodRangeBar } from "@/components/MethodDetailDialog";
@@ -196,10 +196,7 @@ function Dashboard() {
     }
     setSavingValuation(true);
     try {
-      const { error } = await supabase
-        .from("valuations")
-        .insert(buildValuationInsert(current.id, inputs, valuation, health));
-      if (error) throw error;
+      await persistValuationSnapshot(supabase, current.id, inputs, valuation, health);
       await recordEvent({
         data: {
           eventName: "valuation_generated",
