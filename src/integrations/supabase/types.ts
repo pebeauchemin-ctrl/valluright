@@ -1286,6 +1286,7 @@ export type Database = {
         Row: {
           business_id: string
           created_at: string
+          details: Json | null
           id: string
           is_selected: boolean
           method: string
@@ -1295,10 +1296,12 @@ export type Database = {
           value_high: number | null
           value_low: number | null
           value_mid: number | null
+          weight: number | null
         }
         Insert: {
           business_id: string
           created_at?: string
+          details?: Json | null
           id?: string
           is_selected?: boolean
           method: string
@@ -1308,10 +1311,12 @@ export type Database = {
           value_high?: number | null
           value_low?: number | null
           value_mid?: number | null
+          weight?: number | null
         }
         Update: {
           business_id?: string
           created_at?: string
+          details?: Json | null
           id?: string
           is_selected?: boolean
           method?: string
@@ -1321,6 +1326,7 @@ export type Database = {
           value_high?: number | null
           value_low?: number | null
           value_mid?: number | null
+          weight?: number | null
         }
         Relationships: [
           {
