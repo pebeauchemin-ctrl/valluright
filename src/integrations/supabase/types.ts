@@ -400,6 +400,11 @@ export type Database = {
           id: string
           message: string | null
           name: string
+          notification_last_error: string | null
+          notification_token: string
+          owner_notified_at: string | null
+          buyer_acknowledged_at: string | null
+          reviewed_at: string | null
           phone: string | null
           status: Database["public"]["Enums"]["access_request_status"]
         }
@@ -414,6 +419,11 @@ export type Database = {
           id?: string
           message?: string | null
           name: string
+          notification_last_error?: string | null
+          notification_token?: string
+          owner_notified_at?: string | null
+          buyer_acknowledged_at?: string | null
+          reviewed_at?: string | null
           phone?: string | null
           status?: Database["public"]["Enums"]["access_request_status"]
         }
@@ -428,6 +438,11 @@ export type Database = {
           id?: string
           message?: string | null
           name?: string
+          notification_last_error?: string | null
+          notification_token?: string
+          owner_notified_at?: string | null
+          buyer_acknowledged_at?: string | null
+          reviewed_at?: string | null
           phone?: string | null
           status?: Database["public"]["Enums"]["access_request_status"]
         }
@@ -1555,6 +1570,10 @@ export type Database = {
         Args: { _business_id: string; _user_id: string }
         Returns: boolean
       }
+      mark_buyer_access_requests_reviewed: {
+        Args: { _business_id: string }
+        Returns: number
+      }
       record_advisor_review: {
         Args: {
           _body: string
@@ -1575,7 +1594,10 @@ export type Database = {
           _phone?: string
           _public_id: string
         }
-        Returns: string
+        Returns: {
+          notification_token: string
+          request_id: string
+        }
       }
       unsubscribe_from_marketing: { Args: { _token: string }; Returns: boolean }
       update_buyer_access_request_status: {
@@ -1595,6 +1617,11 @@ export type Database = {
           id: string
           message: string | null
           name: string
+          notification_last_error: string | null
+          notification_token: string
+          owner_notified_at: string | null
+          buyer_acknowledged_at: string | null
+          reviewed_at: string | null
           phone: string | null
           status: Database["public"]["Enums"]["access_request_status"]
         }

@@ -132,8 +132,24 @@ function BuyerRequests() {
     setLoading(false);
   };
 
+  const markReviewed = async () => {
+    if (!current) return;
+
+    const { error } = await (
+      supabase as unknown as {
+        rpc: (
+          fn: "mark_buyer_access_requests_reviewed",
+          args: { _business_id: string },
+        ) => Promise<{ data: number | null; error: Error | null }>;
+      }
+    ).rpc("mark_buyer_access_requests_reviewed", { _business_id: current.id });
+
+    if (!error) window.dispatchEvent(new Event("buyer-leads-reviewed"));
+  };
+
   useEffect(() => {
-    refresh();
+    void refresh();
+    void markReviewed();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current?.id]);
 
