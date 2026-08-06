@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, useNavigate, useLocation } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   LayoutDashboard,
   FileSpreadsheet,
@@ -35,6 +35,23 @@ function AppLayout() {
   const location = useLocation();
   const [businessMenuOpen, setBusinessMenuOpen] = useState(false);
   const [hasAdvisorAccess, setHasAdvisorAccess] = useState<boolean | null>(null);
+  const [unreadBuyerLeadCount, setUnreadBuyerLeadCount] = useState(0);
+
+  const refreshUnreadBuyerLeadCount = useCallback(async () => {
+    if (!current) {
+      setUnreadBuyerLeadCount(0);
+      return;
+    }
+
+    const { count, error } = await supabase
+      .from("buyer_access_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("business_id", current.id)
+      .eq("status", "pending")
+      .is("reviewed_at", null);
+
+    if (!error) setUnreadBuyerLeadCount(count ?? 0);
+  }, [current?.id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -65,6 +82,12 @@ function AppLayout() {
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth" });
   }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    void refreshUnreadBuyerLeadCount();
+    window.addEventListener("buyer-leads-reviewed", refreshUnreadBuyerLeadCount);
+    return () => window.removeEventListener("buyer-leads-reviewed", refreshUnreadBuyerLeadCount);
+  }, [refreshUnreadBuyerLeadCount]);
 
   useEffect(() => {
     if (
@@ -244,7 +267,15 @@ function AppLayout() {
                 }`}
               >
                 <Icon className="h-4 w-4 shrink-0" />
-                {item.label}
+                <span>{item.label}</span>
+                {item.to === "/app/buyer-requests" && unreadBuyerLeadCount > 0 && (
+                  <span
+                    aria-label={`${unreadBuyerLeadCount} unread buyer lead${unreadBuyerLeadCount === 1 ? "" : "s"}`}
+                    className="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-accent px-1.5 py-0.5 text-[11px] font-bold text-accent-foreground"
+                  >
+                    {unreadBuyerLeadCount > 99 ? "99+" : unreadBuyerLeadCount}
+                  </span>
+                )}
               </Link>
             );
           })}
