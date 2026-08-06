@@ -4,6 +4,8 @@ import { Mountain, Mail, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { fmtCurrency } from "@/lib/format";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { notifyBuyerLeadCreated } from "@/lib/buyer-lead-notifications.functions";
 import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 import { AccessibleChart } from "@/components/AccessibleChart";
 import { displayIndustryLabel } from "@/lib/industry-display";
@@ -100,6 +102,7 @@ function Teaser() {
   const [ack, setAck] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const sendLeadNotifications = useServerFn(notifyBuyerLeadCreated);
 
   useEffect(() => {
     if (typeof window !== "undefined") window.scrollTo(0, 0);
@@ -125,7 +128,10 @@ function Teaser() {
             _financing_status: string | null;
             _message: string | null;
           },
-        ) => Promise<{ data: string | null; error: Error | null }>;
+        ) => Promise<{
+          data: { request_id: string; notification_token: string } | null;
+          error: Error | null;
+        }>;
       }
     ).rpc("submit_buyer_access_request", {
       _public_id: business.public_id,
@@ -142,6 +148,17 @@ function Teaser() {
       return;
     }
     setSubmitted(true);
+
+    if (data?.request_id && data.notification_token) {
+      void sendLeadNotifications({
+        data: {
+          requestId: data.request_id,
+          notificationToken: data.notification_token,
+        },
+      }).catch((notificationError) => {
+        console.error("Buyer lead notification failed", notificationError);
+      });
+    }
   };
 
   const highlights = (settings.business_highlights as string[] | null) ?? [];
