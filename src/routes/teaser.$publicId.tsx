@@ -115,7 +115,7 @@ function Teaser() {
       return;
     }
     setSubmitting(true);
-    const { error } = await (
+    const { data, error } = await (
       supabase as unknown as {
         rpc: (
           fn: "submit_buyer_access_request",
