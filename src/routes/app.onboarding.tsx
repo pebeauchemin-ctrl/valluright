@@ -15,7 +15,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { useBusiness, toBusinessInputs } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
-import { buildValuationInsert } from "@/lib/valuation-persistence";
+import { persistValuationSnapshot } from "@/lib/valuation-persistence";
 import {
   INDUSTRY_OPTIONS,
   valueBusiness,
@@ -643,10 +643,7 @@ function Onboarding() {
       const inputs = toBusinessInputs(biz, (yearsRows ?? []) as never);
       const v = valueBusiness(inputs);
       const h = computeHealthScore(inputs);
-      const { error: valuationError } = await supabase
-        .from("valuations")
-        .insert(buildValuationInsert(bizId, inputs, v, h));
-      if (valuationError) throw valuationError;
+      await persistValuationSnapshot(supabase, bizId, inputs, v, h);
 
       await recordEvent({
         data: {

@@ -10,7 +10,7 @@ import { LoadErrorState, errorMessage } from "@/components/LoadErrorState";
 import type { Database } from "@/integrations/supabase/types";
 import { useServerFn } from "@tanstack/react-start";
 import { recordProductEvent } from "@/lib/observability.functions";
-import { buildValuationInsert } from "@/lib/valuation-persistence";
+import { persistValuationSnapshot } from "@/lib/valuation-persistence";
 import {
   computeHealthScore,
   valueBusiness,
@@ -265,10 +265,13 @@ function Reports() {
       );
       const liveValuation = valueBusiness(inputs);
       const liveHealth = computeHealthScore(inputs);
-      const { error } = await supabase
-        .from("valuations")
-        .insert(buildValuationInsert(bundle.business.id, inputs, liveValuation, liveHealth));
-      if (error) throw error;
+      await persistValuationSnapshot(
+        supabase,
+        bundle.business.id,
+        inputs,
+        liveValuation,
+        liveHealth,
+      );
       toast.success("Saved a current valuation snapshot for reports.");
       setLoadAttempt((attempt) => attempt + 1);
     } catch (error) {
