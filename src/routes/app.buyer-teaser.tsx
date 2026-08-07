@@ -434,7 +434,7 @@ function BuyerTeaser() {
               </Link>
             )}
             <button
-              onClick={save}
+              onClick={() => void save()}
               disabled={saving}
               className="inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90 disabled:opacity-60"
             >
