@@ -32,10 +32,10 @@ const COMMON_NAME_WORDS = new Set(["the", "and", "for", "of", "at", "in", "by"])
 function normalizedWords(value: string) {
   return value
     .toLowerCase()
-    .replace(/d\\s*[/\\.]?\\s*b\\s*[/\\.]?\\s*a/g, " dba ")
+    .replace(/d\s*[/\.]?\s*b\s*[/\.]?\s*a/g, " dba ")
     .replace(/[^a-z0-9]+/g, " ")
     .trim()
-    .split(/\\s+/)
+    .split(/\s+/)
     .filter(Boolean);
 }
 
@@ -67,9 +67,9 @@ function containsWords(text: string, phrase: string) {
 
 function locationMatches(text: string) {
   const patterns = [
-    /\\b\\d{1,5}\\s+(?:[a-z0-9.'-]+\\s+){0,4}(?:street|st|avenue|ave|road|rd|boulevard|blvd|drive|dr|lane|ln|court|ct|highway|hwy|way|parkway|pkwy)\\b/i,
-    /\\b\\d{5}(?:-\\d{4})?\\b/,
-    /\\b\\d{1,3}\\s+miles?\\s+(?:(?:north|south|east|west|northeast|northwest|southeast|southwest)\\s+)?(?:of|from)\\s+[a-z][a-z .'-]{1,60}/i,
+    /\b\d{1,5}\s+(?:[a-z0-9.'-]+\s+){0,4}(?:street|st|avenue|ave|road|rd|boulevard|blvd|drive|dr|lane|ln|court|ct|highway|hwy|way|parkway|pkwy)\b/i,
+    /\b\d{5}(?:-\d{4})?\b/,
+    /\b\d{1,3}\s+miles?\s+(?:(?:north|south|east|west|northeast|northwest|southeast|southwest)\s+)?(?:of|from)\s+[a-z][a-z .'-]{1,60}/i,
   ];
 
   return patterns
