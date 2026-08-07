@@ -32,7 +32,7 @@ const COMMON_NAME_WORDS = new Set(["the", "and", "for", "of", "at", "in", "by"])
 function normalizedWords(value: string) {
   return value
     .toLowerCase()
-    .replace(/d\s*[/\.]?\s*b\s*[/\.]?\s*a/g, " dba ")
+    .replace(/d\s*[/.]?\s*b\s*[/.]?\s*a/g, " dba ")
     .replace(/[^a-z0-9]+/g, " ")
     .trim()
     .split(/\s+/)
