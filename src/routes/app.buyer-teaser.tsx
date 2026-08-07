@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { CheckCircle2, Copy, ExternalLink, EyeOff, LockKeyhole, Save, Shield } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Copy, ExternalLink, EyeOff, LockKeyhole, Save, Shield } from "lucide-react";
 import { useBusiness, type FinancialYearRow } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ import { fmtCurrency } from "@/lib/format";
 import { recordProductEvent } from "@/lib/observability.functions";
 import { displayIndustryLabel } from "@/lib/industry-display";
 import { usePlanEntitlements } from "@/lib/use-plan-entitlements";
+import { analyzeTeaserAnonymity, type TeaserAnonymityWarning } from "@/lib/teaser-anonymity";
 
 const ASKING_PRICE_MAX = 1_000_000_000;
 
@@ -66,6 +67,7 @@ function BuyerTeaser() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loadAttempt, setLoadAttempt] = useState(0);
+  const [showPublishWarning, setShowPublishWarning] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -130,8 +132,24 @@ function BuyerTeaser() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current, loadAttempt]);
 
-  const save = async () => {
+  const anonymityWarnings = current
+    ? analyzeTeaserAnonymity(current.name, [
+        { field: "Anonymous description", text: anonymous },
+        { field: "Reason for sale", text: reason },
+        { field: "Business highlights", text: highlights },
+        { field: "Growth opportunities", text: opps },
+        { field: "Transition support", text: settings.transition_support },
+      ])
+    : [];
+  const warningsFor = (field: string) =>
+    anonymityWarnings.filter((warning) => warning.field === field);
+
+  const save = async (publishAnyway = false) => {
     if (!current) return;
+    if (settings.is_published && anonymityWarnings.length > 0 && !publishAnyway) {
+      setShowPublishWarning(true);
+      return;
+    }
     const askingPriceError = validateAskingPrice(askLow, askHigh);
     if (askingPriceError) {
       toast.error(askingPriceError);
@@ -232,7 +250,9 @@ function BuyerTeaser() {
               rows={3}
               placeholder="e.g., Established service business in the Pacific Northwest..."
             />
+            <AnonymityWarnings warnings={warningsFor("Anonymous description")} />
             <Textarea label="Reason for sale" value={reason} onChange={setReason} rows={2} />
+            <AnonymityWarnings warnings={warningsFor("Reason for sale")} />
             <div className="grid gap-4 sm:grid-cols-2">
               <NumField label="Asking price (low)" value={askLow} onChange={setAskLow} />
               <NumField label="Asking price (high)" value={askHigh} onChange={setAskHigh} />
@@ -249,18 +269,21 @@ function BuyerTeaser() {
               onChange={setHighlights}
               rows={4}
             />
+            <AnonymityWarnings warnings={warningsFor("Business highlights")} />
             <Textarea
               label="Growth opportunities (one per line)"
               value={opps}
               onChange={setOpps}
               rows={3}
             />
+            <AnonymityWarnings warnings={warningsFor("Growth opportunities")} />
             <Textarea
               label="Transition support"
               value={settings.transition_support}
               onChange={(v) => setSettings((s) => ({ ...s, transition_support: v }))}
               rows={2}
             />
+            <AnonymityWarnings warnings={warningsFor("Transition support")} />
           </Section>
 
           <Section
@@ -411,7 +434,7 @@ function BuyerTeaser() {
               </Link>
             )}
             <button
-              onClick={save}
+              onClick={() => void save()}
               disabled={saving}
               className="inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90 disabled:opacity-60"
             >
@@ -440,6 +463,52 @@ function BuyerTeaser() {
           financials={financials}
         />
       </div>
+
+      {showPublishWarning && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-primary/40 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="anonymity-warning-title"
+        >
+          <div className="w-full max-w-lg rounded-lg border border-border bg-background p-6 shadow-xl">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="mt-0.5 h-6 w-6 shrink-0 text-gold" />
+              <div>
+                <h2 id="anonymity-warning-title" className="font-display text-xl font-semibold text-primary">
+                  This teaser may identify your business
+                </h2>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  Anyone with the public link could learn that this specific business is for sale before signing an NDA.
+                </p>
+              </div>
+            </div>
+            <AnonymityWarnings warnings={anonymityWarnings} className="mt-4" />
+            <p className="mt-4 text-sm text-muted-foreground">
+              Edit the public text to remove identifying details, or publish only if you accept that risk.
+            </p>
+            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setShowPublishWarning(false)}
+                className="rounded-md border border-border px-4 py-2 text-sm font-semibold text-foreground hover:bg-secondary"
+              >
+                Edit description
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPublishWarning(false);
+                  void save(true);
+                }}
+                className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90"
+              >
+                Publish anyway
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -795,6 +864,33 @@ function validateAskingPrice(low: number | null, high: number | null) {
     return "Asking price low must be less than or equal to asking price high.";
   }
   return null;
+}
+
+
+function AnonymityWarnings({
+  warnings,
+  className = "",
+}: {
+  warnings: TeaserAnonymityWarning[];
+  className?: string;
+}) {
+  if (warnings.length === 0) return null;
+
+  return (
+    <div className={`rounded-md border border-gold/40 bg-gold/10 px-3 py-2 text-xs leading-relaxed text-foreground ${className}`}>
+      <div className="flex items-center gap-1.5 font-semibold">
+        <AlertTriangle className="h-3.5 w-3.5 text-gold" />
+        This public text may identify your business
+      </div>
+      <ul className="mt-1 list-disc space-y-0.5 pl-4 text-muted-foreground">
+        {warnings.map((warning, index) => (
+          <li key={`${warning.field}-${warning.kind}-${warning.matchedText}-${index}`}>
+            {warning.message}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
 function Textarea({
