@@ -117,7 +117,7 @@ function Landing() {
             <div><BrandLogo size={36} variant="onDark" /><p className="mt-3 text-sm text-primary-foreground/70 max-w-md">Helping business owners over 60 get the value they've built.</p></div>
             <div className="space-y-3 text-xs text-primary-foreground/60 max-w-md">
               ValuRight.ai outputs are software-generated planning estimates. They are not certified appraisals, tax advice, legal advice, investment advice, or guaranteed sale prices.
-              <div className="flex flex-wrap gap-4"><Link to="/privacy" className="hover:text-primary-foreground">Privacy</Link><Link to="/terms" className="hover:text-primary-foreground">Terms</Link><Link to="/security" className="hover:text-primary-foreground">Security</Link><Link to="/methodology" className="hover:text-primary-foreground">Methodology</Link></div>
+              <div className="flex flex-wrap gap-4"><Link to="/privacy" className="hover:text-primary-foreground">Privacy</Link><Link to="/terms" className="hover:text-primary-foreground">Terms</Link><Link to="/security" className="hover:text-primary-foreground">Security</Link><Link to="/methodology" className="hover:text-primary-foreground">Methodology</Link><Link to="/what-is-my-business-worth" className="hover:text-primary-foreground">What is my business worth?</Link><Link to="/guides/how-to-value-a-small-business" className="hover:text-primary-foreground">Guides</Link></div>
             </div>
           </div>
           <div className="mt-8 pt-6 border-t border-primary-foreground/10 text-xs text-primary-foreground/60">© {new Date().getFullYear()} ValuRight.ai. All rights reserved.</div>

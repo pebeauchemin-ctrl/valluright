@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WhatIsMyBusinessWorthRouteImport } from './routes/what-is-my-business-worth'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SecurityRouteImport } from './routes/security'
@@ -23,6 +24,8 @@ import { Route as AdvisorRouteImport } from './routes/advisor'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as TeaserPublicIdRouteImport } from './routes/teaser.$publicId'
+import { Route as GuidesOwnerDependenceRouteImport } from './routes/guides.owner-dependence'
+import { Route as GuidesHowToValueASmallBusinessRouteImport } from './routes/guides.how-to-value-a-small-business'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppScenariosRouteImport } from './routes/app.scenarios'
 import { Route as AppRoadmapRouteImport } from './routes/app.roadmap'
@@ -42,6 +45,11 @@ import { Route as ApiPublicXeroCallbackRouteImport } from './routes/api.public.x
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api.public.stripe.webhook'
 import { Route as ApiPublicQuickbooksCallbackRouteImport } from './routes/api.public.quickbooks.callback'
 
+const WhatIsMyBusinessWorthRoute = WhatIsMyBusinessWorthRouteImport.update({
+  id: '/what-is-my-business-worth',
+  path: '/what-is-my-business-worth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
   path: '/unsubscribe',
@@ -112,6 +120,17 @@ const TeaserPublicIdRoute = TeaserPublicIdRouteImport.update({
   path: '/teaser/$publicId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GuidesOwnerDependenceRoute = GuidesOwnerDependenceRouteImport.update({
+  id: '/guides/owner-dependence',
+  path: '/guides/owner-dependence',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuidesHowToValueASmallBusinessRoute =
+  GuidesHowToValueASmallBusinessRouteImport.update({
+    id: '/guides/how-to-value-a-small-business',
+    path: '/guides/how-to-value-a-small-business',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -217,6 +236,7 @@ export interface FileRoutesByFullPath {
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/what-is-my-business-worth': typeof WhatIsMyBusinessWorthRoute
   '/app/advisors': typeof AppAdvisorsRoute
   '/app/buyer-requests': typeof AppBuyerRequestsRoute
   '/app/buyer-teaser': typeof AppBuyerTeaserRoute
@@ -230,6 +250,8 @@ export interface FileRoutesByFullPath {
   '/app/roadmap': typeof AppRoadmapRoute
   '/app/scenarios': typeof AppScenariosRoute
   '/app/settings': typeof AppSettingsRoute
+  '/guides/how-to-value-a-small-business': typeof GuidesHowToValueASmallBusinessRoute
+  '/guides/owner-dependence': typeof GuidesOwnerDependenceRoute
   '/teaser/$publicId': typeof TeaserPublicIdRoute
   '/app/': typeof AppIndexRoute
   '/advisor/accept/$inviteId': typeof AdvisorAcceptInviteIdRoute
@@ -250,6 +272,7 @@ export interface FileRoutesByTo {
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/what-is-my-business-worth': typeof WhatIsMyBusinessWorthRoute
   '/app/advisors': typeof AppAdvisorsRoute
   '/app/buyer-requests': typeof AppBuyerRequestsRoute
   '/app/buyer-teaser': typeof AppBuyerTeaserRoute
@@ -263,6 +286,8 @@ export interface FileRoutesByTo {
   '/app/roadmap': typeof AppRoadmapRoute
   '/app/scenarios': typeof AppScenariosRoute
   '/app/settings': typeof AppSettingsRoute
+  '/guides/how-to-value-a-small-business': typeof GuidesHowToValueASmallBusinessRoute
+  '/guides/owner-dependence': typeof GuidesOwnerDependenceRoute
   '/teaser/$publicId': typeof TeaserPublicIdRoute
   '/app': typeof AppIndexRoute
   '/advisor/accept/$inviteId': typeof AdvisorAcceptInviteIdRoute
@@ -285,6 +310,7 @@ export interface FileRoutesById {
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/what-is-my-business-worth': typeof WhatIsMyBusinessWorthRoute
   '/app/advisors': typeof AppAdvisorsRoute
   '/app/buyer-requests': typeof AppBuyerRequestsRoute
   '/app/buyer-teaser': typeof AppBuyerTeaserRoute
@@ -298,6 +324,8 @@ export interface FileRoutesById {
   '/app/roadmap': typeof AppRoadmapRoute
   '/app/scenarios': typeof AppScenariosRoute
   '/app/settings': typeof AppSettingsRoute
+  '/guides/how-to-value-a-small-business': typeof GuidesHowToValueASmallBusinessRoute
+  '/guides/owner-dependence': typeof GuidesOwnerDependenceRoute
   '/teaser/$publicId': typeof TeaserPublicIdRoute
   '/app/': typeof AppIndexRoute
   '/advisor/accept/$inviteId': typeof AdvisorAcceptInviteIdRoute
@@ -321,6 +349,7 @@ export interface FileRouteTypes {
     | '/security'
     | '/terms'
     | '/unsubscribe'
+    | '/what-is-my-business-worth'
     | '/app/advisors'
     | '/app/buyer-requests'
     | '/app/buyer-teaser'
@@ -334,6 +363,8 @@ export interface FileRouteTypes {
     | '/app/roadmap'
     | '/app/scenarios'
     | '/app/settings'
+    | '/guides/how-to-value-a-small-business'
+    | '/guides/owner-dependence'
     | '/teaser/$publicId'
     | '/app/'
     | '/advisor/accept/$inviteId'
@@ -354,6 +385,7 @@ export interface FileRouteTypes {
     | '/security'
     | '/terms'
     | '/unsubscribe'
+    | '/what-is-my-business-worth'
     | '/app/advisors'
     | '/app/buyer-requests'
     | '/app/buyer-teaser'
@@ -367,6 +399,8 @@ export interface FileRouteTypes {
     | '/app/roadmap'
     | '/app/scenarios'
     | '/app/settings'
+    | '/guides/how-to-value-a-small-business'
+    | '/guides/owner-dependence'
     | '/teaser/$publicId'
     | '/app'
     | '/advisor/accept/$inviteId'
@@ -388,6 +422,7 @@ export interface FileRouteTypes {
     | '/security'
     | '/terms'
     | '/unsubscribe'
+    | '/what-is-my-business-worth'
     | '/app/advisors'
     | '/app/buyer-requests'
     | '/app/buyer-teaser'
@@ -401,6 +436,8 @@ export interface FileRouteTypes {
     | '/app/roadmap'
     | '/app/scenarios'
     | '/app/settings'
+    | '/guides/how-to-value-a-small-business'
+    | '/guides/owner-dependence'
     | '/teaser/$publicId'
     | '/app/'
     | '/advisor/accept/$inviteId'
@@ -423,6 +460,9 @@ export interface RootRouteChildren {
   SecurityRoute: typeof SecurityRoute
   TermsRoute: typeof TermsRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
+  WhatIsMyBusinessWorthRoute: typeof WhatIsMyBusinessWorthRoute
+  GuidesHowToValueASmallBusinessRoute: typeof GuidesHowToValueASmallBusinessRoute
+  GuidesOwnerDependenceRoute: typeof GuidesOwnerDependenceRoute
   TeaserPublicIdRoute: typeof TeaserPublicIdRoute
   ApiPublicQuickbooksCallbackRoute: typeof ApiPublicQuickbooksCallbackRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
@@ -431,6 +471,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/what-is-my-business-worth': {
+      id: '/what-is-my-business-worth'
+      path: '/what-is-my-business-worth'
+      fullPath: '/what-is-my-business-worth'
+      preLoaderRoute: typeof WhatIsMyBusinessWorthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/unsubscribe': {
       id: '/unsubscribe'
       path: '/unsubscribe'
@@ -527,6 +574,20 @@ declare module '@tanstack/react-router' {
       path: '/teaser/$publicId'
       fullPath: '/teaser/$publicId'
       preLoaderRoute: typeof TeaserPublicIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guides/owner-dependence': {
+      id: '/guides/owner-dependence'
+      path: '/guides/owner-dependence'
+      fullPath: '/guides/owner-dependence'
+      preLoaderRoute: typeof GuidesOwnerDependenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guides/how-to-value-a-small-business': {
+      id: '/guides/how-to-value-a-small-business'
+      path: '/guides/how-to-value-a-small-business'
+      fullPath: '/guides/how-to-value-a-small-business'
+      preLoaderRoute: typeof GuidesHowToValueASmallBusinessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app/settings': {
@@ -720,6 +781,9 @@ const rootRouteChildren: RootRouteChildren = {
   SecurityRoute: SecurityRoute,
   TermsRoute: TermsRoute,
   UnsubscribeRoute: UnsubscribeRoute,
+  WhatIsMyBusinessWorthRoute: WhatIsMyBusinessWorthRoute,
+  GuidesHowToValueASmallBusinessRoute: GuidesHowToValueASmallBusinessRoute,
+  GuidesOwnerDependenceRoute: GuidesOwnerDependenceRoute,
   TeaserPublicIdRoute: TeaserPublicIdRoute,
   ApiPublicQuickbooksCallbackRoute: ApiPublicQuickbooksCallbackRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
@@ -728,12 +792,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
