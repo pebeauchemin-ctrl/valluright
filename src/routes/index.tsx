@@ -81,7 +81,7 @@ function Landing() {
           <div className="text-center mb-14"><p className="text-sm font-semibold uppercase tracking-wider text-accent">How it works</p><h2 className="mt-2 font-display text-4xl font-semibold text-primary">Three steps to a confident exit</h2></div>
           <div className="grid md:grid-cols-3 gap-8">
             <Step n="1" title="Tell us about your business" desc="Industry, owner involvement, customers, and three years of financials. Takes about 15 minutes." />
-            <Step n="2" title="See your value range" desc="Six valuation methods, a Health Score out of 100, and a clear picture of what buyers will care about." />
+            <Step n="2" title="See your value range" desc="Seven valuation methods, a Health Score out of 100, and a clear picture of what buyers will care about." />
             <Step n="3" title="Improve exit readiness" desc="Prioritized recommendations and a what-if builder that shows how each change may affect the planning range." />
           </div>
         </div>
@@ -90,7 +90,7 @@ function Landing() {
       <section id="features" className="border-t border-border/60">
         <div className="mx-auto max-w-7xl px-6 py-20">
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Feature icon={<TrendingUp />} title="Six valuation methods" desc="SDE, EBITDA, revenue, DCF, asset-based, and comparable sales — combined into one defensible range." />
+            <Feature icon={<TrendingUp />} title="Seven valuation methods" desc="SDE, EBITDA, revenue, DCF, asset-based, comparable sales, and cap rate / NOI — combined into one defensible range." />
             <Feature icon={<ShieldCheck />} title="Buyer-safe teaser" desc="A clean confidential teaser page you control, line by line. Sensitive details stay behind NDA." />
             <Feature icon={<Users />} title="Advisor review workspace" desc="Invite a trusted advisor to review and comment. The invited advisor pays nothing." />
             <Feature icon={<FileCheck />} title="Light data room" desc="Organize financials, tax returns, leases, and more — ready when a buyer asks." />
@@ -114,7 +114,7 @@ function Landing() {
       <footer className="border-t border-border/60 bg-primary text-primary-foreground">
         <div className="mx-auto max-w-7xl px-6 py-12">
           <div className="flex flex-col md:flex-row justify-between gap-8">
-            <div><BrandLogo size={36} variant="onDark" /><p className="mt-3 text-sm text-primary-foreground/70 max-w-md">Helping business owners over 60 get the value they've built.</p></div>
+            <div><BrandLogo size={36} variant="onDark" /><p className="mt-3 text-sm text-primary-foreground/70 max-w-md">Helping business owners 55+ get the value they've built.</p></div>
             <div className="space-y-3 text-xs text-primary-foreground/60 max-w-md">
               ValuRight.ai outputs are software-generated planning estimates. They are not certified appraisals, tax advice, legal advice, investment advice, or guaranteed sale prices.
               <div className="flex flex-wrap gap-4"><Link to="/privacy" className="hover:text-primary-foreground">Privacy</Link><Link to="/terms" className="hover:text-primary-foreground">Terms</Link><Link to="/security" className="hover:text-primary-foreground">Security</Link><Link to="/methodology" className="hover:text-primary-foreground">Methodology</Link><Link to="/what-is-my-business-worth" className="hover:text-primary-foreground">What is my business worth?</Link><Link to="/guides/how-to-value-a-small-business" className="hover:text-primary-foreground">Guides</Link></div>
