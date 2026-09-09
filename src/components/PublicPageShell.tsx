@@ -28,8 +28,11 @@ export function PublicPageShell({
             <Link to="/pricing" search={{ checkout: undefined }} className="hover:text-foreground transition">
               Pricing
             </Link>
-            <Link to="/security" className="hover:text-foreground transition">
-              Security
+            <Link to="/what-is-my-business-worth" className="hover:text-foreground transition">
+              Worth?
+            </Link>
+            <Link to="/guides/how-to-value-a-small-business" className="hover:text-foreground transition">
+              Guides
             </Link>
             <Link to="/methodology" className="hover:text-foreground transition">
               Methodology
@@ -83,6 +86,12 @@ export function PublicPageShell({
             </Link>
             <Link to="/methodology" className="hover:text-primary-foreground">
               Methodology
+            </Link>
+            <Link to="/what-is-my-business-worth" className="hover:text-primary-foreground">
+              Worth?
+            </Link>
+            <Link to="/guides/how-to-value-a-small-business" className="hover:text-primary-foreground">
+              Guides
             </Link>
           </div>
         </div>
