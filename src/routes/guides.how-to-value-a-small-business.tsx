@@ -33,6 +33,16 @@ export const Route = createFileRoute("/guides/how-to-value-a-small-business")({
         href: "https://valuright.ai/guides/how-to-value-a-small-business",
       },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: "{\"@context\": \"https://schema.org\", \"@type\": \"Article\", \"headline\": \"How to Value a Small Business (Owner\u2019s Guide)\", \"description\": \"Learn how Main Street buyers price a small business \u2014 SDE, multiples, and what moves the range. Then run a free ValuRight planning estimate.\", \"author\": {\"@type\": \"Organization\", \"name\": \"ValuRight\"}, \"publisher\": {\"@type\": \"Organization\", \"name\": \"ValuRight\", \"logo\": {\"@type\": \"ImageObject\", \"url\": \"https://valuright.ai/favicon.svg\"}}, \"mainEntityOfPage\": \"https://valuright.ai/guides/how-to-value-a-small-business\", \"datePublished\": \"2026-09-09\", \"dateModified\": \"2026-09-09\"}",
+      },
+      {
+        type: "application/ld+json",
+        children: "{\"@context\": \"https://schema.org\", \"@type\": \"BreadcrumbList\", \"itemListElement\": [{\"@type\": \"ListItem\", \"position\": 1, \"name\": \"Home\", \"item\": \"https://valuright.ai/\"}, {\"@type\": \"ListItem\", \"position\": 2, \"name\": \"Guides\", \"item\": \"https://valuright.ai/guides\"}, {\"@type\": \"ListItem\", \"position\": 3, \"name\": \"How to value a small business\", \"item\": \"https://valuright.ai/guides/how-to-value-a-small-business\"}]}",
+      },
+    ],
   }),
   component: HowToValueGuide,
 });
@@ -124,17 +134,20 @@ function HowToValueGuide() {
           </Link>
         </div>
         <div className="flex flex-wrap gap-4 pt-2 text-sm">
-          <Link
-            to="/guides/owner-dependence"
-            className="font-semibold text-accent hover:underline"
-          >
+          <Link to="/guides/sde-explained" className="font-semibold text-accent hover:underline">
+            Related: What is SDE?
+          </Link>
+          <Link to="/guides/owner-dependence" className="font-semibold text-accent hover:underline">
             Related: Owner dependence
           </Link>
-          <Link
-            to="/what-is-my-business-worth"
-            className="font-semibold text-accent hover:underline"
-          >
+          <Link to="/what-is-my-business-worth" className="font-semibold text-accent hover:underline">
             Related: What is my business worth?
+          </Link>
+          <Link to="/methodology" className="font-semibold text-accent hover:underline">
+            Related: Methodology
+          </Link>
+          <Link to="/guides" className="font-semibold text-accent hover:underline">
+            All guides
           </Link>
         </div>
       </div>

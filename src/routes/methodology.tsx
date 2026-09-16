@@ -1,16 +1,18 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowRight } from "lucide-react";
 import { LegalSection, PublicPageShell } from "@/components/PublicPageShell";
 
 export const Route = createFileRoute("/methodology")({
   head: () => ({
     meta: [
-      { title: "Valuation Methodology - ValuRight.ai" },
+      { title: "How ValuRight Values a Small Business | ValuRight" },
       {
         name: "description",
         content:
-          "Phase 1 ValuRight.ai methodology for business valuation estimates, assumptions, confidence, and non-appraisal limitations.",
+          "How ValuRight builds a planning range for Main Street businesses using seven valuation methods — not a certified appraisal. See inputs, methods, and limitations.",
       },
     ],
+    links: [{ rel: "canonical", href: "https://valuright.ai/methodology" }],
   }),
   component: MethodologyPage,
 });
@@ -19,10 +21,25 @@ function MethodologyPage() {
   return (
     <PublicPageShell
       eyebrow="Methodology"
-      title="Phase 1 valuation methodology"
-      description="ValuRight.ai produces software-generated planning estimates from owner-provided business profile data, financial history, and valuation assumptions. This page explains how the Phase 1 estimate is calculated and where professional review is required."
-      updated="May 29, 2026"
+      title="How ValuRight values a small business"
+      description="ValuRight builds a planning range for Main Street businesses using multiple methods — not a single rule of thumb. This page explains what goes into the estimate and where a CPA, broker, or appraiser still belongs. It is a software-generated planning estimate, not a certified appraisal."
+      updated="September 15, 2026"
     >
+      <div className="mb-8 flex flex-wrap gap-3">
+        <Link
+          to="/auth"
+          search={{ mode: "signup" }}
+          className="inline-flex items-center gap-2 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition shadow-sm"
+        >
+          Start your free valuation <ArrowRight className="h-4 w-4" />
+        </Link>
+        <Link
+          to="/guides/how-to-value-a-small-business"
+          className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-secondary transition"
+        >
+          How to value a small business
+        </Link>
+      </div>
       <LegalSection title="What the estimate is and is not">
         <p>
           ValuRight.ai estimates a planning range for a small business or owner-operated company. It
@@ -64,6 +81,9 @@ function MethodologyPage() {
       </LegalSection>
 
       <LegalSection title="Supported methods">
+        <p>
+          ValuRight uses seven methods (including SDE- and EBITDA-oriented views plus cap rate / NOI where the business is income-property oriented). Each method is shown with confidence notes; the headline range blends methods appropriate for the business category.
+        </p>
         <p>
           SDE multiple: Seller's Discretionary Earnings multiplied by an industry range. This is
           commonly used for owner-operated small businesses where a buyer expects to replace or
@@ -156,6 +176,25 @@ function MethodologyPage() {
           professional, CPA, broker, or attorney.
         </p>
       </LegalSection>
+
+      <div className="mt-10 space-y-4 rounded-xl border border-border bg-card p-6">
+        <p className="font-display text-xl font-semibold text-primary">Next steps</p>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            to="/auth"
+            search={{ mode: "signup" }}
+            className="inline-flex items-center gap-2 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition shadow-sm"
+          >
+            Start Free Preview <ArrowRight className="h-4 w-4" />
+          </Link>
+          <Link
+            to="/guides/how-to-value-a-small-business"
+            className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-secondary transition"
+          >
+            Owner&apos;s valuation guide
+          </Link>
+        </div>
+      </div>
     </PublicPageShell>
   );
 }

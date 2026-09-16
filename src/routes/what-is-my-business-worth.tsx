@@ -28,6 +28,16 @@ export const Route = createFileRoute("/what-is-my-business-worth")({
       },
     ],
     links: [{ rel: "canonical", href: "https://valuright.ai/what-is-my-business-worth" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: "{\"@context\": \"https://schema.org\", \"@type\": \"FAQPage\", \"mainEntity\": [{\"@type\": \"Question\", \"name\": \"Is this a certified appraisal?\", \"acceptedAnswer\": {\"@type\": \"Answer\", \"text\": \"No. It is a software-generated planning estimate to help you understand a range and value drivers before you talk to a CPA, broker, or appraiser.\"}}, {\"@type\": \"Question\", \"name\": \"How long does Free Preview take?\", \"acceptedAnswer\": {\"@type\": \"Answer\", \"text\": \"About 15 minutes if you have recent financials handy.\"}}, {\"@type\": \"Question\", \"name\": \"Who is it for?\", \"acceptedAnswer\": {\"@type\": \"Answer\", \"text\": \"Small-business owners \u2014 especially owners 55+ planning the next chapter \u2014 not Wall Street models.\"}}, {\"@type\": \"Question\", \"name\": \"SDE or EBITDA?\", \"acceptedAnswer\": {\"@type\": \"Answer\", \"text\": \"Owner-operated Main Street businesses usually start with Seller\u2019s Discretionary Earnings (SDE). Businesses that can run with hired management lean more on EBITDA. ValuRight shows both in context.\"}}]}",
+      },
+      {
+        type: "application/ld+json",
+        children: "{\"@context\": \"https://schema.org\", \"@type\": \"BreadcrumbList\", \"itemListElement\": [{\"@type\": \"ListItem\", \"position\": 1, \"name\": \"Home\", \"item\": \"https://valuright.ai/\"}, {\"@type\": \"ListItem\", \"position\": 2, \"name\": \"What is my business worth?\", \"item\": \"https://valuright.ai/what-is-my-business-worth\"}]}",
+      },
+    ],
   }),
   component: WorthLanding,
 });
@@ -47,10 +57,7 @@ function WorthLanding() {
             <Link to="/pricing" search={{ checkout: undefined }} className="hover:text-foreground transition">
               Pricing
             </Link>
-            <Link
-              to="/guides/how-to-value-a-small-business"
-              className="hover:text-foreground transition"
-            >
+            <Link to="/guides" className="hover:text-foreground transition">
               Guides
             </Link>
             <Link to="/demo" className="hover:text-foreground transition">
