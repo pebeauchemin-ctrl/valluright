@@ -30,6 +30,16 @@ export const Route = createFileRoute("/guides/owner-dependence")({
     links: [
       { rel: "canonical", href: "https://valuright.ai/guides/owner-dependence" },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: "{\"@context\": \"https://schema.org\", \"@type\": \"Article\", \"headline\": \"Owner Dependence: Why Buyers Discount Your Business\", \"description\": \"If the business can\u2019t run without you, buyers pay less. See what owner dependence costs and what to fix before you sell \u2014 plus a free ValuRight Health Score.\", \"author\": {\"@type\": \"Organization\", \"name\": \"ValuRight\"}, \"publisher\": {\"@type\": \"Organization\", \"name\": \"ValuRight\", \"logo\": {\"@type\": \"ImageObject\", \"url\": \"https://valuright.ai/favicon.svg\"}}, \"mainEntityOfPage\": \"https://valuright.ai/guides/owner-dependence\", \"datePublished\": \"2026-09-09\", \"dateModified\": \"2026-09-09\"}",
+      },
+      {
+        type: "application/ld+json",
+        children: "{\"@context\": \"https://schema.org\", \"@type\": \"BreadcrumbList\", \"itemListElement\": [{\"@type\": \"ListItem\", \"position\": 1, \"name\": \"Home\", \"item\": \"https://valuright.ai/\"}, {\"@type\": \"ListItem\", \"position\": 2, \"name\": \"Guides\", \"item\": \"https://valuright.ai/guides\"}, {\"@type\": \"ListItem\", \"position\": 3, \"name\": \"Owner dependence\", \"item\": \"https://valuright.ai/guides/owner-dependence\"}]}",
+      },
+    ],
   }),
   component: OwnerDependenceGuide,
 });
@@ -93,17 +103,20 @@ function OwnerDependenceGuide() {
           </Link>
         </div>
         <div className="flex flex-wrap gap-4 pt-2 text-sm">
-          <Link
-            to="/guides/how-to-value-a-small-business"
-            className="font-semibold text-accent hover:underline"
-          >
+          <Link to="/guides/how-to-value-a-small-business" className="font-semibold text-accent hover:underline">
             Related: How to value a small business
           </Link>
-          <Link
-            to="/what-is-my-business-worth"
-            className="font-semibold text-accent hover:underline"
-          >
+          <Link to="/guides/exit-strategy-retirement" className="font-semibold text-accent hover:underline">
+            Related: Exit strategy for retirement
+          </Link>
+          <Link to="/what-is-my-business-worth" className="font-semibold text-accent hover:underline">
             Related: What is my business worth?
+          </Link>
+          <Link to="/methodology" className="font-semibold text-accent hover:underline">
+            Related: Methodology
+          </Link>
+          <Link to="/guides" className="font-semibold text-accent hover:underline">
+            All guides
           </Link>
         </div>
       </div>

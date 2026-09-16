@@ -43,7 +43,8 @@ function PricingPage() {
       title="Start with a free preview, upgrade when sharing matters"
       description="Every paid capability shown below is tied to the active subscription. Invited advisors access their owner’s review workspace for free."
     >
-      <div className="mx-auto flex max-w-5xl flex-col gap-6 md:flex-row md:items-stretch [&>*]:min-w-0 [&>*]:flex-1">\n        <div className="rounded-xl border border-border bg-card p-6">
+      <div className="mx-auto flex max-w-5xl flex-col gap-6 md:flex-row md:items-stretch [&>*]:min-w-0 [&>*]:flex-1">
+        <div className="rounded-xl border border-border bg-card p-6">
           <h2 className="font-display text-xl font-semibold text-primary">Free Preview</h2>
           <p className="mt-1 text-xs text-muted-foreground">Explore your exit-readiness baseline</p>
           <div className="mt-4 flex items-baseline gap-1">
@@ -53,7 +54,7 @@ function PricingPage() {
           <ul className="mt-5 space-y-2 text-sm text-foreground">
             <li className="flex gap-2">
               <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-              <span>Value dashboard and all six valuation methods</span>
+              <span>Value dashboard and all seven valuation methods</span>
             </li>
             <li className="flex gap-2">
               <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" />

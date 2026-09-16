@@ -61,7 +61,7 @@ export const COMMERCIAL_PLANS: CommercialPlan[] = [
     cta: "Start Essentials preview",
     features: [
       "Ongoing value dashboard",
-      "All six valuation methods",
+      "All seven valuation methods",
       "Health Score and recommendations",
       "What-if scenario modeling",
     ],
@@ -93,7 +93,7 @@ export const COMMERCIAL_PLANS: CommercialPlan[] = [
 export const PLAN_COMPARISON_ROWS: PlanComparisonRow[] = [
   {
     group: "Valuation",
-    feature: "Value dashboard and all six valuation methods",
+    feature: "Value dashboard and all seven valuation methods",
     free: "included",
     essentials: "included",
     "exit-ready": "included",

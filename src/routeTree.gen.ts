@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WhatIsMyBusinessWorthRouteImport } from './routes/what-is-my-business-worth'
+import { Route as ValuationCalculatorRouteImport } from './routes/valuation-calculator'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SecurityRouteImport } from './routes/security'
@@ -17,15 +18,20 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as MethodologyRouteImport } from './routes/methodology'
+import { Route as GuidesRouteImport } from './routes/guides'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AdvisorRouteImport } from './routes/advisor'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GuidesIndexRouteImport } from './routes/guides.index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as TeaserPublicIdRouteImport } from './routes/teaser.$publicId'
+import { Route as GuidesSdeExplainedRouteImport } from './routes/guides.sde-explained'
 import { Route as GuidesOwnerDependenceRouteImport } from './routes/guides.owner-dependence'
 import { Route as GuidesHowToValueASmallBusinessRouteImport } from './routes/guides.how-to-value-a-small-business'
+import { Route as GuidesHowToSellMyBusinessRouteImport } from './routes/guides.how-to-sell-my-business'
+import { Route as GuidesExitStrategyRetirementRouteImport } from './routes/guides.exit-strategy-retirement'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppScenariosRouteImport } from './routes/app.scenarios'
 import { Route as AppRoadmapRouteImport } from './routes/app.roadmap'
@@ -48,6 +54,11 @@ import { Route as ApiPublicQuickbooksCallbackRouteImport } from './routes/api.pu
 const WhatIsMyBusinessWorthRoute = WhatIsMyBusinessWorthRouteImport.update({
   id: '/what-is-my-business-worth',
   path: '/what-is-my-business-worth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ValuationCalculatorRoute = ValuationCalculatorRouteImport.update({
+  id: '/valuation-calculator',
+  path: '/valuation-calculator',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
@@ -85,6 +96,11 @@ const MethodologyRoute = MethodologyRouteImport.update({
   path: '/methodology',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GuidesRoute = GuidesRouteImport.update({
+  id: '/guides',
+  path: '/guides',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DemoRoute = DemoRouteImport.update({
   id: '/demo',
   path: '/demo',
@@ -110,6 +126,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GuidesIndexRoute = GuidesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => GuidesRoute,
+} as any)
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -120,16 +141,33 @@ const TeaserPublicIdRoute = TeaserPublicIdRouteImport.update({
   path: '/teaser/$publicId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GuidesSdeExplainedRoute = GuidesSdeExplainedRouteImport.update({
+  id: '/sde-explained',
+  path: '/sde-explained',
+  getParentRoute: () => GuidesRoute,
+} as any)
 const GuidesOwnerDependenceRoute = GuidesOwnerDependenceRouteImport.update({
-  id: '/guides/owner-dependence',
-  path: '/guides/owner-dependence',
-  getParentRoute: () => rootRouteImport,
+  id: '/owner-dependence',
+  path: '/owner-dependence',
+  getParentRoute: () => GuidesRoute,
 } as any)
 const GuidesHowToValueASmallBusinessRoute =
   GuidesHowToValueASmallBusinessRouteImport.update({
-    id: '/guides/how-to-value-a-small-business',
-    path: '/guides/how-to-value-a-small-business',
-    getParentRoute: () => rootRouteImport,
+    id: '/how-to-value-a-small-business',
+    path: '/how-to-value-a-small-business',
+    getParentRoute: () => GuidesRoute,
+  } as any)
+const GuidesHowToSellMyBusinessRoute =
+  GuidesHowToSellMyBusinessRouteImport.update({
+    id: '/how-to-sell-my-business',
+    path: '/how-to-sell-my-business',
+    getParentRoute: () => GuidesRoute,
+  } as any)
+const GuidesExitStrategyRetirementRoute =
+  GuidesExitStrategyRetirementRouteImport.update({
+    id: '/exit-strategy-retirement',
+    path: '/exit-strategy-retirement',
+    getParentRoute: () => GuidesRoute,
   } as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
@@ -229,6 +267,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
+  '/guides': typeof GuidesRouteWithChildren
   '/methodology': typeof MethodologyRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -236,6 +275,7 @@ export interface FileRoutesByFullPath {
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/valuation-calculator': typeof ValuationCalculatorRoute
   '/what-is-my-business-worth': typeof WhatIsMyBusinessWorthRoute
   '/app/advisors': typeof AppAdvisorsRoute
   '/app/buyer-requests': typeof AppBuyerRequestsRoute
@@ -250,10 +290,14 @@ export interface FileRoutesByFullPath {
   '/app/roadmap': typeof AppRoadmapRoute
   '/app/scenarios': typeof AppScenariosRoute
   '/app/settings': typeof AppSettingsRoute
+  '/guides/exit-strategy-retirement': typeof GuidesExitStrategyRetirementRoute
+  '/guides/how-to-sell-my-business': typeof GuidesHowToSellMyBusinessRoute
   '/guides/how-to-value-a-small-business': typeof GuidesHowToValueASmallBusinessRoute
   '/guides/owner-dependence': typeof GuidesOwnerDependenceRoute
+  '/guides/sde-explained': typeof GuidesSdeExplainedRoute
   '/teaser/$publicId': typeof TeaserPublicIdRoute
   '/app/': typeof AppIndexRoute
+  '/guides/': typeof GuidesIndexRoute
   '/advisor/accept/$inviteId': typeof AdvisorAcceptInviteIdRoute
   '/advisor/decline/$inviteId': typeof AdvisorDeclineInviteIdRoute
   '/api/public/quickbooks/callback': typeof ApiPublicQuickbooksCallbackRoute
@@ -272,6 +316,7 @@ export interface FileRoutesByTo {
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/valuation-calculator': typeof ValuationCalculatorRoute
   '/what-is-my-business-worth': typeof WhatIsMyBusinessWorthRoute
   '/app/advisors': typeof AppAdvisorsRoute
   '/app/buyer-requests': typeof AppBuyerRequestsRoute
@@ -286,10 +331,14 @@ export interface FileRoutesByTo {
   '/app/roadmap': typeof AppRoadmapRoute
   '/app/scenarios': typeof AppScenariosRoute
   '/app/settings': typeof AppSettingsRoute
+  '/guides/exit-strategy-retirement': typeof GuidesExitStrategyRetirementRoute
+  '/guides/how-to-sell-my-business': typeof GuidesHowToSellMyBusinessRoute
   '/guides/how-to-value-a-small-business': typeof GuidesHowToValueASmallBusinessRoute
   '/guides/owner-dependence': typeof GuidesOwnerDependenceRoute
+  '/guides/sde-explained': typeof GuidesSdeExplainedRoute
   '/teaser/$publicId': typeof TeaserPublicIdRoute
   '/app': typeof AppIndexRoute
+  '/guides': typeof GuidesIndexRoute
   '/advisor/accept/$inviteId': typeof AdvisorAcceptInviteIdRoute
   '/advisor/decline/$inviteId': typeof AdvisorDeclineInviteIdRoute
   '/api/public/quickbooks/callback': typeof ApiPublicQuickbooksCallbackRoute
@@ -303,6 +352,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
+  '/guides': typeof GuidesRouteWithChildren
   '/methodology': typeof MethodologyRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -310,6 +360,7 @@ export interface FileRoutesById {
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/valuation-calculator': typeof ValuationCalculatorRoute
   '/what-is-my-business-worth': typeof WhatIsMyBusinessWorthRoute
   '/app/advisors': typeof AppAdvisorsRoute
   '/app/buyer-requests': typeof AppBuyerRequestsRoute
@@ -324,10 +375,14 @@ export interface FileRoutesById {
   '/app/roadmap': typeof AppRoadmapRoute
   '/app/scenarios': typeof AppScenariosRoute
   '/app/settings': typeof AppSettingsRoute
+  '/guides/exit-strategy-retirement': typeof GuidesExitStrategyRetirementRoute
+  '/guides/how-to-sell-my-business': typeof GuidesHowToSellMyBusinessRoute
   '/guides/how-to-value-a-small-business': typeof GuidesHowToValueASmallBusinessRoute
   '/guides/owner-dependence': typeof GuidesOwnerDependenceRoute
+  '/guides/sde-explained': typeof GuidesSdeExplainedRoute
   '/teaser/$publicId': typeof TeaserPublicIdRoute
   '/app/': typeof AppIndexRoute
+  '/guides/': typeof GuidesIndexRoute
   '/advisor/accept/$inviteId': typeof AdvisorAcceptInviteIdRoute
   '/advisor/decline/$inviteId': typeof AdvisorDeclineInviteIdRoute
   '/api/public/quickbooks/callback': typeof ApiPublicQuickbooksCallbackRoute
@@ -342,6 +397,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/demo'
+    | '/guides'
     | '/methodology'
     | '/pricing'
     | '/privacy'
@@ -349,6 +405,7 @@ export interface FileRouteTypes {
     | '/security'
     | '/terms'
     | '/unsubscribe'
+    | '/valuation-calculator'
     | '/what-is-my-business-worth'
     | '/app/advisors'
     | '/app/buyer-requests'
@@ -363,10 +420,14 @@ export interface FileRouteTypes {
     | '/app/roadmap'
     | '/app/scenarios'
     | '/app/settings'
+    | '/guides/exit-strategy-retirement'
+    | '/guides/how-to-sell-my-business'
     | '/guides/how-to-value-a-small-business'
     | '/guides/owner-dependence'
+    | '/guides/sde-explained'
     | '/teaser/$publicId'
     | '/app/'
+    | '/guides/'
     | '/advisor/accept/$inviteId'
     | '/advisor/decline/$inviteId'
     | '/api/public/quickbooks/callback'
@@ -385,6 +446,7 @@ export interface FileRouteTypes {
     | '/security'
     | '/terms'
     | '/unsubscribe'
+    | '/valuation-calculator'
     | '/what-is-my-business-worth'
     | '/app/advisors'
     | '/app/buyer-requests'
@@ -399,10 +461,14 @@ export interface FileRouteTypes {
     | '/app/roadmap'
     | '/app/scenarios'
     | '/app/settings'
+    | '/guides/exit-strategy-retirement'
+    | '/guides/how-to-sell-my-business'
     | '/guides/how-to-value-a-small-business'
     | '/guides/owner-dependence'
+    | '/guides/sde-explained'
     | '/teaser/$publicId'
     | '/app'
+    | '/guides'
     | '/advisor/accept/$inviteId'
     | '/advisor/decline/$inviteId'
     | '/api/public/quickbooks/callback'
@@ -415,6 +481,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/demo'
+    | '/guides'
     | '/methodology'
     | '/pricing'
     | '/privacy'
@@ -422,6 +489,7 @@ export interface FileRouteTypes {
     | '/security'
     | '/terms'
     | '/unsubscribe'
+    | '/valuation-calculator'
     | '/what-is-my-business-worth'
     | '/app/advisors'
     | '/app/buyer-requests'
@@ -436,10 +504,14 @@ export interface FileRouteTypes {
     | '/app/roadmap'
     | '/app/scenarios'
     | '/app/settings'
+    | '/guides/exit-strategy-retirement'
+    | '/guides/how-to-sell-my-business'
     | '/guides/how-to-value-a-small-business'
     | '/guides/owner-dependence'
+    | '/guides/sde-explained'
     | '/teaser/$publicId'
     | '/app/'
+    | '/guides/'
     | '/advisor/accept/$inviteId'
     | '/advisor/decline/$inviteId'
     | '/api/public/quickbooks/callback'
@@ -453,6 +525,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
   DemoRoute: typeof DemoRoute
+  GuidesRoute: typeof GuidesRouteWithChildren
   MethodologyRoute: typeof MethodologyRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -460,9 +533,8 @@ export interface RootRouteChildren {
   SecurityRoute: typeof SecurityRoute
   TermsRoute: typeof TermsRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
+  ValuationCalculatorRoute: typeof ValuationCalculatorRoute
   WhatIsMyBusinessWorthRoute: typeof WhatIsMyBusinessWorthRoute
-  GuidesHowToValueASmallBusinessRoute: typeof GuidesHowToValueASmallBusinessRoute
-  GuidesOwnerDependenceRoute: typeof GuidesOwnerDependenceRoute
   TeaserPublicIdRoute: typeof TeaserPublicIdRoute
   ApiPublicQuickbooksCallbackRoute: typeof ApiPublicQuickbooksCallbackRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
@@ -476,6 +548,13 @@ declare module '@tanstack/react-router' {
       path: '/what-is-my-business-worth'
       fullPath: '/what-is-my-business-worth'
       preLoaderRoute: typeof WhatIsMyBusinessWorthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/valuation-calculator': {
+      id: '/valuation-calculator'
+      path: '/valuation-calculator'
+      fullPath: '/valuation-calculator'
+      preLoaderRoute: typeof ValuationCalculatorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/unsubscribe': {
@@ -527,6 +606,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MethodologyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/guides': {
+      id: '/guides'
+      path: '/guides'
+      fullPath: '/guides'
+      preLoaderRoute: typeof GuidesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/demo': {
       id: '/demo'
       path: '/demo'
@@ -562,6 +648,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/guides/': {
+      id: '/guides/'
+      path: '/'
+      fullPath: '/guides/'
+      preLoaderRoute: typeof GuidesIndexRouteImport
+      parentRoute: typeof GuidesRoute
+    }
     '/app/': {
       id: '/app/'
       path: '/'
@@ -576,19 +669,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TeaserPublicIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/guides/sde-explained': {
+      id: '/guides/sde-explained'
+      path: '/sde-explained'
+      fullPath: '/guides/sde-explained'
+      preLoaderRoute: typeof GuidesSdeExplainedRouteImport
+      parentRoute: typeof GuidesRoute
+    }
     '/guides/owner-dependence': {
       id: '/guides/owner-dependence'
-      path: '/guides/owner-dependence'
+      path: '/owner-dependence'
       fullPath: '/guides/owner-dependence'
       preLoaderRoute: typeof GuidesOwnerDependenceRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof GuidesRoute
     }
     '/guides/how-to-value-a-small-business': {
       id: '/guides/how-to-value-a-small-business'
-      path: '/guides/how-to-value-a-small-business'
+      path: '/how-to-value-a-small-business'
       fullPath: '/guides/how-to-value-a-small-business'
       preLoaderRoute: typeof GuidesHowToValueASmallBusinessRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof GuidesRoute
+    }
+    '/guides/how-to-sell-my-business': {
+      id: '/guides/how-to-sell-my-business'
+      path: '/how-to-sell-my-business'
+      fullPath: '/guides/how-to-sell-my-business'
+      preLoaderRoute: typeof GuidesHowToSellMyBusinessRouteImport
+      parentRoute: typeof GuidesRoute
+    }
+    '/guides/exit-strategy-retirement': {
+      id: '/guides/exit-strategy-retirement'
+      path: '/exit-strategy-retirement'
+      fullPath: '/guides/exit-strategy-retirement'
+      preLoaderRoute: typeof GuidesExitStrategyRetirementRouteImport
+      parentRoute: typeof GuidesRoute
     }
     '/app/settings': {
       id: '/app/settings'
@@ -768,12 +882,34 @@ const AppRouteChildren: AppRouteChildren = {
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
+interface GuidesRouteChildren {
+  GuidesExitStrategyRetirementRoute: typeof GuidesExitStrategyRetirementRoute
+  GuidesHowToSellMyBusinessRoute: typeof GuidesHowToSellMyBusinessRoute
+  GuidesHowToValueASmallBusinessRoute: typeof GuidesHowToValueASmallBusinessRoute
+  GuidesOwnerDependenceRoute: typeof GuidesOwnerDependenceRoute
+  GuidesSdeExplainedRoute: typeof GuidesSdeExplainedRoute
+  GuidesIndexRoute: typeof GuidesIndexRoute
+}
+
+const GuidesRouteChildren: GuidesRouteChildren = {
+  GuidesExitStrategyRetirementRoute: GuidesExitStrategyRetirementRoute,
+  GuidesHowToSellMyBusinessRoute: GuidesHowToSellMyBusinessRoute,
+  GuidesHowToValueASmallBusinessRoute: GuidesHowToValueASmallBusinessRoute,
+  GuidesOwnerDependenceRoute: GuidesOwnerDependenceRoute,
+  GuidesSdeExplainedRoute: GuidesSdeExplainedRoute,
+  GuidesIndexRoute: GuidesIndexRoute,
+}
+
+const GuidesRouteWithChildren =
+  GuidesRoute._addFileChildren(GuidesRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdvisorRoute: AdvisorRouteWithChildren,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
   DemoRoute: DemoRoute,
+  GuidesRoute: GuidesRouteWithChildren,
   MethodologyRoute: MethodologyRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
@@ -781,9 +917,8 @@ const rootRouteChildren: RootRouteChildren = {
   SecurityRoute: SecurityRoute,
   TermsRoute: TermsRoute,
   UnsubscribeRoute: UnsubscribeRoute,
+  ValuationCalculatorRoute: ValuationCalculatorRoute,
   WhatIsMyBusinessWorthRoute: WhatIsMyBusinessWorthRoute,
-  GuidesHowToValueASmallBusinessRoute: GuidesHowToValueASmallBusinessRoute,
-  GuidesOwnerDependenceRoute: GuidesOwnerDependenceRoute,
   TeaserPublicIdRoute: TeaserPublicIdRoute,
   ApiPublicQuickbooksCallbackRoute: ApiPublicQuickbooksCallbackRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,

@@ -76,7 +76,7 @@ function Demo() {
         </section>
 
         {/* Method cards */}
-        <h2 className="mt-12 mb-4 font-display text-2xl font-semibold text-primary">Six valuation methods</h2>
+        <h2 className="mt-12 mb-4 font-display text-2xl font-semibold text-primary">Seven valuation methods</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {valuation.methods.map((m) => (
             <div key={m.method} className={`rounded-xl border bg-card p-5 ${m.available ? "border-border" : "border-dashed border-border opacity-60"}`}>

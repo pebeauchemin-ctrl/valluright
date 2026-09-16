@@ -10,6 +10,14 @@ type PublicPageShellProps = {
   children: React.ReactNode;
 };
 
+const GUIDE_LINKS = [
+  { to: "/guides/how-to-value-a-small-business" as const, label: "How to value a small business" },
+  { to: "/guides/sde-explained" as const, label: "What is SDE?" },
+  { to: "/guides/owner-dependence" as const, label: "Owner dependence" },
+  { to: "/guides/exit-strategy-retirement" as const, label: "Exit strategy for retirement" },
+  { to: "/guides/how-to-sell-my-business" as const, label: "How to sell my business" },
+];
+
 export function PublicPageShell({
   eyebrow,
   title,
@@ -31,7 +39,7 @@ export function PublicPageShell({
             <Link to="/what-is-my-business-worth" className="hover:text-foreground transition">
               Worth?
             </Link>
-            <Link to="/guides/how-to-value-a-small-business" className="hover:text-foreground transition">
+            <Link to="/guides" className="hover:text-foreground transition">
               Guides
             </Link>
             <Link to="/methodology" className="hover:text-foreground transition">
@@ -72,27 +80,36 @@ export function PublicPageShell({
       </main>
 
       <footer className="border-t border-border/60 bg-primary text-primary-foreground">
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-10 md:flex-row md:items-center md:justify-between">
+        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-10 md:flex-row md:items-start md:justify-between">
           <BrandLogo size={34} variant="onDark" />
-          <div className="flex flex-wrap gap-4 text-sm text-primary-foreground/70">
-            <Link to="/privacy" className="hover:text-primary-foreground">
-              Privacy
-            </Link>
-            <Link to="/terms" className="hover:text-primary-foreground">
-              Terms
-            </Link>
-            <Link to="/security" className="hover:text-primary-foreground">
-              Security
-            </Link>
-            <Link to="/methodology" className="hover:text-primary-foreground">
-              Methodology
-            </Link>
-            <Link to="/what-is-my-business-worth" className="hover:text-primary-foreground">
-              Worth?
-            </Link>
-            <Link to="/guides/how-to-value-a-small-business" className="hover:text-primary-foreground">
-              Guides
-            </Link>
+          <div className="flex flex-col gap-4 text-sm text-primary-foreground/70">
+            <div className="flex flex-wrap gap-4">
+              <Link to="/privacy" className="hover:text-primary-foreground">
+                Privacy
+              </Link>
+              <Link to="/terms" className="hover:text-primary-foreground">
+                Terms
+              </Link>
+              <Link to="/security" className="hover:text-primary-foreground">
+                Security
+              </Link>
+              <Link to="/methodology" className="hover:text-primary-foreground">
+                Methodology
+              </Link>
+              <Link to="/what-is-my-business-worth" className="hover:text-primary-foreground">
+                Worth?
+              </Link>
+              <Link to="/guides" className="hover:text-primary-foreground">
+                Guides
+              </Link>
+            </div>
+            <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-primary-foreground/60">
+              {GUIDE_LINKS.map((g) => (
+                <Link key={g.to} to={g.to} className="hover:text-primary-foreground">
+                  {g.label}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </footer>
@@ -108,3 +125,4 @@ export function LegalSection({ title, children }: { title: string; children: Rea
     </section>
   );
 }
+
