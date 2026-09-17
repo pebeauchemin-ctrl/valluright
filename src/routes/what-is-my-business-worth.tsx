@@ -3,6 +3,108 @@ import { ArrowRight, Check, Sparkles, TrendingUp, ShieldCheck, Users, FileCheck 
 import { BrandLogo } from "@/components/BrandLogo";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 
+const articleLd = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  headline: "What Is My Business Worth? Get a Free Planning Range",
+  description:
+    "Your business is worth a planning range, not one napkin number. ValuRight Free Preview estimates a multi-method planning range in about 15 minutes for Main Street owners 55+.",
+  author: { "@type": "Organization", name: "ValuRight" },
+  publisher: {
+    "@type": "Organization",
+    name: "ValuRight",
+    logo: { "@type": "ImageObject", url: "https://valuright.ai/favicon.svg" },
+  },
+  mainEntityOfPage: "https://valuright.ai/what-is-my-business-worth",
+  datePublished: "2026-09-09",
+  dateModified: "2026-09-17",
+};
+
+const faqLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "Is this a certified appraisal?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "No. It is a software-generated planning estimate to help you understand a range and value drivers before you talk to a CPA, broker, or appraiser.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "How long does Free Preview take?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "About 15 minutes if you have recent financials handy.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Who is it for?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Small-business owners — especially owners 55+ planning the next chapter — not Wall Street models.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "SDE or EBITDA?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Owner-operated Main Street businesses usually start with Seller’s Discretionary Earnings (SDE). Businesses that can run with hired management lean more on EBITDA. ValuRight shows both in context.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "How is the planning range calculated?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Free Preview runs seven valuation methods appropriate to your business category, then blends a headline planning range with confidence notes. Methods are shown for context; this page does not publish secret “weights.” Risk and quality factors (including owner involvement) can shift multiples within industry bands.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Is the $820K–$1.05M number on this page my valuation?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "No. That block is sample preview UI (illustrative) from a sample report — not your valuation and not an average of other owners. Your range comes from your inputs after you start Free Preview.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "What inputs matter most?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Earnings base and quality (often SDE for owner-operated shops), owner dependence / owner hours, customer concentration, documentation and management depth, recurring or repeatable revenue where it fits, and consistent financial history. Garbage in, garbage out — review odd add-backs with your CPA.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Free Preview vs a CPA, broker, or appraisal?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Free Preview is homework: a planning range, Health Score, and what-if scenarios so you walk into advisor conversations with clearer questions. It does not replace a CPA, broker, attorney, or certified appraisal when a formal opinion or deal process requires one.",
+      },
+    },
+  ],
+};
+
+const breadcrumbLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://valuright.ai/" },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: "What is my business worth?",
+      item: "https://valuright.ai/what-is-my-business-worth",
+    },
+  ],
+};
+
 export const Route = createFileRoute("/what-is-my-business-worth")({
   head: () => ({
     meta: [
@@ -10,7 +112,7 @@ export const Route = createFileRoute("/what-is-my-business-worth")({
       {
         name: "description",
         content:
-          "See a planning range for your small business in minutes. Built for owners 55+ — multi-method estimate, Health Score, and what may be holding the number down. Not a certified appraisal.",
+          "Get a free planning range for your Main Street business in about 15 minutes. Health Score, what-if scenarios, and value drivers for owners 55+ — not a certified appraisal.",
       },
       {
         property: "og:title",
@@ -19,7 +121,7 @@ export const Route = createFileRoute("/what-is-my-business-worth")({
       {
         property: "og:description",
         content:
-          "See a planning range for your small business in minutes. Built for owners 55+ — multi-method estimate, Health Score, and what may be holding the number down. Not a certified appraisal.",
+          "Get a free planning range for your Main Street business in about 15 minutes. Health Score, what-if scenarios, and value drivers for owners 55+ — not a certified appraisal.",
       },
       { property: "og:type", content: "website" },
       {
@@ -31,11 +133,15 @@ export const Route = createFileRoute("/what-is-my-business-worth")({
     scripts: [
       {
         type: "application/ld+json",
-        children: "{\"@context\": \"https://schema.org\", \"@type\": \"FAQPage\", \"mainEntity\": [{\"@type\": \"Question\", \"name\": \"Is this a certified appraisal?\", \"acceptedAnswer\": {\"@type\": \"Answer\", \"text\": \"No. It is a software-generated planning estimate to help you understand a range and value drivers before you talk to a CPA, broker, or appraiser.\"}}, {\"@type\": \"Question\", \"name\": \"How long does Free Preview take?\", \"acceptedAnswer\": {\"@type\": \"Answer\", \"text\": \"About 15 minutes if you have recent financials handy.\"}}, {\"@type\": \"Question\", \"name\": \"Who is it for?\", \"acceptedAnswer\": {\"@type\": \"Answer\", \"text\": \"Small-business owners \u2014 especially owners 55+ planning the next chapter \u2014 not Wall Street models.\"}}, {\"@type\": \"Question\", \"name\": \"SDE or EBITDA?\", \"acceptedAnswer\": {\"@type\": \"Answer\", \"text\": \"Owner-operated Main Street businesses usually start with Seller\u2019s Discretionary Earnings (SDE). Businesses that can run with hired management lean more on EBITDA. ValuRight shows both in context.\"}}]}",
+        children: JSON.stringify(articleLd),
       },
       {
         type: "application/ld+json",
-        children: "{\"@context\": \"https://schema.org\", \"@type\": \"BreadcrumbList\", \"itemListElement\": [{\"@type\": \"ListItem\", \"position\": 1, \"name\": \"Home\", \"item\": \"https://valuright.ai/\"}, {\"@type\": \"ListItem\", \"position\": 2, \"name\": \"What is my business worth?\", \"item\": \"https://valuright.ai/what-is-my-business-worth\"}]}",
+        children: JSON.stringify(faqLd),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify(breadcrumbLd),
       },
     ],
   }),
@@ -94,18 +200,35 @@ function WorthLanding() {
               <p className="text-sm font-semibold uppercase tracking-wider text-accent mb-3">
                 What is my business worth?
               </p>
-              <h1 className="font-display text-5xl md:text-6xl font-semibold tracking-tight text-primary leading-[1.05]">
-                Know your value before you sell
+              <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-primary leading-[1.05]">
+                What Is My Business Worth? Get a Free Planning Range
               </h1>
               <p className="mt-6 max-w-xl text-lg text-muted-foreground leading-relaxed">
-                Get a free planning range for your Main Street business — then see what buyers may
-                discount for owner dependence and other risks.
+                Your business is worth a <strong className="text-foreground">planning range</strong>,
+                not one napkin number. For most Main Street owner-operated companies, that range
+                starts from earnings quality (often{" "}
+                <Link to="/guides/sde-explained" className="font-semibold text-accent hover:underline">
+                  SDE
+                </Link>
+                ) and buyer risk — including{" "}
+                <Link
+                  to="/guides/owner-dependence"
+                  className="font-semibold text-accent hover:underline"
+                >
+                  owner dependence
+                </Link>{" "}
+                — then gets cross-checked with other methods. ValuRight Free Preview estimates that
+                range in about <strong className="text-foreground">15 minutes</strong>. It is a
+                software-generated planning estimate for owners{" "}
+                <strong className="text-foreground">55+</strong>, not a certified appraisal or a
+                guaranteed sale price.
               </p>
               <p className="mt-4 max-w-xl text-base text-muted-foreground leading-relaxed">
-                Enter your industry, owner involvement, and recent financials. ValuRight runs seven
-                valuation methods (including SDE, EBITDA, and cap rate where it fits), blends a
-                planning range, and shows a Health Score with the top issues that may be holding the
-                number down.
+                See a planning range, a Health Score for what may be holding the number down, and
+                what-if scenarios — useful homework before you talk to a CPA or broker.
+              </p>
+              <p className="mt-3 text-xs font-medium text-muted-foreground">
+                Last updated: September 17, 2026
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-4">
                 <Link
@@ -142,6 +265,11 @@ function WorthLanding() {
                   <div className="font-display text-3xl font-semibold text-primary mt-2">
                     $820K <span className="text-muted-foreground font-normal">–</span> $1.05M
                   </div>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                    <strong className="text-foreground">Sample preview (illustrative).</strong> This
+                    $820K–$1.05M block is example UI from a sample report — not your valuation and not
+                    an average of other owners. Your range comes from your inputs.
+                  </p>
                   <div className="mt-4 h-2 rounded-full bg-secondary overflow-hidden">
                     <div className="h-full w-3/4 rounded-full bg-gradient-to-r from-accent to-gold" />
                   </div>
@@ -263,9 +391,16 @@ function WorthLanding() {
               </h2>
               <p className="mt-4 text-muted-foreground leading-relaxed">
                 Many owners are surprised when a buyer&apos;s view is lower than &ldquo;what I think
-                it&apos;s worth.&rdquo; A common reason is owner dependence — if you are the
-                rainmaker and the playbook lives in your head, buyers discount the price or demand a
-                longer transition. ValuRight&apos;s Health Score surfaces that risk early.
+                it&apos;s worth.&rdquo; A common reason is{" "}
+                <Link
+                  to="/guides/owner-dependence"
+                  className="font-semibold text-accent hover:underline"
+                >
+                  owner dependence
+                </Link>{" "}
+                — if you are the rainmaker and the playbook lives in your head, buyers discount the
+                price or demand a longer transition. ValuRight&apos;s Health Score surfaces that risk
+                early.
               </p>
               <div className="mt-6 flex flex-wrap gap-4">
                 <Link
@@ -287,7 +422,16 @@ function WorthLanding() {
               <Feature
                 icon={<TrendingUp className="h-5 w-5" />}
                 title="Seven valuation methods"
-                desc="SDE, EBITDA, revenue, DCF, asset-based, comps, and cap rate where it fits."
+                desc={
+                  <>
+                    SDE, EBITDA, revenue, DCF, asset-based, comps, and cap rate where it fits.
+                    Details:{" "}
+                    <Link to="/methodology" className="font-semibold text-accent hover:underline">
+                      Methodology
+                    </Link>
+                    .
+                  </>
+                }
               />
               <Feature
                 icon={<ShieldCheck className="h-5 w-5" />}
@@ -331,14 +475,59 @@ function WorthLanding() {
                 <>
                   Owner-operated Main Street businesses usually start with Seller&apos;s Discretionary
                   Earnings (SDE). Businesses that can run with hired management lean more on EBITDA.
-                  ValuRight shows both in context.{" "}
+                  ValuRight shows both in context. More:{" "}
                   <Link
-                    to="/guides/how-to-value-a-small-business"
+                    to="/guides/sde-explained"
                     className="font-semibold text-accent hover:underline"
                   >
-                    More in the owner&apos;s guide
+                    SDE explained
                   </Link>
                   .
+                </>
+              }
+            />
+            <Faq
+              q="How is the planning range calculated?"
+              a={
+                <>
+                  Free Preview runs <strong>seven valuation methods</strong> appropriate to your
+                  business category, then blends a headline planning range with confidence notes.
+                  Methods are shown for context; this page does <strong>not</strong> publish secret
+                  &ldquo;weights.&rdquo; Risk and quality factors (including owner involvement) can
+                  shift multiples within industry bands. See{" "}
+                  <Link to="/methodology" className="font-semibold text-accent hover:underline">
+                    Methodology
+                  </Link>
+                  .
+                </>
+              }
+            />
+            <Faq
+              q="Is the $820K–$1.05M number on this page my valuation?"
+              a={
+                <>
+                  No. That block is <strong>sample preview UI (illustrative)</strong> from a sample
+                  report — not your valuation and not an average of other owners. Your range comes
+                  from your inputs after you start Free Preview. You can also{" "}
+                  <Link to="/demo" className="font-semibold text-accent hover:underline">
+                    see a sample report
+                  </Link>
+                  .
+                </>
+              }
+            />
+            <Faq
+              q="What inputs matter most?"
+              a="Earnings base and quality (often SDE for owner-operated shops), owner dependence / owner hours, customer concentration, documentation and management depth, recurring or repeatable revenue where it fits, and consistent financial history. Garbage in, garbage out — review odd add-backs with your CPA."
+            />
+            <Faq
+              q="Free Preview vs a CPA, broker, or appraisal?"
+              a={
+                <>
+                  Free Preview is homework: a planning range, Health Score, and what-if scenarios so
+                  you walk into advisor conversations with clearer questions. It does{" "}
+                  <strong>not</strong> replace a CPA, broker, attorney, or certified appraisal when a
+                  formal opinion or deal process requires one.
                 </>
               }
             />
@@ -370,6 +559,27 @@ function WorthLanding() {
               See a sample report
             </Link>
           </div>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-sm">
+            <Link to="/guides/sde-explained" className="font-semibold text-accent hover:underline">
+              SDE explained
+            </Link>
+            <Link to="/guides/owner-dependence" className="font-semibold text-accent hover:underline">
+              Owner dependence
+            </Link>
+            <Link to="/methodology" className="font-semibold text-accent hover:underline">
+              Methodology
+            </Link>
+            <Link
+              to="/pricing"
+              search={{ checkout: undefined }}
+              className="font-semibold text-accent hover:underline"
+            >
+              Pricing
+            </Link>
+            <Link to="/guides" className="font-semibold text-accent hover:underline">
+              Guides
+            </Link>
+          </div>
           <p className="mt-6 text-xs text-muted-foreground">{VALUATION_DISCLAIMER_SHORT}</p>
         </div>
       </section>
@@ -395,10 +605,7 @@ function WorthLanding() {
                 <Link to="/methodology" className="hover:text-primary-foreground">
                   Methodology
                 </Link>
-                <Link
-                  to="/guides/how-to-value-a-small-business"
-                  className="hover:text-primary-foreground"
-                >
+                <Link to="/guides" className="hover:text-primary-foreground">
                   Guides
                 </Link>
               </div>
@@ -432,7 +639,7 @@ function Feature({
 }: {
   icon: React.ReactNode;
   title: string;
-  desc: string;
+  desc: React.ReactNode;
 }) {
   return (
     <div className="rounded-xl border border-border bg-card p-5">
