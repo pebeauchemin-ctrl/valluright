@@ -3,13 +3,117 @@ import { ArrowRight } from "lucide-react";
 import { LegalSection, PublicPageShell } from "@/components/PublicPageShell";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 
+const articleLd = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  headline: "What Is SDE (Seller’s Discretionary Earnings)?",
+  description:
+    "Seller’s Discretionary Earnings (SDE) is the total financial benefit a single full-time owner-operator can take from a Main Street business in a normal year. See the formula, an illustrative example, and how it differs from EBITDA.",
+  author: { "@type": "Organization", name: "ValuRight" },
+  publisher: {
+    "@type": "Organization",
+    name: "ValuRight",
+    logo: { "@type": "ImageObject", url: "https://valuright.ai/favicon.svg" },
+  },
+  mainEntityOfPage: "https://valuright.ai/guides/sde-explained",
+  datePublished: "2026-09-15",
+  dateModified: "2026-09-17",
+};
+
+const breadcrumbLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://valuright.ai/" },
+    { "@type": "ListItem", position: 2, name: "Guides", item: "https://valuright.ai/guides" },
+    {
+      "@type": "ListItem",
+      position: 3,
+      name: "What Is SDE?",
+      item: "https://valuright.ai/guides/sde-explained",
+    },
+  ],
+};
+
+const faqLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "Is SDE the same as profit?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Not usually. SDE starts from profit-like figures, then adds back items such as one owner’s compensation and certain documented discretionary or non-recurring expenses so the result reflects total benefit to one full-time owner-operator.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Can I use SDE if I have partners?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Buyers typically normalize to one full-time owner-operator equivalent. Multiple working owners need a clear story for what compensation stays in the business after a sale. When in doubt, review the build with your CPA.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Why do buyers challenge add-backs?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Because inflated SDE raises the asking price without raising transferable earnings. Documented, non-recurring, and clearly personal items hold up better than vague discretionary buckets.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Does ValuRight replace my CPA or broker?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "No. Free Preview is a planning estimate to help you understand range and value drivers before you talk to advisors. It is not a certified appraisal.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "How do I calculate SDE from a tax return or P&L?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Start from reported profit or taxable business income for a normal year, then add back one full-time owner’s compensation, documented personal perks a buyer would not keep, interest/taxes/D&A when they sit below the earnings base, and documented non-recurring costs. Exact lines vary — every add-back should be explainable. When unsure, build it with your CPA.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "What is the SDE formula in plain English?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "SDE is roughly: profit + one owner’s pay + documented add-backs a buyer would accept, so the figure shows the total benefit available to a single full-time owner-operator in a normal year.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "When should I use EBITDA instead of SDE?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "When a professional management team can already run the company without a working owner-operator. Then buyers often treat market-rate manager pay as an operating cost and lean on EBITDA. Many owner-operated Main Street businesses still start with SDE; ValuRight shows both in context.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "If my SDE is higher, is my sale price higher?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Not automatically. Price also depends on risk, transferability, growth, industry, and deal structure. A higher SDE with high owner dependence can still face multiple compression or tougher terms. Use a multi-method planning range — not SDE alone — and review with advisors before you set an asking price.",
+      },
+    },
+  ],
+};
+
 export const Route = createFileRoute("/guides/sde-explained")({
   head: () => ({
     meta: [
       { title: "What Is SDE? Seller’s Discretionary Earnings Explained | ValuRight" },
       {
         name: "description",
-        content: "SDE is how Main Street buyers price owner-operated businesses. See what\u2019s in SDE, common add-backs, and how it differs from EBITDA.",
+        content:
+          "SDE is the total benefit one full-time owner-operator can take from a Main Street business in a normal year. See the formula, an illustrative example, and how it differs from EBITDA.",
       },
       {
         property: "og:title",
@@ -17,7 +121,8 @@ export const Route = createFileRoute("/guides/sde-explained")({
       },
       {
         property: "og:description",
-        content: "SDE is how Main Street buyers price owner-operated businesses. See what\u2019s in SDE, common add-backs, and how it differs from EBITDA.",
+        content:
+          "SDE is the total benefit one full-time owner-operator can take from a Main Street business in a normal year. See the formula, an illustrative example, and how it differs from EBITDA.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://valuright.ai/guides/sde-explained" },
@@ -26,15 +131,15 @@ export const Route = createFileRoute("/guides/sde-explained")({
     scripts: [
       {
         type: "application/ld+json",
-        children: "{\"@context\": \"https://schema.org\", \"@type\": \"Article\", \"headline\": \"What Is SDE (Seller\u2019s Discretionary Earnings)?\", \"description\": \"SDE is how Main Street buyers price owner-operated businesses. See what\u2019s in SDE, common add-backs, and how it differs from EBITDA.\", \"author\": {\"@type\": \"Organization\", \"name\": \"ValuRight\"}, \"publisher\": {\"@type\": \"Organization\", \"name\": \"ValuRight\", \"logo\": {\"@type\": \"ImageObject\", \"url\": \"https://valuright.ai/favicon.svg\"}}, \"mainEntityOfPage\": \"https://valuright.ai/guides/sde-explained\", \"datePublished\": \"2026-09-15\", \"dateModified\": \"2026-09-15\"}",
+        children: JSON.stringify(articleLd),
       },
       {
         type: "application/ld+json",
-        children: "{\"@context\": \"https://schema.org\", \"@type\": \"BreadcrumbList\", \"itemListElement\": [{\"@type\": \"ListItem\", \"position\": 1, \"name\": \"Home\", \"item\": \"https://valuright.ai/\"}, {\"@type\": \"ListItem\", \"position\": 2, \"name\": \"Guides\", \"item\": \"https://valuright.ai/guides\"}, {\"@type\": \"ListItem\", \"position\": 3, \"name\": \"What Is SDE?\", \"item\": \"https://valuright.ai/guides/sde-explained\"}]}",
+        children: JSON.stringify(breadcrumbLd),
       },
       {
         type: "application/ld+json",
-        children: "{\"@context\": \"https://schema.org\", \"@type\": \"FAQPage\", \"mainEntity\": [{\"@type\": \"Question\", \"name\": \"Is SDE the same as profit?\", \"acceptedAnswer\": {\"@type\": \"Answer\", \"text\": \"Not usually. SDE starts from profit-like figures, then adds back items such as one owner\u2019s compensation and certain documented discretionary or non-recurring expenses so the result reflects total benefit to one full-time owner-operator.\"}}, {\"@type\": \"Question\", \"name\": \"Can I use SDE if I have partners?\", \"acceptedAnswer\": {\"@type\": \"Answer\", \"text\": \"Buyers typically normalize to one full-time owner-operator equivalent. Multiple working owners need a clear story for what compensation stays in the business after a sale. When in doubt, review the build with your CPA.\"}}, {\"@type\": \"Question\", \"name\": \"Why do buyers challenge add-backs?\", \"acceptedAnswer\": {\"@type\": \"Answer\", \"text\": \"Because inflated SDE raises the asking price without raising transferable earnings. Documented, non-recurring, and clearly personal items hold up better than vague discretionary buckets.\"}}, {\"@type\": \"Question\", \"name\": \"Does ValuRight replace my CPA or broker?\", \"acceptedAnswer\": {\"@type\": \"Answer\", \"text\": \"No. Free Preview is a planning estimate to help you understand range and value drivers before you talk to advisors. It is not a certified appraisal.\"}}]}",
+        children: JSON.stringify(faqLd),
       },
     ],
   }),
@@ -44,10 +149,10 @@ export const Route = createFileRoute("/guides/sde-explained")({
 function SdeExplainedGuide() {
   return (
     <PublicPageShell
-      eyebrow="Owner’s guide"
+      eyebrow="Planning homework for owners 55+ — not a certified appraisal."
       title="What Is SDE (Seller’s Discretionary Earnings)?"
-      description="Owners ask for “the number.” Main Street buyers usually start with a different question: what does one full-time owner-operator take home from this business in a normal year? That figure is Seller’s Discretionary Earnings — SDE. Get SDE wrong and every multiple that follows is wrong too."
-      updated="September 15, 2026"
+      description="Seller’s Discretionary Earnings (SDE) is the total financial benefit a single full-time owner-operator can take from a Main Street business in a normal year — roughly profit plus one owner’s pay and documented add-backs a buyer would accept. Get SDE wrong and every multiple that follows is wrong too."
+      updated="September 17, 2026"
     >
       <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
         This guide is homework for owners 55+ planning the next chapter. It is not a certified
@@ -56,8 +161,7 @@ function SdeExplainedGuide() {
 
       <LegalSection title="What SDE means">
         <p>
-          SDE is the total financial benefit available to a single full-time owner-operator. It is
-          built for businesses where the owner still works in the company — sales, ops,
+          SDE is built for businesses where the owner still works in the company — sales, ops,
           relationships, or all three. Buyers use it to compare apples to apples across
           owner-operated shops, service firms, and similar Main Street assets.
         </p>
@@ -65,6 +169,74 @@ function SdeExplainedGuide() {
           If a professional management team already runs the company without you, buyers often lean
           more on EBITDA. Many ValuRight users see <strong>both</strong> in context; SDE is usually
           the starting point for owner-operated Main Street businesses.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="SDE formula (plain English)">
+        <pre className="overflow-x-auto rounded-lg border border-border bg-secondary/40 p-4 text-sm leading-relaxed text-foreground whitespace-pre-wrap font-mono">
+{`SDE ≈ reported profit (or taxable business income)
+    + one full-time owner’s compensation (salary, draw, or equivalent)
+    + documented owner perks a buyer would not keep as personal expenses
+    + interest, taxes, and depreciation / amortization when they sit below the earnings base
+    + documented non-recurring / one-time costs that would not continue under new ownership`}
+        </pre>
+        <p>
+          Exact accounting lines vary by bookkeeping style. The discipline that matters:{" "}
+          <strong>every add-back should be explainable</strong> to a careful buyer or lender.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="Illustrative example — not your business, not a ValuRight result">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[28rem] border-collapse text-left text-sm">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="py-2 pr-3 font-semibold text-foreground">Line</th>
+                <th className="py-2 font-semibold text-foreground">Amount</th>
+              </tr>
+            </thead>
+            <tbody className="text-muted-foreground">
+              <tr className="border-b border-border/60">
+                <td className="py-2 pr-3">Net income</td>
+                <td className="py-2">$120,000</td>
+              </tr>
+              <tr className="border-b border-border/60">
+                <td className="py-2 pr-3">+ Owner W-2 / draw (one full-time owner)</td>
+                <td className="py-2">$90,000</td>
+              </tr>
+              <tr className="border-b border-border/60">
+                <td className="py-2 pr-3">
+                  + Personal auto / health (documented perks a buyer would not keep)
+                </td>
+                <td className="py-2">$18,000</td>
+              </tr>
+              <tr className="border-b border-border/60">
+                <td className="py-2 pr-3">+ One-time flood repair (documented non-recurring)</td>
+                <td className="py-2">$12,000</td>
+              </tr>
+              <tr>
+                <td className="py-2 pr-3 font-semibold text-foreground">Illustrative SDE</td>
+                <td className="py-2 font-semibold text-foreground">$240,000</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Main Street owner-operated businesses often use a rough planning shorthand around{" "}
+          <strong>2×–4× SDE</strong> before method mix and risk adjustments. On this illustrative SDE
+          alone, that shorthand sketches about <strong>$480,000–$960,000</strong> —{" "}
+          <strong>
+            not an asking price, not an average of other owners, and not a ValuRight result.
+          </strong>
+        </p>
+        <p>
+          ValuRight Free Preview does <strong>not</strong> stop at one napkin multiple. It builds a{" "}
+          <strong>multi-method planning range</strong>, a <strong>Health Score</strong>, and
+          recommendations — including risks (such as{" "}
+          <Link to="/guides/owner-dependence" className="font-semibold text-accent hover:underline">
+            owner dependence
+          </Link>
+          ) that often compress the multiple.
         </p>
       </LegalSection>
 
@@ -88,7 +260,7 @@ function SdeExplainedGuide() {
           </li>
         </ul>
         <p>
-          Exact accounting lines vary by bookkeeping style. The discipline that matters: 
+          Exact accounting lines vary by bookkeeping style. The discipline that matters:{" "}
           <strong>every add-back should be explainable to a careful buyer or lender.</strong>
         </p>
       </LegalSection>
@@ -146,7 +318,7 @@ function SdeExplainedGuide() {
           Using EBITDA alone on a highly owner-dependent shop can understate the benefit an
           owner-operator enjoys — or mis-set the multiple band. Using SDE on a true managed company
           can overstate transferable earnings. Match the base to how the business actually runs. More
-          context: 
+          context:{" "}
           <Link
             to="/guides/how-to-value-a-small-business"
             className="font-semibold text-accent hover:underline"
@@ -167,10 +339,10 @@ function SdeExplainedGuide() {
         </p>
         <p>
           A multiple is not a promise. It is a market shorthand that still gets stress-tested in
-          diligence. See 
+          diligence. See{" "}
           <Link to="/guides/owner-dependence" className="font-semibold text-accent hover:underline">
             owner dependence
-          </Link> 
+          </Link>{" "}
           for why the “job you own” discount shows up so often.
         </p>
       </LegalSection>
@@ -190,22 +362,80 @@ function SdeExplainedGuide() {
       </LegalSection>
 
       <LegalSection title="FAQ">
-      <div>
-        <p className="font-semibold text-foreground">Is SDE the same as profit?</p>
-        <p className="mt-1">Not usually. SDE starts from profit-like figures, then adds back items such as one owner’s compensation and certain documented discretionary or non-recurring expenses so the result reflects total benefit to one full-time owner-operator.</p>
-      </div>
-      <div>
-        <p className="font-semibold text-foreground">Can I use SDE if I have partners?</p>
-        <p className="mt-1">Buyers typically normalize to one full-time owner-operator equivalent. Multiple working owners need a clear story for what compensation stays in the business after a sale. When in doubt, review the build with your CPA.</p>
-      </div>
-      <div>
-        <p className="font-semibold text-foreground">Why do buyers challenge add-backs?</p>
-        <p className="mt-1">Because inflated SDE raises the asking price without raising transferable earnings. Documented, non-recurring, and clearly personal items hold up better than vague discretionary buckets.</p>
-      </div>
-      <div>
-        <p className="font-semibold text-foreground">Does ValuRight replace my CPA or broker?</p>
-        <p className="mt-1">No. Free Preview is a planning estimate to help you understand range and value drivers before you talk to advisors. It is not a certified appraisal.</p>
-      </div>
+        <div>
+          <p className="font-semibold text-foreground">Is SDE the same as profit?</p>
+          <p className="mt-1">
+            Not usually. SDE starts from profit-like figures, then adds back items such as one owner’s
+            compensation and certain documented discretionary or non-recurring expenses so the result
+            reflects total benefit to one full-time owner-operator.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">Can I use SDE if I have partners?</p>
+          <p className="mt-1">
+            Buyers typically normalize to one full-time owner-operator equivalent. Multiple working
+            owners need a clear story for what compensation stays in the business after a sale. When
+            in doubt, review the build with your CPA.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">Why do buyers challenge add-backs?</p>
+          <p className="mt-1">
+            Because inflated SDE raises the asking price without raising transferable earnings.
+            Documented, non-recurring, and clearly personal items hold up better than vague
+            discretionary buckets.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">Does ValuRight replace my CPA or broker?</p>
+          <p className="mt-1">
+            No. Free Preview is a planning estimate to help you understand range and value drivers
+            before you talk to advisors. It is not a certified appraisal.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">
+            How do I calculate SDE from a tax return or P&amp;L?
+          </p>
+          <p className="mt-1">
+            Start from reported profit or taxable business income for a normal year, then add back
+            one full-time owner’s compensation, documented personal perks a buyer would not keep,
+            interest/taxes/D&amp;A when they sit below the earnings base, and documented non-recurring
+            costs. Exact lines vary — every add-back should be explainable. When unsure, build it with
+            your CPA.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">What is the SDE formula in plain English?</p>
+          <p className="mt-1">
+            SDE is roughly: profit + one owner’s pay + documented add-backs a buyer would accept, so
+            the figure shows the total benefit available to a single full-time owner-operator in a
+            normal year.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">When should I use EBITDA instead of SDE?</p>
+          <p className="mt-1">
+            When a professional management team can already run the company without a working
+            owner-operator. Then buyers often treat market-rate manager pay as an operating cost and
+            lean on EBITDA. Many owner-operated Main Street businesses still start with SDE; ValuRight
+            shows both in context.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">
+            If my SDE is higher, is my sale price higher?
+          </p>
+          <p className="mt-1">
+            Not automatically. Price also depends on risk, transferability, growth, industry, and deal
+            structure. A higher SDE with high{" "}
+            <Link to="/guides/owner-dependence" className="font-semibold text-accent hover:underline">
+              owner dependence
+            </Link>{" "}
+            can still face multiple compression or tougher terms. Use a multi-method planning range —
+            not SDE alone — and review with advisors before you set an asking price.
+          </p>
+        </div>
       </LegalSection>
 
       <div className="mt-10 space-y-4 rounded-xl border border-border bg-card p-6">
@@ -226,17 +456,20 @@ function SdeExplainedGuide() {
           </Link>
         </div>
         <div className="flex flex-wrap gap-4 pt-2 text-sm">
-          <Link to="/guides/how-to-value-a-small-business" className="font-semibold text-accent hover:underline">
-            How to value a small business
-          </Link>
-          <Link to="/guides/owner-dependence" className="font-semibold text-accent hover:underline">
-            Owner dependence
+          <Link to="/methodology" className="font-semibold text-accent hover:underline">
+            Methodology
           </Link>
           <Link to="/what-is-my-business-worth" className="font-semibold text-accent hover:underline">
             What is my business worth?
           </Link>
-          <Link to="/methodology" className="font-semibold text-accent hover:underline">
-            Methodology
+          <Link
+            to="/guides/how-to-value-a-small-business"
+            className="font-semibold text-accent hover:underline"
+          >
+            How to value a small business
+          </Link>
+          <Link to="/guides/owner-dependence" className="font-semibold text-accent hover:underline">
+            Owner dependence
           </Link>
         </div>
       </div>
