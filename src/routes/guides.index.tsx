@@ -9,7 +9,7 @@ export const Route = createFileRoute("/guides/")({
       {
         name: "description",
         content:
-          "Practical guides for Main Street owners 55+ — how to value a small business, SDE, owner dependence, exit strategy, and how to sell.",
+          "Practical guides for Main Street owners 55+ — how to value a small business, SDE, owner dependence, exit readiness & Health Score, exit strategy, and how to sell.",
       },
       {
         property: "og:title",
@@ -18,7 +18,7 @@ export const Route = createFileRoute("/guides/")({
       {
         property: "og:description",
         content:
-          "Practical guides for Main Street owners 55+ — how to value a small business, SDE, owner dependence, exit strategy, and how to sell.",
+          "Practical guides for Main Street owners 55+ — how to value a small business, SDE, owner dependence, exit readiness & Health Score, exit strategy, and how to sell.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://valuright.ai/guides" },
@@ -35,6 +35,11 @@ const GUIDES = [
     blurb: "Free planning range (tool page)",
   },
   {
+    to: "/what-is-my-rv-park-worth" as const,
+    title: "What is my RV park worth?",
+    blurb: "Free planning range for parks & campgrounds (tool page)",
+  },
+  {
     to: "/guides/how-to-value-a-small-business" as const,
     title: "How to value a small business",
     blurb: "SDE, multiples, and what moves the range",
@@ -48,6 +53,11 @@ const GUIDES = [
     to: "/guides/owner-dependence" as const,
     title: "Owner dependence",
     blurb: "Why buyers discount when the business is still a job you own",
+  },
+  {
+    to: "/guides/exit-readiness" as const,
+    title: "Exit readiness & Health Score",
+    blurb: "What buyers mean by ready to sell — and how ValuRight scores it",
   },
   {
     to: "/guides/exit-strategy-retirement" as const,
@@ -66,8 +76,8 @@ function GuidesHub() {
     <PublicPageShell
       eyebrow="Owner’s guides"
       title="Owner guides"
-      description="Practical homework for Main Street owners 55+ planning the next chapter — valuation, SDE, owner dependence, exit strategy, and selling readiness. Planning estimates, not certified appraisals."
-      updated="September 15, 2026"
+      description="Practical homework for Main Street owners 55+ planning the next chapter — valuation, SDE, owner dependence, exit readiness / Health Score, exit strategy, and selling readiness. Planning estimates, not certified appraisals."
+      updated="September 21, 2026"
     >
       <div className="mb-8 flex flex-wrap gap-3">
         <Link

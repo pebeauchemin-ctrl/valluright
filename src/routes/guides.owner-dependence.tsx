@@ -343,6 +343,9 @@ function OwnerDependenceGuide() {
           </Link>
         </div>
         <div className="flex flex-wrap gap-4 pt-2 text-sm">
+          <Link to="/guides/exit-readiness" className="font-semibold text-accent hover:underline">
+            Exit readiness &amp; Health Score
+          </Link>
           <Link to="/what-is-my-business-worth" className="font-semibold text-accent hover:underline">
             What is my business worth?
           </Link>

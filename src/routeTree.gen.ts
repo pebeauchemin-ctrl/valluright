@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WhatIsMyRvParkWorthRouteImport } from './routes/what-is-my-rv-park-worth'
 import { Route as WhatIsMyBusinessWorthRouteImport } from './routes/what-is-my-business-worth'
 import { Route as ValuationCalculatorRouteImport } from './routes/valuation-calculator'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
@@ -32,6 +33,7 @@ import { Route as GuidesOwnerDependenceRouteImport } from './routes/guides.owner
 import { Route as GuidesHowToValueASmallBusinessRouteImport } from './routes/guides.how-to-value-a-small-business'
 import { Route as GuidesHowToSellMyBusinessRouteImport } from './routes/guides.how-to-sell-my-business'
 import { Route as GuidesExitStrategyRetirementRouteImport } from './routes/guides.exit-strategy-retirement'
+import { Route as GuidesExitReadinessRouteImport } from './routes/guides.exit-readiness'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppScenariosRouteImport } from './routes/app.scenarios'
 import { Route as AppRoadmapRouteImport } from './routes/app.roadmap'
@@ -51,6 +53,11 @@ import { Route as ApiPublicXeroCallbackRouteImport } from './routes/api.public.x
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api.public.stripe.webhook'
 import { Route as ApiPublicQuickbooksCallbackRouteImport } from './routes/api.public.quickbooks.callback'
 
+const WhatIsMyRvParkWorthRoute = WhatIsMyRvParkWorthRouteImport.update({
+  id: '/what-is-my-rv-park-worth',
+  path: '/what-is-my-rv-park-worth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WhatIsMyBusinessWorthRoute = WhatIsMyBusinessWorthRouteImport.update({
   id: '/what-is-my-business-worth',
   path: '/what-is-my-business-worth',
@@ -169,6 +176,11 @@ const GuidesExitStrategyRetirementRoute =
     path: '/exit-strategy-retirement',
     getParentRoute: () => GuidesRoute,
   } as any)
+const GuidesExitReadinessRoute = GuidesExitReadinessRouteImport.update({
+  id: '/exit-readiness',
+  path: '/exit-readiness',
+  getParentRoute: () => GuidesRoute,
+} as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -277,6 +289,7 @@ export interface FileRoutesByFullPath {
   '/unsubscribe': typeof UnsubscribeRoute
   '/valuation-calculator': typeof ValuationCalculatorRoute
   '/what-is-my-business-worth': typeof WhatIsMyBusinessWorthRoute
+  '/what-is-my-rv-park-worth': typeof WhatIsMyRvParkWorthRoute
   '/app/advisors': typeof AppAdvisorsRoute
   '/app/buyer-requests': typeof AppBuyerRequestsRoute
   '/app/buyer-teaser': typeof AppBuyerTeaserRoute
@@ -290,6 +303,7 @@ export interface FileRoutesByFullPath {
   '/app/roadmap': typeof AppRoadmapRoute
   '/app/scenarios': typeof AppScenariosRoute
   '/app/settings': typeof AppSettingsRoute
+  '/guides/exit-readiness': typeof GuidesExitReadinessRoute
   '/guides/exit-strategy-retirement': typeof GuidesExitStrategyRetirementRoute
   '/guides/how-to-sell-my-business': typeof GuidesHowToSellMyBusinessRoute
   '/guides/how-to-value-a-small-business': typeof GuidesHowToValueASmallBusinessRoute
@@ -318,6 +332,7 @@ export interface FileRoutesByTo {
   '/unsubscribe': typeof UnsubscribeRoute
   '/valuation-calculator': typeof ValuationCalculatorRoute
   '/what-is-my-business-worth': typeof WhatIsMyBusinessWorthRoute
+  '/what-is-my-rv-park-worth': typeof WhatIsMyRvParkWorthRoute
   '/app/advisors': typeof AppAdvisorsRoute
   '/app/buyer-requests': typeof AppBuyerRequestsRoute
   '/app/buyer-teaser': typeof AppBuyerTeaserRoute
@@ -331,6 +346,7 @@ export interface FileRoutesByTo {
   '/app/roadmap': typeof AppRoadmapRoute
   '/app/scenarios': typeof AppScenariosRoute
   '/app/settings': typeof AppSettingsRoute
+  '/guides/exit-readiness': typeof GuidesExitReadinessRoute
   '/guides/exit-strategy-retirement': typeof GuidesExitStrategyRetirementRoute
   '/guides/how-to-sell-my-business': typeof GuidesHowToSellMyBusinessRoute
   '/guides/how-to-value-a-small-business': typeof GuidesHowToValueASmallBusinessRoute
@@ -362,6 +378,7 @@ export interface FileRoutesById {
   '/unsubscribe': typeof UnsubscribeRoute
   '/valuation-calculator': typeof ValuationCalculatorRoute
   '/what-is-my-business-worth': typeof WhatIsMyBusinessWorthRoute
+  '/what-is-my-rv-park-worth': typeof WhatIsMyRvParkWorthRoute
   '/app/advisors': typeof AppAdvisorsRoute
   '/app/buyer-requests': typeof AppBuyerRequestsRoute
   '/app/buyer-teaser': typeof AppBuyerTeaserRoute
@@ -375,6 +392,7 @@ export interface FileRoutesById {
   '/app/roadmap': typeof AppRoadmapRoute
   '/app/scenarios': typeof AppScenariosRoute
   '/app/settings': typeof AppSettingsRoute
+  '/guides/exit-readiness': typeof GuidesExitReadinessRoute
   '/guides/exit-strategy-retirement': typeof GuidesExitStrategyRetirementRoute
   '/guides/how-to-sell-my-business': typeof GuidesHowToSellMyBusinessRoute
   '/guides/how-to-value-a-small-business': typeof GuidesHowToValueASmallBusinessRoute
@@ -407,6 +425,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/valuation-calculator'
     | '/what-is-my-business-worth'
+    | '/what-is-my-rv-park-worth'
     | '/app/advisors'
     | '/app/buyer-requests'
     | '/app/buyer-teaser'
@@ -420,6 +439,7 @@ export interface FileRouteTypes {
     | '/app/roadmap'
     | '/app/scenarios'
     | '/app/settings'
+    | '/guides/exit-readiness'
     | '/guides/exit-strategy-retirement'
     | '/guides/how-to-sell-my-business'
     | '/guides/how-to-value-a-small-business'
@@ -448,6 +468,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/valuation-calculator'
     | '/what-is-my-business-worth'
+    | '/what-is-my-rv-park-worth'
     | '/app/advisors'
     | '/app/buyer-requests'
     | '/app/buyer-teaser'
@@ -461,6 +482,7 @@ export interface FileRouteTypes {
     | '/app/roadmap'
     | '/app/scenarios'
     | '/app/settings'
+    | '/guides/exit-readiness'
     | '/guides/exit-strategy-retirement'
     | '/guides/how-to-sell-my-business'
     | '/guides/how-to-value-a-small-business'
@@ -491,6 +513,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/valuation-calculator'
     | '/what-is-my-business-worth'
+    | '/what-is-my-rv-park-worth'
     | '/app/advisors'
     | '/app/buyer-requests'
     | '/app/buyer-teaser'
@@ -504,6 +527,7 @@ export interface FileRouteTypes {
     | '/app/roadmap'
     | '/app/scenarios'
     | '/app/settings'
+    | '/guides/exit-readiness'
     | '/guides/exit-strategy-retirement'
     | '/guides/how-to-sell-my-business'
     | '/guides/how-to-value-a-small-business'
@@ -535,6 +559,7 @@ export interface RootRouteChildren {
   UnsubscribeRoute: typeof UnsubscribeRoute
   ValuationCalculatorRoute: typeof ValuationCalculatorRoute
   WhatIsMyBusinessWorthRoute: typeof WhatIsMyBusinessWorthRoute
+  WhatIsMyRvParkWorthRoute: typeof WhatIsMyRvParkWorthRoute
   TeaserPublicIdRoute: typeof TeaserPublicIdRoute
   ApiPublicQuickbooksCallbackRoute: typeof ApiPublicQuickbooksCallbackRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
@@ -543,6 +568,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/what-is-my-rv-park-worth': {
+      id: '/what-is-my-rv-park-worth'
+      path: '/what-is-my-rv-park-worth'
+      fullPath: '/what-is-my-rv-park-worth'
+      preLoaderRoute: typeof WhatIsMyRvParkWorthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/what-is-my-business-worth': {
       id: '/what-is-my-business-worth'
       path: '/what-is-my-business-worth'
@@ -702,6 +734,13 @@ declare module '@tanstack/react-router' {
       path: '/exit-strategy-retirement'
       fullPath: '/guides/exit-strategy-retirement'
       preLoaderRoute: typeof GuidesExitStrategyRetirementRouteImport
+      parentRoute: typeof GuidesRoute
+    }
+    '/guides/exit-readiness': {
+      id: '/guides/exit-readiness'
+      path: '/exit-readiness'
+      fullPath: '/guides/exit-readiness'
+      preLoaderRoute: typeof GuidesExitReadinessRouteImport
       parentRoute: typeof GuidesRoute
     }
     '/app/settings': {
@@ -883,6 +922,7 @@ const AppRouteChildren: AppRouteChildren = {
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 interface GuidesRouteChildren {
+  GuidesExitReadinessRoute: typeof GuidesExitReadinessRoute
   GuidesExitStrategyRetirementRoute: typeof GuidesExitStrategyRetirementRoute
   GuidesHowToSellMyBusinessRoute: typeof GuidesHowToSellMyBusinessRoute
   GuidesHowToValueASmallBusinessRoute: typeof GuidesHowToValueASmallBusinessRoute
@@ -892,6 +932,7 @@ interface GuidesRouteChildren {
 }
 
 const GuidesRouteChildren: GuidesRouteChildren = {
+  GuidesExitReadinessRoute: GuidesExitReadinessRoute,
   GuidesExitStrategyRetirementRoute: GuidesExitStrategyRetirementRoute,
   GuidesHowToSellMyBusinessRoute: GuidesHowToSellMyBusinessRoute,
   GuidesHowToValueASmallBusinessRoute: GuidesHowToValueASmallBusinessRoute,
@@ -919,6 +960,7 @@ const rootRouteChildren: RootRouteChildren = {
   UnsubscribeRoute: UnsubscribeRoute,
   ValuationCalculatorRoute: ValuationCalculatorRoute,
   WhatIsMyBusinessWorthRoute: WhatIsMyBusinessWorthRoute,
+  WhatIsMyRvParkWorthRoute: WhatIsMyRvParkWorthRoute,
   TeaserPublicIdRoute: TeaserPublicIdRoute,
   ApiPublicQuickbooksCallbackRoute: ApiPublicQuickbooksCallbackRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,

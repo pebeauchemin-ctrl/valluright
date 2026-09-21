@@ -14,6 +14,7 @@ const GUIDE_LINKS = [
   { to: "/guides/how-to-value-a-small-business" as const, label: "How to value a small business" },
   { to: "/guides/sde-explained" as const, label: "What is SDE?" },
   { to: "/guides/owner-dependence" as const, label: "Owner dependence" },
+  { to: "/guides/exit-readiness" as const, label: "Exit readiness & Health Score" },
   { to: "/guides/exit-strategy-retirement" as const, label: "Exit strategy for retirement" },
   { to: "/guides/how-to-sell-my-business" as const, label: "How to sell my business" },
 ];
