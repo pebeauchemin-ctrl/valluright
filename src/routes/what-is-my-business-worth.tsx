@@ -436,7 +436,18 @@ function WorthLanding() {
               <Feature
                 icon={<ShieldCheck className="h-5 w-5" />}
                 title="Health Score"
-                desc="See what may be holding the number down before you talk to buyers."
+                desc={
+                  <>
+                    See what may be holding the number down before you talk to buyers.{" "}
+                    <Link
+                      to="/guides/exit-readiness"
+                      className="font-semibold text-accent hover:underline"
+                    >
+                      Exit readiness &amp; Health Score
+                    </Link>
+                    .
+                  </>
+                }
               />
               <Feature
                 icon={<Users className="h-5 w-5" />}
@@ -560,6 +571,12 @@ function WorthLanding() {
             </Link>
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-sm">
+            <Link to="/what-is-my-rv-park-worth" className="font-semibold text-accent hover:underline">
+              What is my RV park worth?
+            </Link>
+            <Link to="/guides/exit-readiness" className="font-semibold text-accent hover:underline">
+              Exit readiness
+            </Link>
             <Link to="/guides/sde-explained" className="font-semibold text-accent hover:underline">
               SDE explained
             </Link>

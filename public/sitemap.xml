@@ -41,6 +41,11 @@
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://valuright.ai/what-is-my-rv-park-worth</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://valuright.ai/guides</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -52,6 +57,11 @@
   </url>
   <url>
     <loc>https://valuright.ai/guides/owner-dependence</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://valuright.ai/guides/exit-readiness</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
