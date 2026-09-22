@@ -570,9 +570,19 @@ function WorthLanding() {
               See a sample report
             </Link>
           </div>
+          <p className="mt-6 text-sm text-muted-foreground">
+            HVAC or heating &amp; cooling? See{" "}
+            <Link to="/what-is-my-hvac-business-worth" className="font-semibold text-accent hover:underline">
+              What is my HVAC business worth?
+            </Link>
+            .
+          </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-sm">
             <Link to="/what-is-my-rv-park-worth" className="font-semibold text-accent hover:underline">
               What is my RV park worth?
+            </Link>
+            <Link to="/what-is-my-hvac-business-worth" className="font-semibold text-accent hover:underline">
+              What is my HVAC business worth?
             </Link>
             <Link to="/guides/exit-readiness" className="font-semibold text-accent hover:underline">
               Exit readiness

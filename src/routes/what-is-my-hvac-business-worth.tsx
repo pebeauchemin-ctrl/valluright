@@ -1,28 +1,28 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Check, Sparkles, TrendingUp, ShieldCheck, Users, FileCheck } from "lucide-react";
+import { ArrowRight, Check, Sparkles, TrendingUp, ShieldCheck, FileCheck } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 
 const webPageLd = {
   "@context": "https://schema.org",
   "@type": "WebPage",
-  name: "What Is My RV Park Worth? Free Planning Range | ValuRight",
-  headline: "What is my RV Park worth?",
+  name: "What Is My HVAC Business Worth? Free Planning Range | ValuRight",
+  headline: "What is my HVAC business worth?",
   description:
-    "Estimate a planning range for an RV park or campground — occupancy, seasonality, owner involvement, and risks buyers discount. Software estimate for owners 55+, not a certified appraisal.",
-  url: "https://valuright.ai/what-is-my-rv-park-worth",
-  datePublished: "2026-09-21",
-  dateModified: "2026-09-21",
+    "Estimate a planning range for an HVAC or heating & cooling business — recurring service, owner involvement, technician bench, and risks buyers discount. Software estimate for owners 55+, not a certified appraisal.",
+  url: "https://valuright.ai/what-is-my-hvac-business-worth",
+  datePublished: "2026-09-22",
+  dateModified: "2026-09-22",
   author: { "@type": "Organization", name: "ValuRight" },
   publisher: {
     "@type": "Organization",
     name: "ValuRight",
     logo: { "@type": "ImageObject", url: "https://valuright.ai/favicon.svg" },
   },
-  mainEntityOfPage: "https://valuright.ai/what-is-my-rv-park-worth",
+  mainEntityOfPage: "https://valuright.ai/what-is-my-hvac-business-worth",
   about: {
     "@type": "Thing",
-    name: "RV park and campground valuation planning estimate",
+    name: "HVAC business valuation planning estimate",
   },
 };
 
@@ -40,8 +40,8 @@ const breadcrumbLd = {
     {
       "@type": "ListItem",
       position: 3,
-      name: "What is my RV park worth?",
-      item: "https://valuright.ai/what-is-my-rv-park-worth",
+      name: "What is my HVAC business worth?",
+      item: "https://valuright.ai/what-is-my-hvac-business-worth",
     },
   ],
 };
@@ -52,7 +52,7 @@ const faqLd = {
   mainEntity: [
     {
       "@type": "Question",
-      name: "Is this a certified appraisal of my RV park?",
+      name: "Is this a certified appraisal of my HVAC business?",
       acceptedAnswer: {
         "@type": "Answer",
         text: "No. Free Preview is a software-generated planning estimate to help you understand a range and value drivers before you talk to a CPA, broker, or appraiser. It is not a certified appraisal, not tax or legal advice, and not a guaranteed sale price.",
@@ -60,18 +60,26 @@ const faqLd = {
     },
     {
       "@type": "Question",
-      name: "How do you value a seasonal campground?",
+      name: "How do buyers value an HVAC company?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Seasonality is a risk and cash-flow factor, not a reason to skip homework. Buyers look at earnings quality across the year, peak dependence, and whether ops transfer without you. Enter honest financials and occupancy context; Free Preview blends methods appropriate to the category. Review assumptions with an advisor before you set an asking price.",
+        text: "Most owner-operated shops start from an honest Seller's Discretionary Earnings (SDE) base, then adjust for risk — recurring work mix, technician bench, owner dependence, concentration, and documentation. There is no universal multiple on this page. Enter your numbers in Free Preview and review assumptions with an advisor before you set an asking price.",
       },
     },
     {
       "@type": "Question",
-      name: "SDE or cap rate for an RV park?",
+      name: "Do maintenance agreements raise my value?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Owner-operated parks often start with Seller's Discretionary Earnings (SDE). Parks that behave more like income property get more weight on income or cap-rate approaches (stabilized NOI divided by a selected cap rate). ValuRight shows multiple methods in context.",
+        text: "Buyers often prefer more repeatable or recurring service work when it is real, documented, and transferable — because earnings may look less dependent on the owner winning every new install. This page does not invent a lift percentage. Use Free Preview what-if and advisor diligence to explore your mix.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "SDE or EBITDA for an HVAC shop?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Owner-operated Main Street HVAC businesses usually start with SDE. Larger shops with management depth may also hear EBITDA in broker conversations. Get the earnings base honest either way.",
       },
     },
     {
@@ -87,15 +95,15 @@ const faqLd = {
       name: "Who is this for?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Park and campground owners — especially owners 55+ planning the next chapter — who want a planning range and exit-readiness homework before broker or buyer conversations. Not Wall Street models.",
+        text: "HVAC and heating and cooling owners — especially owners 55+ planning the next chapter — who want a planning range and exit-readiness homework before broker or buyer conversations. Not Wall Street models.",
       },
     },
     {
       "@type": "Question",
-      name: "Will you show me comps or typical occupancy for parks like mine?",
+      name: "Will you show me comps or typical HVAC multiples?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "No invented sale comps or occupancy benchmarks on this page. Your planning range comes from your inputs and ValuRight's methods. Local comps and market occupancy data belong in advisor or broker diligence.",
+        text: "No invented sale comps or industry-average multiples on this page. Your planning range comes from your inputs and ValuRight's methods. Local comps belong in advisor or broker diligence.",
       },
     },
     {
@@ -109,31 +117,31 @@ const faqLd = {
   ],
 };
 
-export const Route = createFileRoute("/what-is-my-rv-park-worth")({
+export const Route = createFileRoute("/what-is-my-hvac-business-worth")({
   head: () => ({
     meta: [
-      { title: "What Is My RV Park Worth? Free Planning Range | ValuRight" },
+      { title: "What Is My HVAC Business Worth? Free Planning Range | ValuRight" },
       {
         name: "description",
         content:
-          "Estimate a planning range for an RV park or campground — occupancy, seasonality, owner involvement, and risks buyers discount. Software estimate for owners 55+, not a certified appraisal.",
+          "Estimate a planning range for an HVAC or heating & cooling business — recurring service, owner involvement, technician bench, and risks buyers discount. For owners 55+, not a certified appraisal.",
       },
       {
         property: "og:title",
-        content: "What Is My RV Park Worth? Free Planning Range | ValuRight",
+        content: "What Is My HVAC Business Worth? Free Planning Range | ValuRight",
       },
       {
         property: "og:description",
         content:
-          "Estimate a planning range for an RV park or campground — occupancy, seasonality, owner involvement, and risks buyers discount. Software estimate for owners 55+, not a certified appraisal.",
+          "Estimate a planning range for an HVAC or heating & cooling business — recurring service, owner involvement, technician bench, and risks buyers discount. For owners 55+, not a certified appraisal.",
       },
       { property: "og:type", content: "website" },
       {
         property: "og:url",
-        content: "https://valuright.ai/what-is-my-rv-park-worth",
+        content: "https://valuright.ai/what-is-my-hvac-business-worth",
       },
     ],
-    links: [{ rel: "canonical", href: "https://valuright.ai/what-is-my-rv-park-worth" }],
+    links: [{ rel: "canonical", href: "https://valuright.ai/what-is-my-hvac-business-worth" }],
     scripts: [
       {
         type: "application/ld+json",
@@ -149,10 +157,10 @@ export const Route = createFileRoute("/what-is-my-rv-park-worth")({
       },
     ],
   }),
-  component: RvParkWorthLanding,
+  component: HvacWorthLanding,
 });
 
-function RvParkWorthLanding() {
+function HvacWorthLanding() {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border/60 bg-background/80 backdrop-blur sticky top-0 z-50">
@@ -199,31 +207,33 @@ function RvParkWorthLanding() {
             <div className="lg:col-span-7">
               <div className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent-soft px-3 py-1 text-xs font-medium text-accent mb-6">
                 <Sparkles className="h-3.5 w-3.5" />
-                Free Preview · Parks & campgrounds
+                Free Preview · HVAC & trades
               </div>
               <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-primary leading-[1.05]">
-                What is my RV Park worth?
+                What is my HVAC business worth?
               </h1>
               <p className="mt-6 max-w-xl text-lg text-muted-foreground leading-relaxed">
-                Your RV park or campground is worth a{" "}
+                Your HVAC or heating &amp; cooling business is worth a{" "}
                 <strong className="text-foreground">planning range</strong>, not one napkin multiple.
                 Buyers usually start from <strong className="text-foreground">earnings quality</strong>{" "}
-                and <strong className="text-foreground">buyer risk</strong> — occupancy and
-                seasonality, CapEx and deferred maintenance, and how much the park still needs you
-                on-site — then cross-check with income / cap-rate thinking when the asset behaves like
-                income property. ValuRight Free Preview estimates that range in about{" "}
+                and <strong className="text-foreground">buyer risk</strong> — how much work is recurring
+                vs one-time installs, how deep the technician bench is, warranty and callback exposure,
+                and how much the shop still needs <strong className="text-foreground">you</strong> for
+                estimating, sales, or truck time — then apply Main Street methods built around{" "}
+                <strong className="text-foreground">Seller’s Discretionary Earnings (SDE)</strong> for
+                owner-operated shops. ValuRight Free Preview estimates that range in about{" "}
                 <strong className="text-foreground">15 minutes</strong>. It is a{" "}
                 <strong className="text-foreground">software-generated planning estimate</strong> for
-                owners 55+, <strong className="text-foreground">not</strong> a certified appraisal or
-                a guaranteed sale price.
+                owners 55+, <strong className="text-foreground">not</strong> a certified appraisal or a
+                guaranteed sale price.
               </p>
               <p className="mt-4 max-w-xl text-base text-muted-foreground leading-relaxed">
                 See a planning range, a Health Score for what may be holding the number down, and
-                what-if scenarios — useful homework before you talk to a CPA, broker, or buyer about a
-                park or campground.
+                what-if scenarios — useful homework before you talk to a CPA, broker, or buyer about an
+                HVAC shop.
               </p>
               <p className="mt-3 text-xs font-medium text-muted-foreground">
-                Last updated: September 21, 2026
+                Last updated: September 22, 2026
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-4">
                 <Link
@@ -241,7 +251,7 @@ function RvParkWorthLanding() {
                 </Link>
               </div>
               <p className="mt-5 text-xs text-muted-foreground">
-                Planning estimate for park and campground owners 55+ — not Wall Street, not a certified
+                Planning estimate for HVAC and trades owners 55+ — not Wall Street, not a certified
                 appraisal, not a guaranteed sale price.
               </p>
             </div>
@@ -251,23 +261,23 @@ function RvParkWorthLanding() {
                 <div className="rounded-[14px] bg-card p-6">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                      Park Free Preview
+                      HVAC Free Preview
                     </span>
                     <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-semibold text-accent">
                       <TrendingUp className="h-3 w-3" /> Seven methods
                     </span>
                   </div>
                   <p className="mt-3 font-display text-xl font-semibold text-primary">
-                    Planning range + Health Score for parks
+                    Planning range + Health Score for HVAC shops
                   </p>
                   <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                    No invented “typical park” dollar or occupancy numbers here. Your range comes from
+                    No invented “typical HVAC” dollar or multiple numbers here. Your range comes from
                     your inputs after you start Free Preview.
                   </p>
                   <ul className="mt-6 space-y-3 text-sm text-foreground">
                     {[
-                      "Select RV park / campground in Free Preview when available",
-                      "Cap rate among seven methods where income-property category fits",
+                      "Select HVAC / heating & cooling in Free Preview when available",
+                      "SDE-first Main Street methods among seven approaches",
                       "Health Score out of 100 + prioritized recommendations",
                       "What-if scenarios on owner hours and transferability",
                     ].map((item) => (
@@ -291,80 +301,72 @@ function RvParkWorthLanding() {
       <section id="how-buyers-look" className="border-t border-border/60 bg-secondary/40">
         <div className="mx-auto max-w-3xl px-6 py-20">
           <p className="text-sm font-semibold uppercase tracking-wider text-accent">
-            How buyers look at RV parks
+            How buyers look at HVAC shops
           </p>
           <h2 className="mt-2 font-display text-3xl font-semibold text-primary">
-            Income story + transfer without you
+            Earnings story + transfer without you
           </h2>
           <p className="mt-4 text-muted-foreground leading-relaxed">
-            Park buyers care about the <strong className="text-foreground">income story</strong> and
-            whether it survives without the current owner.
+            HVAC buyers care about the <strong className="text-foreground">earnings story</strong> and
+            whether it survives without the current owner on the tools or on every estimate.
           </p>
           <p className="mt-4 text-muted-foreground leading-relaxed">In plain terms, diligence usually covers:</p>
           <ol className="mt-4 list-decimal space-y-3 pl-5 text-muted-foreground leading-relaxed">
             <li>
-              <strong className="text-foreground">Income mix</strong> — site rent / nightly and monthly
-              stays, plus add-ons (utilities pass-throughs, store, propane, laundry, activities) when
-              they are real and documented.
+              <strong className="text-foreground">Revenue mix</strong> — service / maintenance /
+              membership work vs replace / install / new construction. Recurring or repeatable service
+              often reads as more transferable than a book of one-off installs that live in the owner’s
+              relationships.
             </li>
             <li>
-              <strong className="text-foreground">Occupancy and seasonality</strong> — how full the park
-              runs across the year, not just a peak weekend. Shoulder and off-season matter for cash
-              flow risk.
+              <strong className="text-foreground">Customer and channel mix</strong> — residential vs
+              light commercial; reliance on a few builders, property managers, or referral sources vs a
+              broader base.
             </li>
             <li>
-              <strong className="text-foreground">Length-of-stay mix</strong> — transient vs seasonal vs
-              longer stays change revenue stability and ops load.
+              <strong className="text-foreground">Technician bench</strong> — licensed coverage,
+              capacity for peak heat/cold seasons, and whether work stops when a key tech (or you) is
+              out.
             </li>
             <li>
-              <strong className="text-foreground">CapEx and condition</strong> — roads, electrical,
-              water/sewer, pads, amenities. Deferred maintenance shows up as a buyer discount or a
-              renegotiation.
+              <strong className="text-foreground">Warranty, callbacks, and quality</strong> — open
+              warranty exposure, redo rates, and brand/reputation that support (or undermine) pricing
+              power.
             </li>
             <li>
-              <strong className="text-foreground">Ops transferability</strong> — who runs check-in,
-              maintenance triage, guest issues, and local relationships when you are not on the
-              property.
+              <strong className="text-foreground">Ops transferability</strong> — who owns estimating,
+              dispatch, vendor accounts, permitting know-how, and customer relationships when you are
+              not in the truck or on the phone.
             </li>
           </ol>
 
           <h3 className="mt-10 font-display text-2xl font-semibold text-primary">
-            When SDE vs income / cap-rate approaches fit
+            When SDE is the right starting point
           </h3>
           <ul className="mt-4 list-disc space-y-3 pl-5 text-muted-foreground leading-relaxed">
             <li>
-              <strong className="text-foreground">Smaller owner-operated parks</strong> where the buyer
-              will replace or perform the owner’s role often start with{" "}
-              <strong className="text-foreground">Seller’s Discretionary Earnings (SDE)</strong> — the
-              total annual benefit to one full-time owner-operator — then apply risk-aware multiples.
-              See{" "}
+              Most <strong className="text-foreground">owner-operated HVAC shops</strong> where the
+              buyer will replace or oversee the owner’s rainmaking / estimating / lead-tech role start
+              with <strong className="text-foreground">Seller’s Discretionary Earnings (SDE)</strong>{" "}
+              — the total annual benefit to one full-time owner-operator — then apply risk-aware
+              multiples. See{" "}
               <Link to="/guides/sde-explained" className="font-semibold text-accent hover:underline">
                 What is SDE?
               </Link>
               .
             </li>
             <li>
-              <strong className="text-foreground">Income-property-oriented parks</strong> (more
-              stabilized NOI, clearer property economics) often get more weight on{" "}
-              <strong className="text-foreground">cap rate / income</strong> approaches: stabilized NOI
-              divided by a selected cap rate. ValuRight includes cap rate among its seven methods where
-              the category fits. See{" "}
-              <Link to="/methodology" className="font-semibold text-accent hover:underline">
-                Methodology
-              </Link>
-              .
-            </li>
-            <li>
-              Most Main Street parks sit somewhere in between. Free Preview runs{" "}
+              Larger shops with professional management and cleaner add-backs may also discuss EBITDA in
+              broker conversations — still start with an honest earnings base. Free Preview runs{" "}
               <strong className="text-foreground">seven methods</strong> appropriate to the business
               category and blends a headline <strong className="text-foreground">planning range</strong>{" "}
               with confidence notes. This page does <strong className="text-foreground">not</strong>{" "}
-              publish secret method weights.
+              publish secret method weights or “typical HVAC multiples.”
             </li>
           </ul>
           <p className="mt-4 text-muted-foreground leading-relaxed">
-            There is no universal “RV park multiple” that replaces homework. Garbage-in financials and
-            undocumented seasonality produce junk ranges.
+            There is no universal “HVAC multiple” that replaces homework. Garbage-in financials and
+            undocumented owner add-backs produce junk ranges.
           </p>
         </div>
       </section>
@@ -375,49 +377,54 @@ function RvParkWorthLanding() {
           <h2 className="mt-2 font-display text-3xl font-semibold text-primary">
             Qualitative factors — not a benchmark table
           </h2>
+          <p className="mt-4 text-muted-foreground leading-relaxed">
+            These factors commonly shift an HVAC shop’s planning range (
+            <strong className="text-foreground">qualitative — not a benchmark table, not comps</strong>
+            ):
+          </p>
           <ul className="mt-6 list-disc space-y-2 pl-5 text-muted-foreground leading-relaxed">
             <li>
-              <strong className="text-foreground">Occupancy trends</strong> — rising, flat, or soft; one
-              strong season does not equal a stable earnings base.
+              <strong className="text-foreground">Recurring service share</strong> — maintenance plans,
+              memberships, and repeat service vs pure install/replace project work.
             </li>
             <li>
-              <strong className="text-foreground">Seasonality</strong> — how dependent cash flow is on a
-              short peak window.
+              <strong className="text-foreground">Seasonality and peak coverage</strong> — whether the
+              shop can staff heat and cool peaks without the owner as the overflow tech.
             </li>
             <li>
-              <strong className="text-foreground">Owner hours on-site</strong> — if the park slows when
-              you leave, buyers price transfer risk.
+              <strong className="text-foreground">Owner hours in sales / estimating / trucks</strong> —
+              if revenue softens when you step back, buyers price transfer risk.
             </li>
             <li>
-              <strong className="text-foreground">Staffing depth</strong> — coverage for front desk,
-              grounds, and maintenance without you as the emergency call.
+              <strong className="text-foreground">Technician depth and licenses</strong> — bench
+              strength, specialty skills, and concentration in one or two people.
             </li>
             <li>
-              <strong className="text-foreground">CapEx backlog</strong> — known deferred work buyers
-              will subtract or force into deal structure.
+              <strong className="text-foreground">Customer / builder concentration</strong> — too much
+              book in too few relationships or channels.
             </li>
             <li>
-              <strong className="text-foreground">Utility and infrastructure risk</strong> — aging
-              electrical, water/sewer capacity, flood or access issues.
+              <strong className="text-foreground">Fleet, tools, and CapEx</strong> — trucks, recovery
+              equipment, and deferred vehicle/tool spend buyers will scrutinize.
             </li>
             <li>
-              <strong className="text-foreground">Reputation / reviews</strong> — guest experience that
-              supports (or undermines) rate and occupancy.
+              <strong className="text-foreground">Warranty and callback risk</strong> — open obligations
+              and redo patterns that feel like contingent liability.
             </li>
             <li>
-              <strong className="text-foreground">Documentation</strong> — clean P&Ls, occupancy notes,
-              add-back support, and a playbook someone else can run.
+              <strong className="text-foreground">Documentation</strong> — clean P&amp;Ls, job costing,
+              add-back support, and a dispatch / estimating playbook someone else can run.
             </li>
             <li>
-              <strong className="text-foreground">Customer / channel concentration</strong> —
-              over-reliance on one booking channel or a thin guest base, when that applies.
+              <strong className="text-foreground">Reputation</strong> — reviews and referral quality that
+              support rate integrity.
             </li>
           </ul>
           <p className="mt-6 text-muted-foreground leading-relaxed">
             ValuRight’s <strong className="text-foreground">Health Score</strong> and recommendations
             surface several of these risks early.{" "}
             <strong className="text-foreground">What-if</strong> scenarios let you explore changes (for
-            example, reducing owner hours) and see how the{" "}
+            example, reducing owner hours on the tools) and see how the{" "}
             <strong className="text-foreground">planning range</strong> may move — model output from{" "}
             <em>your</em> inputs, not a promised sale-price lift. More on readiness:{" "}
             <Link to="/guides/exit-readiness" className="font-semibold text-accent hover:underline">
@@ -435,14 +442,14 @@ function RvParkWorthLanding() {
             Still a job you own — or an asset someone else can run?
           </h2>
           <p className="mt-4 text-muted-foreground leading-relaxed">
-            If you are the only person who can run check-in, triage maintenance, handle problem guests,
-            and keep local vendor relationships warm, the park is still a{" "}
+            If you are the default estimator, the closer on the big jobs, the after-hours emergency
+            call, and the keeper of builder relationships, the shop is still a{" "}
             <strong className="text-foreground">job you own</strong> — not only an asset someone else
             can operate.
           </p>
           <p className="mt-4 text-muted-foreground leading-relaxed">
-            Buyers often respond with a lower multiple, a longer transition stay, or more
-            earnout/holdback — and some walk. That is owner dependence in park language.
+            Buyers often respond with a lower multiple, a longer transition, or more earnout/holdback —
+            and some walk. That is owner dependence in trades language.
           </p>
           <p className="mt-4 text-muted-foreground leading-relaxed">
             Read the full guide:{" "}
@@ -452,19 +459,19 @@ function RvParkWorthLanding() {
             .
           </p>
           <h3 className="mt-8 font-display text-xl font-semibold text-primary">
-            Park-flavored self-check (yes/no)
+            HVAC-flavored self-check (yes/no)
           </h3>
           <ol className="mt-4 list-decimal space-y-2 pl-5 text-muted-foreground leading-relaxed">
-            <li>Are you the default on-call for emergencies after hours?</li>
+            <li>Are you the default after-hours call for emergencies or callbacks?</li>
             <li>
-              Would a two-week vacation with little phone access break guest experience or occupancy
-              ops?
+              Would a two-week vacation with little phone access break estimating, dispatch, or key
+              customer coverage?
             </li>
-            <li>Is there no clear #2 for day-to-day park operations?</li>
+            <li>Is there no clear #2 who can run day-to-day ops and sales without you?</li>
             <li>
-              Does pricing, vendor know-how, and “how we handle peak season” mostly live in your head?
+              Does pricing, vendor know-how, and “how we win the job” mostly live in your head?
             </li>
-            <li>Are key local relationships (vendors, contractors, regulators) primarily yours?</li>
+            <li>Are key builder / property-manager / referral relationships primarily yours?</li>
           </ol>
           <p className="mt-4 text-muted-foreground leading-relaxed">
             More yeses → treat transferability as a workstream before you fall in love with an asking
@@ -508,7 +515,13 @@ function RvParkWorthLanding() {
               <Link to="/methodology" className="font-semibold text-accent hover:underline">
                 Methodology
               </Link>{" "}
-              — seven methods, including cap rate / income where it fits.
+              — seven methods in plain English.
+            </li>
+            <li>
+              <Link to="/guides/exit-readiness" className="font-semibold text-accent hover:underline">
+                Exit readiness &amp; Health Score
+              </Link>{" "}
+              — what buyers mean by ready to transfer.
             </li>
           </ul>
         </div>
@@ -519,39 +532,50 @@ function RvParkWorthLanding() {
           <div className="grid gap-8 lg:grid-cols-12 items-start">
             <div className="lg:col-span-7">
               <p className="text-sm font-semibold uppercase tracking-wider text-accent">
-                Free Preview for park owners
+                Free Preview for HVAC owners
               </p>
               <h2 className="mt-2 font-display text-3xl font-semibold text-primary">
                 What to have ready (~15 minutes)
               </h2>
               <ul className="mt-6 list-disc space-y-2 pl-5 text-muted-foreground leading-relaxed">
                 <li>
-                  Recent <strong className="text-foreground">P&Ls</strong> (ideally multi-year) and a
+                  Recent <strong className="text-foreground">P&amp;Ls</strong> (ideally multi-year) and a
                   clear picture of owner compensation / add-backs.
                 </li>
                 <li>
-                  Rough <strong className="text-foreground">occupancy / seasonality notes</strong> (even
-                  if informal — better than guessing in silence).
+                  Rough sense of <strong className="text-foreground">revenue mix</strong> (service /
+                  maintenance vs install / replace / new construction) — even informal notes beat
+                  guessing in silence.
                 </li>
                 <li>
-                  Honest <strong className="text-foreground">owner role</strong>: hours on-site, who
-                  covers when you are gone.
+                  Honest <strong className="text-foreground">owner role</strong>: hours in estimating,
+                  sales, trucks, and after-hours coverage; who covers when you are gone.
                 </li>
                 <li>
-                  Known <strong className="text-foreground">CapEx</strong> items or deferred maintenance
-                  you would disclose in diligence anyway.
+                  Known <strong className="text-foreground">fleet / tool CapEx</strong> or deferred
+                  vehicle and equipment needs you would disclose in diligence anyway.
                 </li>
                 <li>
-                  Industry/category: <strong className="text-foreground">RV park / campground</strong>{" "}
-                  (select in product if available; otherwise describe in profile fields). Live product
-                  maps Campground/RV park under Restaurant/Hospitality with sub-industry “RV park” and
-                  income-property category that prefers cap-rate among the seven methods.
+                  Industry/category:{" "}
+                  <strong className="text-foreground">HVAC / heating &amp; cooling</strong> (select in
+                  product if available; otherwise describe in profile fields).
                 </li>
               </ul>
               <p className="mt-6 text-muted-foreground leading-relaxed">
                 <strong className="text-foreground">Free Preview ($0, no credit card):</strong> seven
                 valuation methods, Health Score out of 100, prioritized recommendations, what-if, manual
                 entry and CSV import.
+              </p>
+              <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
+                Free Preview $0 · Essentials $99/mo · Exit Ready $249/mo — see{" "}
+                <Link
+                  to="/pricing"
+                  search={{ checkout: undefined }}
+                  className="font-semibold text-accent hover:underline"
+                >
+                  Pricing
+                </Link>
+                .
               </p>
               <div className="mt-6 flex flex-wrap gap-4">
                 <Link
@@ -570,19 +594,6 @@ function RvParkWorthLanding() {
               </div>
             </div>
             <div className="lg:col-span-5 space-y-4">
-              <div className="rounded-xl border border-border bg-card p-5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-soft text-accent">
-                  <Users className="h-5 w-5" />
-                </div>
-                <h3 className="mt-3 font-display text-lg font-semibold text-primary">
-                  Built by an operator who still runs a park
-                </h3>
-                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                  Paul owns Mountain View RV Resort. ValuRight is the same homework he wanted as an
-                  owner: a planning range and a clear view of what buyers discount — not a napkin
-                  multiple and not a certified appraisal.
-                </p>
-              </div>
               <Feature
                 icon={<ShieldCheck className="h-5 w-5" />}
                 title="Health Score"
@@ -602,7 +613,7 @@ function RvParkWorthLanding() {
               <Feature
                 icon={<TrendingUp className="h-5 w-5" />}
                 title="Seven methods"
-                desc="Including cap rate / income where the category fits — not a single rule of thumb."
+                desc="SDE-first Main Street methods appropriate to the category — not a single rule of thumb, and not invented HVAC multiples."
               />
             </div>
           </div>
@@ -619,26 +630,30 @@ function RvParkWorthLanding() {
           </div>
           <div className="space-y-6">
             <Faq
-              q="Is this a certified appraisal of my RV park?"
+              q="Is this a certified appraisal of my HVAC business?"
               a="No. Free Preview is a software-generated planning estimate to help you understand a range and value drivers before you talk to a CPA, broker, or appraiser. It is not a certified appraisal, not tax or legal advice, and not a guaranteed sale price."
             />
             <Faq
-              q="How do you value a seasonal campground?"
-              a="Seasonality is a risk and cash-flow factor, not a reason to skip homework. Buyers look at earnings quality across the year, peak dependence, and whether ops transfer without you. Enter honest financials and occupancy context; Free Preview blends methods appropriate to the category. Review assumptions with an advisor before you set an asking price."
+              q="How do buyers value an HVAC company?"
+              a="Most owner-operated shops start from an honest SDE (or similar earnings) base, then adjust for risk — recurring work mix, technician bench, owner dependence, concentration, and documentation. There is no universal multiple on this page. Enter your numbers in Free Preview; review assumptions with an advisor before you set an asking price."
             />
             <Faq
-              q="SDE or cap rate for an RV park?"
+              q="Do maintenance agreements raise my value?"
+              a="Buyers often prefer more repeatable / recurring service work when it is real, documented, and transferable — because earnings may look less dependent on the owner winning every new install. This page does not invent a lift percentage. Use Free Preview what-if and advisor diligence to explore your mix."
+            />
+            <Faq
+              q="SDE or EBITDA for an HVAC shop?"
               a={
                 <>
-                  Owner-operated parks often start with SDE. Parks that behave more like income property
-                  get more weight on income / cap-rate approaches (stabilized NOI ÷ cap rate). ValuRight
-                  shows multiple methods in context — see{" "}
-                  <Link to="/methodology" className="font-semibold text-accent hover:underline">
-                    Methodology
+                  Owner-operated Main Street HVAC businesses usually start with{" "}
+                  <strong>SDE</strong>. Larger shops with management depth may also hear EBITDA in
+                  broker conversations. Get the earnings base honest either way — see{" "}
+                  <Link to="/guides/sde-explained" className="font-semibold text-accent hover:underline">
+                    What is SDE?
                   </Link>{" "}
                   and{" "}
-                  <Link to="/guides/sde-explained" className="font-semibold text-accent hover:underline">
-                    SDE explained
+                  <Link to="/methodology" className="font-semibold text-accent hover:underline">
+                    Methodology
                   </Link>
                   .
                 </>
@@ -647,11 +662,11 @@ function RvParkWorthLanding() {
             <Faq q="How long does Free Preview take?" a="About 15 minutes if you have recent financials handy." />
             <Faq
               q="Who is this for?"
-              a="Park and campground owners — especially owners 55+ planning the next chapter — who want a planning range and exit-readiness homework before broker or buyer conversations. Not Wall Street models."
+              a="HVAC and heating & cooling owners — especially owners 55+ planning the next chapter — who want a planning range and exit-readiness homework before broker or buyer conversations. Not Wall Street models."
             />
             <Faq
-              q='Will you show me comps or “typical occupancy” for parks like mine?'
-              a="No invented sale comps or occupancy benchmarks on this page. Your planning range comes from your inputs and ValuRight’s methods. Local comps and market occupancy data belong in advisor / broker diligence — label any third-party numbers carefully if you add them later."
+              q='Will you show me comps or “typical HVAC multiples”?'
+              a="No invented sale comps or industry-average multiples on this page. Your planning range comes from your inputs and ValuRight’s methods. Local comps belong in advisor / broker diligence — label any third-party numbers carefully if you add them later."
             />
             <Faq
               q="Free Preview vs a broker or appraiser?"
@@ -672,7 +687,7 @@ function RvParkWorthLanding() {
         <div className="mx-auto max-w-3xl px-6 py-16 text-center">
           <FileCheck className="mx-auto h-8 w-8 text-accent" />
           <h2 className="mt-4 font-display text-3xl font-semibold text-primary">
-            Ready to see your park’s planning range?
+            Ready to see your HVAC shop’s planning range?
           </h2>
           <p className="mt-3 text-muted-foreground">
             Start Free Preview in minutes — no credit card required.
@@ -696,8 +711,8 @@ function RvParkWorthLanding() {
             <Link to="/what-is-my-business-worth" className="font-semibold text-accent hover:underline">
               What is my business worth?
             </Link>
-            <Link to="/what-is-my-hvac-business-worth" className="font-semibold text-accent hover:underline">
-              What is my HVAC business worth?
+            <Link to="/what-is-my-rv-park-worth" className="font-semibold text-accent hover:underline">
+              What is my RV park worth?
             </Link>
             <Link to="/guides/exit-readiness" className="font-semibold text-accent hover:underline">
               Exit readiness
@@ -725,8 +740,8 @@ function RvParkWorthLanding() {
             <div>
               <BrandLogo size={36} variant="onDark" />
               <p className="mt-3 text-sm text-primary-foreground/70 max-w-md">
-                Planning estimates for Main Street owners preparing the next chapter — including park
-                and campground operators.
+                Planning estimates for Main Street owners preparing the next chapter — including HVAC
+                and heating &amp; cooling operators.
               </p>
             </div>
             <div className="space-y-3 text-xs text-primary-foreground/60 max-w-md">

@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WhatIsMyRvParkWorthRouteImport } from './routes/what-is-my-rv-park-worth'
+import { Route as WhatIsMyHvacBusinessWorthRouteImport } from './routes/what-is-my-hvac-business-worth'
 import { Route as WhatIsMyBusinessWorthRouteImport } from './routes/what-is-my-business-worth'
 import { Route as ValuationCalculatorRouteImport } from './routes/valuation-calculator'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
@@ -56,6 +57,11 @@ import { Route as ApiPublicQuickbooksCallbackRouteImport } from './routes/api.pu
 const WhatIsMyRvParkWorthRoute = WhatIsMyRvParkWorthRouteImport.update({
   id: '/what-is-my-rv-park-worth',
   path: '/what-is-my-rv-park-worth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WhatIsMyHvacBusinessWorthRoute = WhatIsMyHvacBusinessWorthRouteImport.update({
+  id: '/what-is-my-hvac-business-worth',
+  path: '/what-is-my-hvac-business-worth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WhatIsMyBusinessWorthRoute = WhatIsMyBusinessWorthRouteImport.update({
@@ -289,6 +295,7 @@ export interface FileRoutesByFullPath {
   '/unsubscribe': typeof UnsubscribeRoute
   '/valuation-calculator': typeof ValuationCalculatorRoute
   '/what-is-my-business-worth': typeof WhatIsMyBusinessWorthRoute
+  '/what-is-my-hvac-business-worth': typeof WhatIsMyHvacBusinessWorthRoute
   '/what-is-my-rv-park-worth': typeof WhatIsMyRvParkWorthRoute
   '/app/advisors': typeof AppAdvisorsRoute
   '/app/buyer-requests': typeof AppBuyerRequestsRoute
@@ -332,6 +339,7 @@ export interface FileRoutesByTo {
   '/unsubscribe': typeof UnsubscribeRoute
   '/valuation-calculator': typeof ValuationCalculatorRoute
   '/what-is-my-business-worth': typeof WhatIsMyBusinessWorthRoute
+  '/what-is-my-hvac-business-worth': typeof WhatIsMyHvacBusinessWorthRoute
   '/what-is-my-rv-park-worth': typeof WhatIsMyRvParkWorthRoute
   '/app/advisors': typeof AppAdvisorsRoute
   '/app/buyer-requests': typeof AppBuyerRequestsRoute
@@ -378,6 +386,7 @@ export interface FileRoutesById {
   '/unsubscribe': typeof UnsubscribeRoute
   '/valuation-calculator': typeof ValuationCalculatorRoute
   '/what-is-my-business-worth': typeof WhatIsMyBusinessWorthRoute
+  '/what-is-my-hvac-business-worth': typeof WhatIsMyHvacBusinessWorthRoute
   '/what-is-my-rv-park-worth': typeof WhatIsMyRvParkWorthRoute
   '/app/advisors': typeof AppAdvisorsRoute
   '/app/buyer-requests': typeof AppBuyerRequestsRoute
@@ -425,6 +434,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/valuation-calculator'
     | '/what-is-my-business-worth'
+    | '/what-is-my-hvac-business-worth'
     | '/what-is-my-rv-park-worth'
     | '/app/advisors'
     | '/app/buyer-requests'
@@ -468,6 +478,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/valuation-calculator'
     | '/what-is-my-business-worth'
+    | '/what-is-my-hvac-business-worth'
     | '/what-is-my-rv-park-worth'
     | '/app/advisors'
     | '/app/buyer-requests'
@@ -513,6 +524,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/valuation-calculator'
     | '/what-is-my-business-worth'
+    | '/what-is-my-hvac-business-worth'
     | '/what-is-my-rv-park-worth'
     | '/app/advisors'
     | '/app/buyer-requests'
@@ -559,6 +571,7 @@ export interface RootRouteChildren {
   UnsubscribeRoute: typeof UnsubscribeRoute
   ValuationCalculatorRoute: typeof ValuationCalculatorRoute
   WhatIsMyBusinessWorthRoute: typeof WhatIsMyBusinessWorthRoute
+  WhatIsMyHvacBusinessWorthRoute: typeof WhatIsMyHvacBusinessWorthRoute
   WhatIsMyRvParkWorthRoute: typeof WhatIsMyRvParkWorthRoute
   TeaserPublicIdRoute: typeof TeaserPublicIdRoute
   ApiPublicQuickbooksCallbackRoute: typeof ApiPublicQuickbooksCallbackRoute
@@ -568,6 +581,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/what-is-my-hvac-business-worth': {
+      id: '/what-is-my-hvac-business-worth'
+      path: '/what-is-my-hvac-business-worth'
+      fullPath: '/what-is-my-hvac-business-worth'
+      preLoaderRoute: typeof WhatIsMyHvacBusinessWorthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/what-is-my-rv-park-worth': {
       id: '/what-is-my-rv-park-worth'
       path: '/what-is-my-rv-park-worth'
@@ -960,6 +980,7 @@ const rootRouteChildren: RootRouteChildren = {
   UnsubscribeRoute: UnsubscribeRoute,
   ValuationCalculatorRoute: ValuationCalculatorRoute,
   WhatIsMyBusinessWorthRoute: WhatIsMyBusinessWorthRoute,
+  WhatIsMyHvacBusinessWorthRoute: WhatIsMyHvacBusinessWorthRoute,
   WhatIsMyRvParkWorthRoute: WhatIsMyRvParkWorthRoute,
   TeaserPublicIdRoute: TeaserPublicIdRoute,
   ApiPublicQuickbooksCallbackRoute: ApiPublicQuickbooksCallbackRoute,
