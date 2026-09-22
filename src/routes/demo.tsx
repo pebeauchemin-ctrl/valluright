@@ -137,8 +137,8 @@ function Demo() {
         <div className="mt-12 rounded-xl border border-accent/30 bg-accent-soft p-6 text-center">
           <h3 className="font-display text-xl font-semibold text-primary">Ready to run yours?</h3>
           <p className="mt-2 text-sm text-foreground/80">Get your own valuation, recommendations, and what-if builder in about 15 minutes.</p>
-          <Link to="/auth" className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition">
-            Start free
+          <Link to="/auth" search={{ mode: "signup" }} className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition">
+            Start your free valuation
           </Link>
         </div>
 

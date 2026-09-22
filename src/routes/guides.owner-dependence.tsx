@@ -339,7 +339,7 @@ function OwnerDependenceGuide() {
             to="/demo"
             className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-secondary transition"
           >
-            See a sample report
+            See a sample
           </Link>
         </div>
         <div className="flex flex-wrap gap-4 pt-2 text-sm">

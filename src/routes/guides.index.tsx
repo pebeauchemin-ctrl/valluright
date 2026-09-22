@@ -93,6 +93,12 @@ function GuidesHub() {
           Start your free valuation <ArrowRight className="h-4 w-4" />
         </Link>
         <Link
+          to="/demo"
+          className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-secondary transition"
+        >
+          See a sample
+        </Link>
+        <Link
           to="/what-is-my-business-worth"
           className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-secondary transition"
         >

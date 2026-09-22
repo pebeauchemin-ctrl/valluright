@@ -65,7 +65,7 @@ function Landing() {
                   Start your free valuation <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link to="/demo" className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-6 py-3 text-base font-semibold text-foreground hover:bg-secondary transition">
-                  See a sample report
+                  See a sample
                 </Link>
               </div>
               <p className="mt-5 text-xs text-muted-foreground">Software-generated planning estimate — not a certified appraisal.</p>
@@ -183,7 +183,7 @@ function FreePreviewPlan() {
       <li className="flex items-start gap-2"><span className="mt-1 h-1.5 w-1.5 rounded-full bg-accent shrink-0" />What-if scenario modeling</li>
       <li className="flex items-start gap-2"><span className="mt-1 h-1.5 w-1.5 rounded-full bg-accent shrink-0" />Manual entry and CSV financial import</li>
     </ul>
-    <Link to="/auth" search={{ mode: "signup" }} className="mt-5 inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent">Start free <ArrowRight className="h-4 w-4" /></Link>
+    <Link to="/auth" search={{ mode: "signup" }} className="mt-5 inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent">Start your free valuation <ArrowRight className="h-4 w-4" /></Link>
   </div>;
 }
 

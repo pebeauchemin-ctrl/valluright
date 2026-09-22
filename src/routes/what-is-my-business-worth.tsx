@@ -242,7 +242,7 @@ function WorthLanding() {
                   to="/demo"
                   className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-6 py-3 text-base font-semibold text-foreground hover:bg-secondary transition"
                 >
-                  See a sample report
+                  See a sample
                 </Link>
               </div>
               <p className="mt-5 text-xs text-muted-foreground">
@@ -553,7 +553,7 @@ function WorthLanding() {
             Ready to see your planning range?
           </h2>
           <p className="mt-3 text-muted-foreground">
-            Start Free Preview in minutes — no credit card required.
+            Start your free valuation in minutes — no credit card required.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <Link
@@ -567,7 +567,7 @@ function WorthLanding() {
               to="/demo"
               className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-6 py-3 text-base font-semibold text-foreground hover:bg-secondary transition"
             >
-              See a sample report
+              See a sample
             </Link>
           </div>
           <p className="mt-6 text-sm text-muted-foreground">
