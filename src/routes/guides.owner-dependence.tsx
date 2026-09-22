@@ -18,7 +18,7 @@ const articleLd = {
   },
   mainEntityOfPage: "https://valuright.ai/guides/owner-dependence",
   datePublished: "2026-09-09",
-  dateModified: "2026-09-17",
+  dateModified: "2026-09-22",
 };
 
 const breadcrumbLd = {
@@ -61,20 +61,20 @@ const faqLd = {
       name: "Does owner dependence always lower the price?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Not always as a fixed haircut — but it often compresses the multiple, lengthens the transition, or pushes earnout or holdback structure. Some buyers walk. Outcomes vary; there is no single typical discount percentage.",
+        text: "Not always as a fixed haircut — but it often compresses the multiple, lengthens the transition, or pushes earnout/holdback structure. Some buyers walk. Outcomes vary; there is no single typical discount percentage.",
       },
     },
     {
       "@type": "Question",
-      name: "How long does it take to fix owner dependence?",
+      name: "How long does it take to fix?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Many owners plan on about 12–24 months of deliberate work: hire or promote ops coverage, document the playbook, put a second face on key accounts, and cut owner hours. That is planning guidance, not a guarantee.",
+        text: "Many owners plan on about 12–24 months of deliberate work (hire/promote, document, second face on accounts, cut owner hours). That is planning guidance, not a guarantee. High dependence with a short runway usually means tougher deal terms.",
       },
     },
     {
       "@type": "Question",
-      name: "Can I sell in 12 months if owner dependence is high?",
+      name: "Can I sell in 12 months if dependence is high?",
       acceptedAnswer: {
         "@type": "Answer",
         text: "Sometimes — with a thinner buyer pool, longer seller stay, or more contingent proceeds. A last-minute scramble rarely fools diligence. If life requires a faster path, go in eyes open and get advisor help early.",
@@ -142,7 +142,7 @@ function OwnerDependenceGuide() {
       eyebrow="Owner’s guide"
       title="Owner Dependence: Why Buyers Discount Your Business"
       description="Owner dependence means the business still needs the owner’s hours, relationships, or know-how to produce the earnings a buyer is paying for. Buyers discount the price, stretch the transition, or walk when that is true."
-      updated="September 17, 2026"
+      updated="September 22, 2026"
     >
       <p className="mb-6 text-base leading-relaxed text-muted-foreground">
         If the honest answer to “What happens when you leave?” is that revenue, relationships, or

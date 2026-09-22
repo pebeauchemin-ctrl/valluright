@@ -4,6 +4,108 @@ import { LegalSection, PublicPageShell } from "@/components/PublicPageShell";
 import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 
+const articleLd = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "How to Value a Small Business (Owner’s Guide)",
+  "description": "Learn how Main Street buyers price a small business — SDE, multiples, and what moves the range. Then run a free ValuRight planning estimate.",
+  "author": {
+    "@type": "Organization",
+    "name": "ValuRight"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "ValuRight",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://valuright.ai/favicon.svg"
+    }
+  },
+  "mainEntityOfPage": "https://valuright.ai/guides/how-to-value-a-small-business",
+  "datePublished": "2026-09-09",
+  "dateModified": "2026-09-22"
+};
+
+const breadcrumbLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://valuright.ai/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Guides",
+      "item": "https://valuright.ai/guides"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "How to value a small business",
+      "item": "https://valuright.ai/guides/how-to-value-a-small-business"
+    }
+  ]
+};
+
+const faqLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is there one number for what my business is worth?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Usually no. Buyers think in a planning range built from earnings and risk (transferability, concentration, documentation), not a single multiple on a napkin. Use the range for homework before you set an asking price with advisors. It is not a certified appraisal."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Should I use SDE or EBITDA?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "If you still run day-to-day sales and ops, buyers usually start with Seller’s Discretionary Earnings (SDE) — the total annual benefit to one full-time owner-operator. More professionally managed companies often discuss EBITDA. The wrong earnings base misprices every later conversation. See What is SDE?."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What does the “2×–4× SDE” band on this page mean?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "It is rough Main Street planning shorthand already stated on this page — not a promise, not an industry comps table, and not your sale price. Industry, size, growth, and transferability move where a buyer lands inside (or outside) that band. Cross-check with Methodology and Owner dependence."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why check more than one valuation method?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A single rule of thumb is fragile. ValuRight blends several methods appropriate to the business into a headline planning range with confidence notes. See How ValuRight values a small business or start a Free Preview."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What should I do with a planning range?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Compare it to your retirement or walk-away number, pick which risks to fix first (especially owner dependence), then talk to a CPA or broker before you publish an asking price. The range is homework — not a listing price by itself."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does Free Preview replace an appraisal?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Free Preview is a software-generated planning estimate for owners getting oriented. Use a formal appraisal when lenders, courts, tax, or a purchase agreement require one."
+      }
+    }
+  ]
+};
+
 export const Route = createFileRoute("/guides/how-to-value-a-small-business")({
   head: () => ({
     meta: [
@@ -37,11 +139,15 @@ export const Route = createFileRoute("/guides/how-to-value-a-small-business")({
     scripts: [
       {
         type: "application/ld+json",
-        children: "{\"@context\": \"https://schema.org\", \"@type\": \"Article\", \"headline\": \"How to Value a Small Business (Owner\u2019s Guide)\", \"description\": \"Learn how Main Street buyers price a small business \u2014 SDE, multiples, and what moves the range. Then run a free ValuRight planning estimate.\", \"author\": {\"@type\": \"Organization\", \"name\": \"ValuRight\"}, \"publisher\": {\"@type\": \"Organization\", \"name\": \"ValuRight\", \"logo\": {\"@type\": \"ImageObject\", \"url\": \"https://valuright.ai/favicon.svg\"}}, \"mainEntityOfPage\": \"https://valuright.ai/guides/how-to-value-a-small-business\", \"datePublished\": \"2026-09-09\", \"dateModified\": \"2026-09-09\"}",
+        children: JSON.stringify(articleLd),
       },
       {
         type: "application/ld+json",
-        children: "{\"@context\": \"https://schema.org\", \"@type\": \"BreadcrumbList\", \"itemListElement\": [{\"@type\": \"ListItem\", \"position\": 1, \"name\": \"Home\", \"item\": \"https://valuright.ai/\"}, {\"@type\": \"ListItem\", \"position\": 2, \"name\": \"Guides\", \"item\": \"https://valuright.ai/guides\"}, {\"@type\": \"ListItem\", \"position\": 3, \"name\": \"How to value a small business\", \"item\": \"https://valuright.ai/guides/how-to-value-a-small-business\"}]}",
+        children: JSON.stringify(breadcrumbLd),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify(faqLd),
       },
     ],
   }),
@@ -54,7 +160,7 @@ function HowToValueGuide() {
       eyebrow="Owner’s guide"
       title="How to Value a Small Business (Owner’s Guide)"
       description="Owners usually want one number: “What’s it worth?” Buyers almost never work that way. They think in a range, stress-test the earnings, and discount for risk. A planning estimate is homework — not a certified appraisal and not a guaranteed sale price."
-      updated="September 9, 2026"
+      updated="September 22, 2026"
     >
       <LegalSection title="Pick the earnings base">
         <p>
@@ -116,6 +222,45 @@ function HowToValueGuide() {
           asking price.
         </p>
         <p className="text-xs">{VALUATION_DISCLAIMER_SHORT}</p>
+      </LegalSection>
+
+      <LegalSection title="FAQ">
+        <div>
+          <p className="font-semibold text-foreground">Is there one number for what my business is worth?</p>
+          <p className="mt-1">
+            Usually no. Buyers think in a <strong>planning range</strong> built from earnings and risk (transferability, concentration, documentation), not a single multiple on a napkin. Use the range for homework before you set an asking price with advisors. It is not a certified appraisal.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">Should I use SDE or EBITDA?</p>
+          <p className="mt-1">
+            If you still run day-to-day sales and ops, buyers usually start with <strong>Seller’s Discretionary Earnings (SDE)</strong> — the total annual benefit to one full-time owner-operator. More professionally managed companies often discuss <strong>EBITDA</strong>. The wrong earnings base misprices every later conversation. See <Link to="/guides/sde-explained" className="font-semibold text-accent hover:underline">What is SDE?</Link>.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">What does the “2×–4× SDE” band on this page mean?</p>
+          <p className="mt-1">
+            It is <strong>rough Main Street planning shorthand</strong> already stated on this page — not a promise, not an industry comps table, and not your sale price. Industry, size, growth, and transferability move where a buyer lands inside (or outside) that band. Cross-check with <Link to="/methodology" className="font-semibold text-accent hover:underline">Methodology</Link> and <Link to="/guides/owner-dependence" className="font-semibold text-accent hover:underline">Owner dependence</Link>.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">Why check more than one valuation method?</p>
+          <p className="mt-1">
+            A single rule of thumb is fragile. ValuRight blends several methods appropriate to the business into a <strong>headline planning range</strong> with confidence notes. See <Link to="/methodology" className="font-semibold text-accent hover:underline">How ValuRight values a small business</Link> or start a <Link to="/auth" search={{ mode: "signup" }} className="font-semibold text-accent hover:underline">Free Preview</Link>.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">What should I do with a planning range?</p>
+          <p className="mt-1">
+            Compare it to your retirement or walk-away number, pick which risks to fix first (especially owner dependence), then talk to a CPA or broker before you publish an asking price. The range is homework — not a listing price by itself.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">Does Free Preview replace an appraisal?</p>
+          <p className="mt-1">
+            No. Free Preview is a software-generated planning estimate for owners getting oriented. Use a formal appraisal when lenders, courts, tax, or a purchase agreement require one.
+          </p>
+        </div>
       </LegalSection>
 
       <div className="mt-10 space-y-4 rounded-xl border border-border bg-card p-6">

@@ -3,6 +3,102 @@ import { trackSignupStart } from "@/lib/marketing-analytics";
 import { ArrowRight } from "lucide-react";
 import { LegalSection, PublicPageShell } from "@/components/PublicPageShell";
 
+const articleLd = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "How ValuRight Values a Small Business",
+  "description": "How ValuRight builds a planning range for Main Street businesses using seven valuation methods — not a certified appraisal. See inputs, methods, and limitations.",
+  "author": {
+    "@type": "Organization",
+    "name": "ValuRight"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "ValuRight",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://valuright.ai/favicon.svg"
+    }
+  },
+  "mainEntityOfPage": "https://valuright.ai/methodology",
+  "datePublished": "2026-09-15",
+  "dateModified": "2026-09-22"
+};
+
+const breadcrumbLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://valuright.ai/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Methodology",
+      "item": "https://valuright.ai/methodology"
+    }
+  ]
+};
+
+const faqLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is ValuRight a certified appraisal?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. ValuRight produces a software planning estimate for Main Street owners. Have a CPA, broker, or appraiser review before you rely on a number for a sale, tax, financing, or legal decision."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How is the planning range calculated?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "ValuRight runs multiple methods appropriate to the business category, then blends them into a headline planning range with confidence notes. This page lists the methods; we do not publish secret method weights. Open “Why this range?” in the product for what moved your result."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is SDE vs EBITDA in ValuRight?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "SDE is the total annual benefit to one full-time owner-operator — the usual starting point for owner-operated Main Street businesses. EBITDA is more common when management is already separated from ownership. See What is SDE? for the owner-facing build-up."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What risks change the multiple or confidence?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Factors already discussed on this page — including owner dependence, customer concentration, documentation quality, management depth, recurring or repeatable revenue, and data quality. We do not invent percentage haircuts here; the product surfaces which risks matter for your file."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why show methods that don’t drive the headline range?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Extra methods act as sanity checks and floors so one fragile rule of thumb does not dominate. The product’s “Why this range?” view explains which inputs contributed."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When should I bring in a CPA, broker, or appraiser?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Before you set an asking price, take financing, make tax elections, or negotiate a letter of intent. Export your assumptions from ValuRight and review them with advisors."
+      }
+    }
+  ]
+};
+
 export const Route = createFileRoute("/methodology")({
   head: () => ({
     meta: [
@@ -14,6 +110,20 @@ export const Route = createFileRoute("/methodology")({
       },
     ],
     links: [{ rel: "canonical", href: "https://valuright.ai/methodology" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify(articleLd),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify(breadcrumbLd),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify(faqLd),
+      },
+    ],
   }),
   component: MethodologyPage,
 });
@@ -24,7 +134,7 @@ function MethodologyPage() {
       eyebrow="Methodology"
       title="How ValuRight values a small business"
       description="ValuRight builds a planning range for Main Street businesses using multiple methods — not a single rule of thumb. This page explains what goes into the estimate and where a CPA, broker, or appraiser still belongs. It is a software-generated planning estimate, not a certified appraisal."
-      updated="September 15, 2026"
+      updated="September 22, 2026"
     >
       <div className="mb-8 flex flex-wrap gap-3">
         <Link
@@ -179,6 +289,45 @@ function MethodologyPage() {
         </p>
       </LegalSection>
 
+      <LegalSection title="FAQ">
+        <div>
+          <p className="font-semibold text-foreground">Is ValuRight a certified appraisal?</p>
+          <p className="mt-1">
+            No. ValuRight produces a <strong>software planning estimate</strong> for Main Street owners. Have a CPA, broker, or appraiser review before you rely on a number for a sale, tax, financing, or legal decision.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">How is the planning range calculated?</p>
+          <p className="mt-1">
+            ValuRight runs multiple methods appropriate to the business category, then blends them into a headline <strong>planning range</strong> with confidence notes. This page lists the methods; we do <strong>not</strong> publish secret method weights. Open “Why this range?” in the product for what moved your result.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">What is SDE vs EBITDA in ValuRight?</p>
+          <p className="mt-1">
+            <strong>SDE</strong> is the total annual benefit to one full-time owner-operator — the usual starting point for owner-operated Main Street businesses. <strong>EBITDA</strong> is more common when management is already separated from ownership. See <Link to="/guides/sde-explained" className="font-semibold text-accent hover:underline">What is SDE?</Link> for the owner-facing build-up.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">What risks change the multiple or confidence?</p>
+          <p className="mt-1">
+            Factors already discussed on this page — including owner dependence, customer concentration, documentation quality, management depth, recurring or repeatable revenue, and data quality. We do not invent percentage haircuts here; the product surfaces which risks matter for your file.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">Why show methods that don’t drive the headline range?</p>
+          <p className="mt-1">
+            Extra methods act as <strong>sanity checks and floors</strong> so one fragile rule of thumb does not dominate. The product’s “Why this range?” view explains which inputs contributed.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">When should I bring in a CPA, broker, or appraiser?</p>
+          <p className="mt-1">
+            Before you set an asking price, take financing, make tax elections, or negotiate a letter of intent. Export your assumptions from ValuRight and review them with advisors.
+          </p>
+        </div>
+      </LegalSection>
+
       <div className="mt-10 space-y-4 rounded-xl border border-border bg-card p-6">
         <p className="font-display text-xl font-semibold text-primary">Next steps</p>
         <div className="flex flex-wrap gap-3">
@@ -188,13 +337,21 @@ function MethodologyPage() {
               onClick={trackSignupStart}
             className="inline-flex items-center gap-2 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition shadow-sm"
           >
-            Start Free Preview <ArrowRight className="h-4 w-4" />
+            Start your free valuation <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
-            to="/guides/how-to-value-a-small-business"
+            to="/demo"
             className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-secondary transition"
           >
+            See a sample
+          </Link>
+        </div>
+        <div className="flex flex-wrap gap-4 pt-2 text-sm">
+          <Link to="/guides/how-to-value-a-small-business" className="font-semibold text-accent hover:underline">
             Owner&apos;s valuation guide
+          </Link>
+          <Link to="/guides/sde-explained" className="font-semibold text-accent hover:underline">
+            What is SDE?
           </Link>
         </div>
       </div>
