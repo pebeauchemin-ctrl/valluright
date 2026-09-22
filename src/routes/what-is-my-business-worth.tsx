@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Check, Sparkles, TrendingUp, ShieldCheck, Users, FileCheck } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
+import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 
 const articleLd = {
@@ -166,7 +167,7 @@ function WorthLanding() {
             <Link to="/guides" className="hover:text-foreground transition">
               Guides
             </Link>
-            <Link to="/demo" className="hover:text-foreground transition">
+            <Link to="/demo" onClick={trackDemoClick} className="hover:text-foreground transition">
               See a sample
             </Link>
           </nav>
@@ -180,6 +181,7 @@ function WorthLanding() {
             <Link
               to="/auth"
               search={{ mode: "signup" }}
+              onClick={trackSignupStart}
               className="inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition shadow-sm"
             >
               Get started <ArrowRight className="h-4 w-4" />
@@ -234,12 +236,14 @@ function WorthLanding() {
                 <Link
                   to="/auth"
                   search={{ mode: "signup" }}
+              onClick={trackSignupStart}
                   className="inline-flex items-center gap-2 rounded-md bg-accent px-6 py-3 text-base font-semibold text-accent-foreground hover:bg-accent/90 transition shadow-md hover:shadow-lg"
                 >
                   Start your free valuation <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
                   to="/demo"
+                  onClick={trackDemoClick}
                   className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-6 py-3 text-base font-semibold text-foreground hover:bg-secondary transition"
                 >
                   See a sample
@@ -412,6 +416,7 @@ function WorthLanding() {
                 <Link
                   to="/auth"
                   search={{ mode: "signup" }}
+              onClick={trackSignupStart}
                   className="inline-flex items-center gap-2 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition shadow-sm"
                 >
                   Start your free valuation <ArrowRight className="h-4 w-4" />
@@ -520,7 +525,7 @@ function WorthLanding() {
                   No. That block is <strong>sample preview UI (illustrative)</strong> from a sample
                   report — not your valuation and not an average of other owners. Your range comes
                   from your inputs after you start Free Preview. You can also{" "}
-                  <Link to="/demo" className="font-semibold text-accent hover:underline">
+                  <Link to="/demo" onClick={trackDemoClick} className="font-semibold text-accent hover:underline">
                     see a sample report
                   </Link>
                   .
@@ -559,12 +564,14 @@ function WorthLanding() {
             <Link
               to="/auth"
               search={{ mode: "signup" }}
+              onClick={trackSignupStart}
               className="inline-flex items-center gap-2 rounded-md bg-accent px-6 py-3 text-base font-semibold text-accent-foreground hover:bg-accent/90 transition shadow-md"
             >
               Start your free valuation <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               to="/demo"
+                  onClick={trackDemoClick}
               className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-6 py-3 text-base font-semibold text-foreground hover:bg-secondary transition"
             >
               See a sample
@@ -731,6 +738,7 @@ function PlanCard({
       <Link
         to={to}
         search={search}
+        onClick={to === "/auth" ? trackSignupStart : undefined}
         className={`mt-5 inline-flex w-full items-center justify-center gap-1.5 rounded-md px-4 py-2.5 text-sm font-semibold transition ${
           highlighted
             ? "bg-accent text-accent-foreground hover:bg-accent/90"

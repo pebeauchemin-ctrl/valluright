@@ -30,6 +30,7 @@ import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 import { AccessibleChart } from "@/components/AccessibleChart";
 import { LoadErrorState, errorMessage } from "@/components/LoadErrorState";
 import { recordProductEvent } from "@/lib/observability.functions";
+import { trackValuationResultViewed } from "@/lib/marketing-analytics";
 import { displayIndustryLabel } from "@/lib/industry-display";
 import {
   dataQualityAcknowledgementKey,
@@ -170,6 +171,12 @@ function Dashboard() {
     }
     setDataQualityAcknowledged(window.localStorage.getItem(dataQualityAckKey) === "true");
   }, [dataQualityAckKey]);
+
+  useEffect(() => {
+    if (current && financials.length > 0 && valuation && health && inputs) {
+      trackValuationResultViewed();
+    }
+  }, [current, financials.length, valuation, health, inputs]);
 
   const setDataQualityAcknowledgement = (value: boolean) => {
     setDataQualityAcknowledged(value);

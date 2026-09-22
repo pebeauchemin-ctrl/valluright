@@ -34,6 +34,7 @@ import { startXeroConnect, importXeroFinancials, listXeroConnections } from "@/l
 import { listQuickBooksConnections, startQuickBooksConnect } from "@/lib/quickbooks.functions";
 import { ValuationDisclaimer } from "@/components/ValuationDisclaimer";
 import { recordProductEvent } from "@/lib/observability.functions";
+import { trackValuationStarted } from "@/lib/marketing-analytics";
 
 type OnboardingSearch = {
   xero?: "connected" | "error";
@@ -273,6 +274,10 @@ function Onboarding() {
   const navigate = useNavigate();
   const search = Route.useSearch();
   const [step, setStep] = useState<Step>(0);
+
+  useEffect(() => {
+    trackValuationStarted();
+  }, []);
   const [saving, setSaving] = useState(false);
   const [usingSampleData, setUsingSampleData] = useState(false);
 

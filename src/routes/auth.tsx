@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { commercialPlanBySlug } from "@/lib/commercial-model";
 import { useServerFn } from "@tanstack/react-start";
 import { recordPublicClientEvent } from "@/lib/observability.functions";
+import { trackSignupComplete, trackSignupStart } from "@/lib/marketing-analytics";
 
 type Mode = "signin" | "signup" | "forgot";
 type AuthSearch = { mode?: Mode; plan?: string; redirect?: string };
@@ -44,6 +45,10 @@ function AuthPage() {
   useEffect(() => {
     if (search.mode === "signup") setMode("signup");
   }, [search.mode, selectedPlan, mode]);
+
+  useEffect(() => {
+    if (mode === "signup") trackSignupStart();
+  }, [mode]);
 
   const switchMode = (m: Mode) => {
     setMode(m);
@@ -94,6 +99,7 @@ function AuthPage() {
       setError(error);
     } else {
       if (mode === "signup") {
+        trackSignupComplete({ plan: selectedPlan?.slug ?? "free_preview" });
         recordEvent({
           data: {
             eventName: "signup_completed",

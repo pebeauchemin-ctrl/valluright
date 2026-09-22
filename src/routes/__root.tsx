@@ -12,6 +12,7 @@ import { AuthProvider } from "@/lib/auth";
 import { BusinessProvider } from "@/lib/business";
 import { Toaster } from "@/components/ui/sonner";
 import { recordPublicClientEvent } from "@/lib/observability.functions";
+import { GTM_CONTAINER_ID, GTM_HEAD_SCRIPT } from "@/lib/marketing-analytics";
 
 import appCss from "../styles.css?url";
 
@@ -147,6 +148,11 @@ export const Route = createRootRoute({
       { rel: "stylesheet", href: appCss },
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
     ],
+    scripts: [
+      {
+        children: GTM_HEAD_SCRIPT,
+      },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -161,6 +167,16 @@ function RootShell({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        {/* Google Tag Manager (noscript) */}
+        <noscript>
+          <iframe
+            src={`https://www.googletagmanager.com/ns.html?id=${GTM_CONTAINER_ID}`}
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+            title="Google Tag Manager"
+          />
+        </noscript>
         {children}
         <Scripts />
       </body>

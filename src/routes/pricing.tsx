@@ -7,6 +7,7 @@ import { ArrowRight, Check } from "lucide-react";
 import { PublicPageShell } from "@/components/PublicPageShell";
 import { PlanComparisonMatrix } from "@/components/PlanComparisonMatrix";
 import { COMMERCIAL_PLANS, FREE_TRIAL_LIMITS, buyerTeaserPolicy } from "@/lib/commercial-model";
+import { trackPlanViewed, trackSignupStart } from "@/lib/marketing-analytics";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -36,6 +37,10 @@ function PricingPage() {
   useEffect(() => {
     if (user && search.checkout) void begin(search.checkout);
   }, [user, search.checkout]);
+
+  useEffect(() => {
+    trackPlanViewed();
+  }, []);
 
   return (
     <PublicPageShell
@@ -75,6 +80,7 @@ function PricingPage() {
           <Link
             to="/auth"
             search={{ mode: "signup" }}
+            onClick={trackSignupStart}
             className="mt-5 inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent"
           >
             Start your free valuation <ArrowRight className="h-4 w-4" />
@@ -127,7 +133,7 @@ function PricingPage() {
                 {plan.cta} <ArrowRight className="h-4 w-4" />
               </button>
             ) : (
-              <Link to="/auth" search={{ mode: "signup", plan: plan.slug }} className={`mt-5 inline-flex w-full items-center justify-center gap-1.5 rounded-md px-4 py-2.5 text-sm font-semibold transition ${
+              <Link to="/auth" search={{ mode: "signup", plan: plan.slug }} onClick={trackSignupStart} className={`mt-5 inline-flex w-full items-center justify-center gap-1.5 rounded-md px-4 py-2.5 text-sm font-semibold transition ${
                 plan.highlighted
                   ? "bg-accent text-accent-foreground hover:bg-accent/90"
                   : "border border-border bg-card text-foreground hover:border-accent hover:text-accent"

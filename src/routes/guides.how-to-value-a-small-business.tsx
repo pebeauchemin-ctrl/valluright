@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { LegalSection, PublicPageShell } from "@/components/PublicPageShell";
+import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 
 export const Route = createFileRoute("/guides/how-to-value-a-small-business")({
@@ -91,6 +92,7 @@ function HowToValueGuide() {
         <Link
           to="/auth"
           search={{ mode: "signup" }}
+          onClick={trackSignupStart}
           className="mt-4 inline-flex items-center gap-2 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition shadow-sm"
         >
           Start your free valuation <ArrowRight className="h-4 w-4" />
@@ -122,12 +124,13 @@ function HowToValueGuide() {
           <Link
             to="/auth"
             search={{ mode: "signup" }}
+            onClick={trackSignupStart}
             className="inline-flex items-center gap-2 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition shadow-sm"
           >
             Start your free valuation <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
-            to="/demo"
+            to="/demo" onClick={trackDemoClick}
             className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-secondary transition"
           >
             See a sample
