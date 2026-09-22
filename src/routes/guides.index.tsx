@@ -40,6 +40,11 @@ const GUIDES = [
     blurb: "Free planning range for parks & campgrounds (tool page)",
   },
   {
+    to: "/what-is-my-hvac-business-worth" as const,
+    title: "What is my HVAC business worth?",
+    blurb: "Free planning range for heating & cooling shops (tool page)",
+  },
+  {
     to: "/guides/how-to-value-a-small-business" as const,
     title: "How to value a small business",
     blurb: "SDE, multiples, and what moves the range",
@@ -77,7 +82,7 @@ function GuidesHub() {
       eyebrow="Owner’s guides"
       title="Owner guides"
       description="Practical homework for Main Street owners 55+ planning the next chapter — valuation, SDE, owner dependence, exit readiness / Health Score, exit strategy, and selling readiness. Planning estimates, not certified appraisals."
-      updated="September 21, 2026"
+      updated="September 22, 2026"
     >
       <div className="mb-8 flex flex-wrap gap-3">
         <Link
