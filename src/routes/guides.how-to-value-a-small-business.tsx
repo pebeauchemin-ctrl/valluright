@@ -159,7 +159,7 @@ function HowToValueGuide() {
     <PublicPageShell
       eyebrow="Owner’s guide"
       title="How to Value a Small Business (Owner’s Guide)"
-      description="Buyers almost never pay one napkin number. They work a planning range from earnings quality and risk — and a planning estimate is not an appraisal or an asking price."
+      description="Owners usually want one number: “What’s it worth?” Buyers almost never work that way. They think in a range, stress-test the earnings, and discount for risk. A planning estimate is homework — not a certified appraisal and not a guaranteed sale price."
       updated="September 22, 2026"
     >
       <LegalSection title="Pick the earnings base">

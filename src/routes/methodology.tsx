@@ -3,6 +3,47 @@ import { trackSignupStart } from "@/lib/marketing-analytics";
 import { ArrowRight } from "lucide-react";
 import { LegalSection, PublicPageShell } from "@/components/PublicPageShell";
 
+const articleLd = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "How ValuRight Values a Small Business",
+  "description": "How ValuRight builds a planning range for Main Street businesses using seven valuation methods — not a certified appraisal. See inputs, methods, and limitations.",
+  "author": {
+    "@type": "Organization",
+    "name": "ValuRight"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "ValuRight",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://valuright.ai/favicon.svg"
+    }
+  },
+  "mainEntityOfPage": "https://valuright.ai/methodology",
+  "datePublished": "2026-09-15",
+  "dateModified": "2026-09-22"
+};
+
+const breadcrumbLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://valuright.ai/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Methodology",
+      "item": "https://valuright.ai/methodology"
+    }
+  ]
+};
+
 const faqLd = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
@@ -70,6 +111,14 @@ export const Route = createFileRoute("/methodology")({
     ],
     links: [{ rel: "canonical", href: "https://valuright.ai/methodology" }],
     scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify(articleLd),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify(breadcrumbLd),
+      },
       {
         type: "application/ld+json",
         children: JSON.stringify(faqLd),

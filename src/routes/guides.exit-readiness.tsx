@@ -82,7 +82,7 @@ const faqLd = {
     },
     {
       "@type": "Question",
-      name: "What should I do first if my Health Score is low?",
+      name: "What should I do first if my score is low?",
       acceptedAnswer: {
         "@type": "Answer",
         text: "Start with the in-app recommendations. In practice, owners often tackle owner dependence and documentation first, then concentration and financial cleanup. Run Free Preview again as inputs improve, and use what-if to explore scenarios. See also How to sell my business and Exit strategy for retirement.",
@@ -102,14 +102,6 @@ const faqLd = {
       acceptedAnswer: {
         "@type": "Answer",
         text: "The planning range is a value sketch from valuation methods. The Health Score flags readiness and risk and points to recommendations. Both are owner homework. Neither is a certified appraisal or a guaranteed sale price.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Will fixing Health Score issues raise my sale price?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Fixing issues can improve the diligence conversation and how buyers see risk. It is not a guaranteed price lift. Any what-if tools are scenario modeling only — not a promise.",
       },
     },
   ],
@@ -444,7 +436,7 @@ function ExitReadinessGuide() {
         </div>
         <div>
           <p className="font-semibold text-foreground">
-            What should I do first if my Health Score is low?
+            What should I do first if my score is low?
           </p>
           <p className="mt-1">
             Start with the in-app recommendations. In practice, owners often tackle owner dependence and
@@ -472,16 +464,6 @@ function ExitReadinessGuide() {
             The <strong>planning range</strong> is a value sketch from valuation methods. The{" "}
             <strong>Health Score</strong> flags readiness and risk and points to recommendations.
             Both are owner homework. Neither is a certified appraisal or a guaranteed sale price.
-          </p>
-        </div>
-        <div>
-          <p className="font-semibold text-foreground">
-            Will fixing Health Score issues raise my sale price?
-          </p>
-          <p className="mt-1">
-            Fixing issues can improve the diligence conversation and how buyers see risk. It is{" "}
-            <strong>not</strong> a guaranteed price lift. Any what-if tools are scenario modeling
-            only — not a promise.
           </p>
         </div>
       </LegalSection>
