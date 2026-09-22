@@ -18,7 +18,7 @@ const articleLd = {
   },
   mainEntityOfPage: "https://valuright.ai/guides/exit-readiness",
   datePublished: "2026-09-21",
-  dateModified: "2026-09-21",
+  dateModified: "2026-09-22",
 };
 
 const breadcrumbLd = {
@@ -50,10 +50,10 @@ const faqLd = {
     },
     {
       "@type": "Question",
-      name: "Is exit readiness the same as a sellability score?",
+      name: "Is exit readiness the same as a “sellability score”?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "People use different labels. ValuRight frames it as exit readiness and a Health Score: can a buyer take over without the earnings leaving with you, and what should you fix first? The score is tied to owner-facing risks and a planning range — not a vague marketing number.",
+        text: "People use different labels. ValuRight frames it as exit readiness and a Health Score: can a buyer take over without the earnings leaving with you, and what should you fix first? We do not use vague marketing scores without tying them to owner-facing risks and a planning range.",
       },
     },
     {
@@ -77,7 +77,7 @@ const faqLd = {
       name: "How long does it take to improve exit readiness?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Many owners plan on about 12–24 months of deliberate work. That is planning guidance, not a guarantee. A short runway with high dependence usually means tougher terms.",
+        text: "Many owners plan on about 12–24 months of deliberate work. That is planning guidance, not a guarantee. A short runway with high dependence usually means tougher terms — go in eyes open.",
       },
     },
     {
@@ -85,7 +85,31 @@ const faqLd = {
       name: "What should I do first if my Health Score is low?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Start with the in-app recommendations. In practice, owners often tackle owner dependence and documentation first, then concentration and financial cleanup. Run Free Preview again as inputs improve, and use what-if to explore scenarios.",
+        text: "Start with the in-app recommendations. In practice, owners often tackle owner dependence and documentation first, then concentration and financial cleanup. Run Free Preview again as inputs improve, and use what-if to explore scenarios. See also How to sell my business and Exit strategy for retirement.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Is exit readiness the same as being ready to list this month?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Not necessarily. Exit readiness is about transferable earnings, relationships, and playbooks. Listing date is a separate choice. Low readiness plus a fast list usually means tougher terms or a longer handoff.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "How is the Health Score different from the planning range?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "The planning range is a value sketch from valuation methods. The Health Score flags readiness and risk and points to recommendations. Both are owner homework. Neither is a certified appraisal or a guaranteed sale price.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Will fixing Health Score issues raise my sale price?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Fixing issues can improve the diligence conversation and how buyers see risk. It is not a guaranteed price lift. Any what-if tools are scenario modeling only — not a promise.",
       },
     },
   ],
@@ -140,7 +164,7 @@ function ExitReadinessGuide() {
       eyebrow="Owner’s guide"
       title="Exit readiness and the Health Score"
       description="Exit readiness means a buyer can take over the business without the earnings, relationships, or know-how walking out with you. ValuRight’s Health Score (out of 100) is a software view of how ready your Main Street business looks for that transfer — and what may be holding your planning range down — not a certified appraisal or a guaranteed sale price."
-      updated="September 21, 2026"
+      updated="September 22, 2026"
     >
       <p className="mb-6 text-base leading-relaxed text-muted-foreground">
         For owners 55+ planning the next chapter, readiness is homework: transferability,
@@ -420,26 +444,44 @@ function ExitReadinessGuide() {
         </div>
         <div>
           <p className="font-semibold text-foreground">
-            What should I do first if my score is low?
+            What should I do first if my Health Score is low?
           </p>
           <p className="mt-1">
             Start with the in-app recommendations. In practice, owners often tackle owner dependence and
             documentation first, then concentration and financial cleanup. Run Free Preview again as
             inputs improve, and use what-if to explore scenarios. See also{" "}
-            <Link
-              to="/guides/how-to-sell-my-business"
-              className="font-semibold text-accent hover:underline"
-            >
-              How to sell my business
-            </Link>{" "}
-            and{" "}
-            <Link
-              to="/guides/exit-strategy-retirement"
-              className="font-semibold text-accent hover:underline"
-            >
-              Exit strategy for retirement
-            </Link>
-            .
+            <Link to="/guides/how-to-sell-my-business" className="font-semibold text-accent hover:underline">How to sell my business</Link> and{" "}
+            <Link to="/guides/exit-strategy-retirement" className="font-semibold text-accent hover:underline">Exit strategy for retirement</Link>.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">
+            Is exit readiness the same as being ready to list this month?
+          </p>
+          <p className="mt-1">
+            Not necessarily. Exit readiness is about <strong>transferable</strong> earnings,
+            relationships, and playbooks. Listing date is a separate choice. Low readiness plus a
+            fast list usually means tougher terms or a longer handoff.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">
+            How is the Health Score different from the planning range?
+          </p>
+          <p className="mt-1">
+            The <strong>planning range</strong> is a value sketch from valuation methods. The{" "}
+            <strong>Health Score</strong> flags readiness and risk and points to recommendations.
+            Both are owner homework. Neither is a certified appraisal or a guaranteed sale price.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">
+            Will fixing Health Score issues raise my sale price?
+          </p>
+          <p className="mt-1">
+            Fixing issues can improve the diligence conversation and how buyers see risk. It is{" "}
+            <strong>not</strong> a guaranteed price lift. Any what-if tools are scenario modeling
+            only — not a promise.
           </p>
         </div>
       </LegalSection>

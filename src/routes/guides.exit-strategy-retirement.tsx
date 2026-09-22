@@ -4,6 +4,124 @@ import { LegalSection, PublicPageShell } from "@/components/PublicPageShell";
 import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 
+const articleLd = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Business Exit Strategy for Retirement",
+  "description": "Planning to retire from your small business? A practical exit strategy: timeline, value drivers, and a free planning range before you list or talk to a broker.",
+  "author": {
+    "@type": "Organization",
+    "name": "ValuRight"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "ValuRight",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://valuright.ai/favicon.svg"
+    }
+  },
+  "mainEntityOfPage": "https://valuright.ai/guides/exit-strategy-retirement",
+  "datePublished": "2026-09-15",
+  "dateModified": "2026-09-22"
+};
+
+const breadcrumbLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://valuright.ai/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Guides",
+      "item": "https://valuright.ai/guides"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Exit strategy for retirement",
+      "item": "https://valuright.ai/guides/exit-strategy-retirement"
+    }
+  ]
+};
+
+const faqLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "When should I get a planning range if I want to retire in five years?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Now — or at least early enough that you have years, not months, to fix transferability and earnings quality. The range is a baseline you update as you improve the business."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need a broker to have an exit strategy?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. An exit plan is not the same as hiring a broker. A broker is one go-to-market path after homework. Knowing your planning range, cleaning the financials, and reducing owner dependence matter regardless of who markets the company."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is ValuRight a certified appraisal for estate or legal use?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. It is a software-generated planning estimate for owners preparing an exit conversation. Use qualified professionals for formal appraisals, tax, or legal needs."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What if my retirement number is higher than the planning range?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "That gap is useful information. You can work on value drivers, adjust timeline or lifestyle assumptions, or explore different transaction paths with advisors — with eyes open."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How far before retirement should I start exit work?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Prefer a 3–5 year runway if you still need to improve transferability and earnings quality. About 12 months can work if books are clean and owner dependence is already low. A short runway plus high dependence usually means tougher terms, longer transition, or both — not a fake national average, just how buyers price risk."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What’s the difference between an exit strategy and succession?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Succession answers who will run the business. A third-party sale still needs transferable operations and clean numbers even if a family member stays involved. Many owners need both tracks: who runs it, and how value is realized."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I retire if the business still depends on me?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "You can try, but expect price pressure, earnouts, or a longer post-close stay. Reduce key-person risk before you list when you can. See Owner dependence and Exit readiness."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What value drivers matter most before I list?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Earnings quality, transferability (so the business runs without you on every decision), clean books, and repeatable revenue where it fits your model — the same drivers this guide already covers. No new “typical multiple” claims."
+      }
+    }
+  ]
+};
+
 export const Route = createFileRoute("/guides/exit-strategy-retirement")({
   head: () => ({
     meta: [
@@ -29,15 +147,15 @@ export const Route = createFileRoute("/guides/exit-strategy-retirement")({
     scripts: [
       {
         type: "application/ld+json",
-        children: "{\"@context\": \"https://schema.org\", \"@type\": \"Article\", \"headline\": \"Business Exit Strategy for Retirement\", \"description\": \"Planning to retire from your small business? A practical exit strategy: timeline, value drivers, and a free planning range before you list or talk to a broker.\", \"author\": {\"@type\": \"Organization\", \"name\": \"ValuRight\"}, \"publisher\": {\"@type\": \"Organization\", \"name\": \"ValuRight\", \"logo\": {\"@type\": \"ImageObject\", \"url\": \"https://valuright.ai/favicon.svg\"}}, \"mainEntityOfPage\": \"https://valuright.ai/guides/exit-strategy-retirement\", \"datePublished\": \"2026-09-15\", \"dateModified\": \"2026-09-15\"}",
+        children: JSON.stringify(articleLd),
       },
       {
         type: "application/ld+json",
-        children: "{\"@context\": \"https://schema.org\", \"@type\": \"BreadcrumbList\", \"itemListElement\": [{\"@type\": \"ListItem\", \"position\": 1, \"name\": \"Home\", \"item\": \"https://valuright.ai/\"}, {\"@type\": \"ListItem\", \"position\": 2, \"name\": \"Guides\", \"item\": \"https://valuright.ai/guides\"}, {\"@type\": \"ListItem\", \"position\": 3, \"name\": \"Exit strategy for retirement\", \"item\": \"https://valuright.ai/guides/exit-strategy-retirement\"}]}",
+        children: JSON.stringify(breadcrumbLd),
       },
       {
         type: "application/ld+json",
-        children: "{\"@context\": \"https://schema.org\", \"@type\": \"FAQPage\", \"mainEntity\": [{\"@type\": \"Question\", \"name\": \"When should I get a planning range if I want to retire in five years?\", \"acceptedAnswer\": {\"@type\": \"Answer\", \"text\": \"Now \u2014 or at least early enough that you have years, not months, to fix transferability and earnings quality. The range is a baseline you update as you improve the business.\"}}, {\"@type\": \"Question\", \"name\": \"Do I need a broker to have an exit strategy?\", \"acceptedAnswer\": {\"@type\": \"Answer\", \"text\": \"No. A broker is one go-to-market path. Knowing your planning range, cleaning the financials, and reducing owner dependence matter regardless of who markets the company.\"}}, {\"@type\": \"Question\", \"name\": \"Is ValuRight a certified appraisal for estate or legal use?\", \"acceptedAnswer\": {\"@type\": \"Answer\", \"text\": \"No. It is a software-generated planning estimate for owners preparing an exit conversation. Use qualified professionals for formal appraisals, tax, or legal needs.\"}}, {\"@type\": \"Question\", \"name\": \"What if my retirement number is higher than the planning range?\", \"acceptedAnswer\": {\"@type\": \"Answer\", \"text\": \"That gap is useful information. You can work on value drivers, adjust timeline or lifestyle assumptions, or explore different transaction paths with advisors \u2014 with eyes open.\"}}]}",
+        children: JSON.stringify(faqLd),
       },
     ],
   }),
@@ -50,7 +168,7 @@ function ExitStrategyGuide() {
       eyebrow="Owner’s guide"
       title="Business Exit Strategy for Retirement"
       description="If you are 55+ and the business still depends on you showing up, “retire someday” is not a plan — it is a hope. A practical exit strategy starts with a clear planning range, an honest look at what buyers will pay for, and enough runway to fix the risks that discount the price."
-      updated="September 15, 2026"
+      updated="September 22, 2026"
     >
       <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
         Peer-to-peer, no fake statistics: most owner-operators underestimate how long transferability
@@ -164,22 +282,54 @@ function ExitStrategyGuide() {
       </LegalSection>
 
       <LegalSection title="FAQ">
-      <div>
-        <p className="font-semibold text-foreground">When should I get a planning range if I want to retire in five years?</p>
-        <p className="mt-1">Now — or at least early enough that you have years, not months, to fix transferability and earnings quality. The range is a baseline you update as you improve the business.</p>
-      </div>
-      <div>
-        <p className="font-semibold text-foreground">Do I need a broker to have an exit strategy?</p>
-        <p className="mt-1">No. A broker is one go-to-market path. Knowing your planning range, cleaning the financials, and reducing owner dependence matter regardless of who markets the company.</p>
-      </div>
-      <div>
-        <p className="font-semibold text-foreground">Is ValuRight a certified appraisal for estate or legal use?</p>
-        <p className="mt-1">No. It is a software-generated planning estimate for owners preparing an exit conversation. Use qualified professionals for formal appraisals, tax, or legal needs.</p>
-      </div>
-      <div>
-        <p className="font-semibold text-foreground">What if my retirement number is higher than the planning range?</p>
-        <p className="mt-1">That gap is useful information. You can work on value drivers, adjust timeline or lifestyle assumptions, or explore different transaction paths with advisors — with eyes open.</p>
-      </div>
+        <div>
+          <p className="font-semibold text-foreground">When should I get a planning range if I want to retire in five years?</p>
+          <p className="mt-1">
+            Now — or at least early enough that you have years, not months, to fix transferability and earnings quality. The range is a baseline you update as you improve the business.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">Do I need a broker to have an exit strategy?</p>
+          <p className="mt-1">
+            No. An exit <strong>plan</strong> is not the same as hiring a broker. A broker is one go-to-market path after homework. Knowing your planning range, cleaning the financials, and reducing owner dependence matter regardless of who markets the company.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">Is ValuRight a certified appraisal for estate or legal use?</p>
+          <p className="mt-1">
+            No. It is a software-generated planning estimate for owners preparing an exit conversation. Use qualified professionals for formal appraisals, tax, or legal needs.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">What if my retirement number is higher than the planning range?</p>
+          <p className="mt-1">
+            That gap is useful information. You can work on value drivers, adjust timeline or lifestyle assumptions, or explore different transaction paths with advisors — with eyes open.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">How far before retirement should I start exit work?</p>
+          <p className="mt-1">
+            Prefer a <strong>3–5 year</strong> runway if you still need to improve transferability and earnings quality. About <strong>12 months</strong> can work if books are clean and owner dependence is already low. A short runway plus high dependence usually means tougher terms, longer transition, or both — not a fake national average, just how buyers price risk.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">What’s the difference between an exit strategy and succession?</p>
+          <p className="mt-1">
+            <strong>Succession</strong> answers who will run the business. A <strong>third-party sale</strong> still needs transferable operations and clean numbers even if a family member stays involved. Many owners need both tracks: who runs it, and how value is realized.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">Can I retire if the business still depends on me?</p>
+          <p className="mt-1">
+            You can try, but expect price pressure, earnouts, or a longer post-close stay. Reduce key-person risk before you list when you can. See <Link to="/guides/owner-dependence" className="font-semibold text-accent hover:underline">Owner dependence</Link> and <Link to="/guides/exit-readiness" className="font-semibold text-accent hover:underline">Exit readiness</Link>.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">What value drivers matter most before I list?</p>
+          <p className="mt-1">
+            Earnings quality, transferability (so the business runs without you on every decision), clean books, and repeatable revenue where it fits your model — the same drivers this guide already covers. No new “typical multiple” claims.
+          </p>
+        </div>
       </LegalSection>
 
       <div className="mt-10 space-y-4 rounded-xl border border-border bg-card p-6">
