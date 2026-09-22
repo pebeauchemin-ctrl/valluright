@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Check, Sparkles, TrendingUp, ShieldCheck, Users, FileCheck } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
+import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 
 const webPageLd = {
@@ -170,7 +171,7 @@ function RvParkWorthLanding() {
             <Link to="/guides" className="hover:text-foreground transition">
               Guides
             </Link>
-            <Link to="/demo" className="hover:text-foreground transition">
+            <Link to="/demo" onClick={trackDemoClick} className="hover:text-foreground transition">
               See a sample
             </Link>
           </nav>
@@ -184,6 +185,7 @@ function RvParkWorthLanding() {
             <Link
               to="/auth"
               search={{ mode: "signup" }}
+              onClick={trackSignupStart}
               className="inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition shadow-sm"
             >
               Get started <ArrowRight className="h-4 w-4" />
@@ -229,12 +231,14 @@ function RvParkWorthLanding() {
                 <Link
                   to="/auth"
                   search={{ mode: "signup" }}
+              onClick={trackSignupStart}
                   className="inline-flex items-center gap-2 rounded-md bg-accent px-6 py-3 text-base font-semibold text-accent-foreground hover:bg-accent/90 transition shadow-md hover:shadow-lg"
                 >
                   Start your free valuation <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
                   to="/demo"
+                  onClick={trackDemoClick}
                   className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-6 py-3 text-base font-semibold text-foreground hover:bg-secondary transition"
                 >
                   See a sample
@@ -557,12 +561,14 @@ function RvParkWorthLanding() {
                 <Link
                   to="/auth"
                   search={{ mode: "signup" }}
+              onClick={trackSignupStart}
                   className="inline-flex items-center gap-2 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition shadow-sm"
                 >
                   Start your free valuation <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
                   to="/demo"
+                  onClick={trackDemoClick}
                   className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-secondary transition"
                 >
                   See a sample
@@ -681,12 +687,14 @@ function RvParkWorthLanding() {
             <Link
               to="/auth"
               search={{ mode: "signup" }}
+              onClick={trackSignupStart}
               className="inline-flex items-center gap-2 rounded-md bg-accent px-6 py-3 text-base font-semibold text-accent-foreground hover:bg-accent/90 transition shadow-md"
             >
               Start your free valuation <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               to="/demo"
+                  onClick={trackDemoClick}
               className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-6 py-3 text-base font-semibold text-foreground hover:bg-secondary transition"
             >
               See a sample

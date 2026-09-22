@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Mountain, TrendingUp, AlertTriangle } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { trackDemoClick } from "@/lib/marketing-analytics";
 import {
   valueBusiness,
   computeHealthScore,
@@ -26,6 +27,10 @@ function Demo() {
   );
   const valuation = useMemo(() => valueBusiness(inputs), [inputs]);
   const health = useMemo(() => computeHealthScore(inputs), [inputs]);
+
+  useEffect(() => {
+    trackDemoClick();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">

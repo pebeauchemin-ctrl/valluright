@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { trackSignupStart } from "@/lib/marketing-analytics";
 import { ArrowRight } from "lucide-react";
 import { LegalSection, PublicPageShell } from "@/components/PublicPageShell";
 
@@ -29,6 +30,7 @@ function MethodologyPage() {
         <Link
           to="/auth"
           search={{ mode: "signup" }}
+              onClick={trackSignupStart}
           className="inline-flex items-center gap-2 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition shadow-sm"
         >
           Start your free valuation <ArrowRight className="h-4 w-4" />
@@ -183,6 +185,7 @@ function MethodologyPage() {
           <Link
             to="/auth"
             search={{ mode: "signup" }}
+              onClick={trackSignupStart}
             className="inline-flex items-center gap-2 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition shadow-sm"
           >
             Start Free Preview <ArrowRight className="h-4 w-4" />

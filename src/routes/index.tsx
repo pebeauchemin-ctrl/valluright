@@ -3,6 +3,7 @@ import { ArrowRight, ShieldCheck, TrendingUp, Users, FileCheck, Sparkles } from 
 import { BrandLogo } from "@/components/BrandLogo";
 import { PlanComparisonMatrix } from "@/components/PlanComparisonMatrix";
 import { COMMERCIAL_PLANS } from "@/lib/commercial-model";
+import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -31,11 +32,11 @@ function Landing() {
             <Link to="/what-is-my-business-worth" className="hover:text-foreground transition">Worth?</Link>
             <Link to="/guides" className="hover:text-foreground transition">Guides</Link>
             <Link to="/methodology" className="hover:text-foreground transition">Methodology</Link>
-            <Link to="/demo" className="hover:text-foreground transition">See a sample</Link>
+            <Link to="/demo" onClick={trackDemoClick} className="hover:text-foreground transition">See a sample</Link>
           </nav>
           <div className="flex items-center gap-3">
             <Link to="/auth" className="text-sm font-medium text-foreground hover:text-accent transition hidden sm:inline">Sign in</Link>
-            <Link to="/auth" search={{ mode: "signup" }} className="inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition shadow-sm">
+            <Link to="/auth" search={{ mode: "signup" }} onClick={trackSignupStart} className="inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition shadow-sm">
               Get started <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -61,10 +62,10 @@ function Landing() {
                 See what your business may be worth — free planning range.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-4">
-                <Link to="/auth" search={{ mode: "signup" }} className="inline-flex items-center gap-2 rounded-md bg-accent px-6 py-3 text-base font-semibold text-accent-foreground hover:bg-accent/90 transition shadow-md hover:shadow-lg">
+                <Link to="/auth" search={{ mode: "signup" }} onClick={trackSignupStart} className="inline-flex items-center gap-2 rounded-md bg-accent px-6 py-3 text-base font-semibold text-accent-foreground hover:bg-accent/90 transition shadow-md hover:shadow-lg">
                   Start your free valuation <ArrowRight className="h-4 w-4" />
                 </Link>
-                <Link to="/demo" className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-6 py-3 text-base font-semibold text-foreground hover:bg-secondary transition">
+                <Link to="/demo" onClick={trackDemoClick} className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-6 py-3 text-base font-semibold text-foreground hover:bg-secondary transition">
                   See a sample
                 </Link>
               </div>
@@ -183,7 +184,7 @@ function FreePreviewPlan() {
       <li className="flex items-start gap-2"><span className="mt-1 h-1.5 w-1.5 rounded-full bg-accent shrink-0" />What-if scenario modeling</li>
       <li className="flex items-start gap-2"><span className="mt-1 h-1.5 w-1.5 rounded-full bg-accent shrink-0" />Manual entry and CSV financial import</li>
     </ul>
-    <Link to="/auth" search={{ mode: "signup" }} className="mt-5 inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent">Start your free valuation <ArrowRight className="h-4 w-4" /></Link>
+    <Link to="/auth" search={{ mode: "signup" }} onClick={trackSignupStart} className="mt-5 inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent">Start your free valuation <ArrowRight className="h-4 w-4" /></Link>
   </div>;
 }
 
@@ -193,6 +194,6 @@ function Plan({ slug, name, price, sub, who, cta, features, highlighted }: { slu
     <h3 className="font-display text-xl font-semibold text-primary">{name}</h3><p className="text-xs text-muted-foreground mt-1">{who}</p>
     <div className="mt-4 flex items-baseline gap-1"><span className="font-display text-3xl font-semibold text-primary">{price}</span><span className="text-sm text-muted-foreground">{sub}</span></div>
     <ul className="mt-5 space-y-2 text-sm text-foreground">{features.map((feature) => <li key={feature} className="flex items-start gap-2"><span className="mt-1 h-1.5 w-1.5 rounded-full bg-accent shrink-0" />{feature}</li>)}</ul>
-    <Link to="/auth" search={{ mode: "signup", plan: slug }} className={`mt-5 inline-flex w-full items-center justify-center gap-1.5 rounded-md px-4 py-2.5 text-sm font-semibold transition ${highlighted ? "bg-accent text-accent-foreground hover:bg-accent/90" : "border border-border bg-card text-foreground hover:border-accent hover:text-accent"}`}>{cta} <ArrowRight className="h-4 w-4" /></Link>
+    <Link to="/auth" search={{ mode: "signup", plan: slug }} onClick={trackSignupStart} className={`mt-5 inline-flex w-full items-center justify-center gap-1.5 rounded-md px-4 py-2.5 text-sm font-semibold transition ${highlighted ? "bg-accent text-accent-foreground hover:bg-accent/90" : "border border-border bg-card text-foreground hover:border-accent hover:text-accent"}`}>{cta} <ArrowRight className="h-4 w-4" /></Link>
   </div>;
 }

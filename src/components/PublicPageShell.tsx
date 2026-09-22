@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
+import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 
 type PublicPageShellProps = {
   eyebrow: string;
@@ -46,13 +47,14 @@ export function PublicPageShell({
             <Link to="/methodology" className="hover:text-foreground transition">
               Methodology
             </Link>
-            <Link to="/demo" className="hover:text-foreground transition">
+            <Link to="/demo" onClick={trackDemoClick} className="hover:text-foreground transition">
               Demo
             </Link>
           </nav>
           <Link
             to="/auth"
             search={{ mode: "signup" }}
+            onClick={trackSignupStart}
             className="inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-sm transition hover:bg-accent/90"
           >
             Get started <ArrowRight className="h-4 w-4" />
