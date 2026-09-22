@@ -237,7 +237,7 @@ function RvParkWorthLanding() {
                   to="/demo"
                   className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-6 py-3 text-base font-semibold text-foreground hover:bg-secondary transition"
                 >
-                  See a sample report
+                  See a sample
                 </Link>
               </div>
               <p className="mt-5 text-xs text-muted-foreground">
@@ -565,7 +565,7 @@ function RvParkWorthLanding() {
                   to="/demo"
                   className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-secondary transition"
                 >
-                  See a sample report
+                  See a sample
                 </Link>
               </div>
             </div>
@@ -675,7 +675,7 @@ function RvParkWorthLanding() {
             Ready to see your park’s planning range?
           </h2>
           <p className="mt-3 text-muted-foreground">
-            Start Free Preview in minutes — no credit card required.
+            Start your free valuation in minutes — no credit card required.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <Link
@@ -689,7 +689,7 @@ function RvParkWorthLanding() {
               to="/demo"
               className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-6 py-3 text-base font-semibold text-foreground hover:bg-secondary transition"
             >
-              See a sample report
+              See a sample
             </Link>
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-sm">

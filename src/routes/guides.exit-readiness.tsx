@@ -314,7 +314,7 @@ function ExitReadinessGuide() {
       <LegalSection title="How Free Preview + what-if connect">
         <ol className="list-decimal space-y-2 pl-5">
           <li>
-            <strong>Start Free Preview</strong> ($0, no credit card) — industry/profile, owner
+            <strong>Start your free valuation</strong> ($0, no credit card) — industry/profile, owner
             involvement, financials (manual or CSV). About 15 minutes if data is handy.
           </li>
           <li>
@@ -354,7 +354,7 @@ function ExitReadinessGuide() {
             to="/demo"
             className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-secondary transition"
           >
-            See a sample report
+            See a sample
           </Link>
         </div>
         <p className="mt-4">
@@ -456,7 +456,7 @@ function ExitReadinessGuide() {
             to="/demo"
             className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-secondary transition"
           >
-            See a sample report
+            See a sample
           </Link>
         </div>
         <div className="flex flex-wrap gap-4 pt-2 text-sm">

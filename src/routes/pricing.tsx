@@ -77,7 +77,7 @@ function PricingPage() {
             search={{ mode: "signup" }}
             className="mt-5 inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent"
           >
-            Start free <ArrowRight className="h-4 w-4" />
+            Start your free valuation <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
 

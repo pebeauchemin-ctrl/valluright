@@ -52,6 +52,7 @@ export function PublicPageShell({
           </nav>
           <Link
             to="/auth"
+            search={{ mode: "signup" }}
             className="inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-sm transition hover:bg-accent/90"
           >
             Get started <ArrowRight className="h-4 w-4" />

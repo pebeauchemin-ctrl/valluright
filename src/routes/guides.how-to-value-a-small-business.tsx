@@ -124,13 +124,13 @@ function HowToValueGuide() {
             search={{ mode: "signup" }}
             className="inline-flex items-center gap-2 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 transition shadow-sm"
           >
-            Start Free Preview <ArrowRight className="h-4 w-4" />
+            Start your free valuation <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
             to="/demo"
             className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-secondary transition"
           >
-            See a sample report
+            See a sample
           </Link>
         </div>
         <div className="flex flex-wrap gap-4 pt-2 text-sm">
