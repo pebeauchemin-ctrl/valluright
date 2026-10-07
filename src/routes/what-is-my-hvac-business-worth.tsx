@@ -722,6 +722,9 @@ function HvacWorthLanding() {
             <Link to="/what-is-my-rv-park-worth" className="font-semibold text-accent hover:underline">
               What is my RV park worth?
             </Link>
+            <Link to="/what-is-my-dental-practice-worth" className="font-semibold text-accent hover:underline">
+              What is my dental practice worth?
+            </Link>
             <Link to="/guides/exit-readiness" className="font-semibold text-accent hover:underline">
               Exit readiness
             </Link>
