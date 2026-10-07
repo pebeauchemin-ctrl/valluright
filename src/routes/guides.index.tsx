@@ -46,6 +46,11 @@ const GUIDES = [
     blurb: "Free planning range for heating & cooling shops (tool page)",
   },
   {
+    to: "/what-is-my-dental-practice-worth" as const,
+    title: "What is my dental practice worth?",
+    blurb: "Free planning range for owner-dentists (tool page)",
+  },
+  {
     to: "/guides/how-to-value-a-small-business" as const,
     title: "How to value a small business",
     blurb: "SDE, multiples, and what moves the range",

@@ -707,6 +707,9 @@ function RvParkWorthLanding() {
             <Link to="/what-is-my-hvac-business-worth" className="font-semibold text-accent hover:underline">
               What is my HVAC business worth?
             </Link>
+            <Link to="/what-is-my-dental-practice-worth" className="font-semibold text-accent hover:underline">
+              What is my dental practice worth?
+            </Link>
             <Link to="/guides/exit-readiness" className="font-semibold text-accent hover:underline">
               Exit readiness
             </Link>
