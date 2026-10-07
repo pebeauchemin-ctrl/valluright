@@ -134,7 +134,7 @@ function AuthPage() {
       ? "Sign in to your dashboard."
       : mode === "signup"
         ? selectedPlan
-          ? `Create your account to start the ${selectedPlan.name} flow. Billing is not charged yet.`
+          ? `Create your account to start the ${selectedPlan.name} flow.`
           : "Start your free, marketing-supported valuation account."
         : "Enter your email and we'll send you a link to choose a new password.";
   const cta =

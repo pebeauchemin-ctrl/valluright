@@ -22,7 +22,7 @@ assert.doesNotMatch(FREE_TRIAL_LIMITS.buyerTeaser, /Advisor Partner/);
 const exitReady = COMMERCIAL_PLANS.find((plan) => plan.name === "Exit Ready");
 assert.ok(exitReady);
 assert.equal(exitReady.slug, "exit-ready");
-assert.equal(exitReady.cta, "Start Exit Ready preview");
+assert.equal(exitReady.cta, "Start Exit Ready");
 assert.equal(exitReady.buyerTeaser, "public_sharing");
 assert.equal(buyerTeaserPolicy(exitReady), "Public teaser sharing included");
 assert.equal(commercialPlanBySlug("exit-ready")?.name, "Exit Ready");
@@ -33,6 +33,7 @@ assert.equal(COMMERCIAL_PLANS.length, 2);
 const essentials = COMMERCIAL_PLANS.find((plan) => plan.name === "Essentials");
 assert.ok(essentials);
 assert.equal(essentials.slug, "essentials");
+assert.equal(essentials.cta, "Start Essentials");
 assert.equal(essentials.buyerTeaser, "preview_only");
 assert.ok(essentials.limits.some((limit) => /Xero and QuickBooks/.test(limit)));
 

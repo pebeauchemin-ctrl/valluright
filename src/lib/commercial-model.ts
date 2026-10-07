@@ -58,7 +58,7 @@ export const COMMERCIAL_PLANS: CommercialPlan[] = [
     price: "$99",
     sub: "/month",
     who: "Owner-operator",
-    cta: "Start Essentials preview",
+    cta: "Start Essentials",
     features: [
       "Ongoing value dashboard",
       "All seven valuation methods",
@@ -77,7 +77,7 @@ export const COMMERCIAL_PLANS: CommercialPlan[] = [
     price: "$249",
     sub: "/month",
     who: "Preparing to sell",
-    cta: "Start Exit Ready preview",
+    cta: "Start Exit Ready",
     highlighted: true,
     features: [
       "Everything in Essentials",
