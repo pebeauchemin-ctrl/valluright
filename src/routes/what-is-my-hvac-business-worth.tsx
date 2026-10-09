@@ -47,6 +47,9 @@ const breadcrumbLd = {
   ],
 };
 
+// Shared by the visible FAQ heading and FAQPage JSON-LD so they stay identical.
+const FAQ_Q_COMPS = "Will you show me comps or “typical HVAC multiples”?";
+
 const faqLd = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
@@ -101,7 +104,7 @@ const faqLd = {
     },
     {
       "@type": "Question",
-      name: "Will you show me comps or typical HVAC multiples?",
+      name: FAQ_Q_COMPS,
       acceptedAnswer: {
         "@type": "Answer",
         text: "No invented sale comps or industry-average multiples on this page. Your planning range comes from your inputs and ValuRight's methods. Local comps belong in advisor or broker diligence.",
@@ -671,7 +674,7 @@ function HvacWorthLanding() {
               a="HVAC and heating & cooling owners — especially owners 55+ planning the next chapter — who want a planning range and exit-readiness homework before broker or buyer conversations. Not Wall Street models."
             />
             <Faq
-              q='Will you show me comps or “typical HVAC multiples”?'
+              q={FAQ_Q_COMPS}
               a="No invented sale comps or industry-average multiples on this page. Your planning range comes from your inputs and ValuRight’s methods. Local comps belong in advisor / broker diligence — label any third-party numbers carefully if you add them later."
             />
             <Faq
