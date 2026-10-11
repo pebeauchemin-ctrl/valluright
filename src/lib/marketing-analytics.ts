@@ -27,7 +27,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 type SafeParamValue = string | number | boolean | null;
 type SafeParams = Record<string, SafeParamValue | undefined>;
 
-const PII_KEY = /^(email|password|full.?name|name|phone|token|authorization|ssn)$/i;
+const PII_KEY =
+  /(e-?mail|password|name|phone|token|authorization|ssn|address|revenue|sde|ebitda|profit|valuation_amount|amount|price|value)/i;
+/** Values that look like an email address are never pushed, whatever the key. */
+const EMAIL_LIKE = /[^\s@]+@[^\s@]+\.[^\s@]+/;
+/** Plan slugs are short lowercase identifiers (e.g. "free_preview", "essentials"). */
+const PLAN_SLUG = /^[a-z0-9_-]{1,40}$/;
 
 declare global {
   interface Window {
@@ -41,6 +46,7 @@ function sanitizeParams(params?: SafeParams): Record<string, SafeParamValue> {
   for (const [key, value] of Object.entries(params)) {
     if (value === undefined) continue;
     if (PII_KEY.test(key)) continue;
+    if (typeof value === "string" && EMAIL_LIKE.test(value)) continue;
     out[key] = value;
   }
   return out;
@@ -82,9 +88,8 @@ export function trackSignupStart(): void {
 
 /** Free Preview (or paid) account created successfully — no PII. */
 export function trackSignupComplete(params?: { plan?: string | null }): void {
-  pushMarketingEvent("signup_complete", {
-    plan: params?.plan ?? "free_preview",
-  });
+  const plan = params?.plan && PLAN_SLUG.test(params.plan) ? params.plan : "free_preview";
+  pushMarketingEvent("signup_complete", { plan });
 }
 
 /** Click / navigation intent toward /demo. */
@@ -107,4 +112,10 @@ export function trackValuationResultViewed(): void {
 /** /pricing page view. */
 export function trackPlanViewed(): void {
   pushMarketingEvent("plan_viewed");
+}
+
+/** Test-only: reset dedupe + once-per-session state. */
+export function __resetMarketingStateForTests(): void {
+  lastPush = null;
+  memoryOnce.clear();
 }
