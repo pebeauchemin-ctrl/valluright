@@ -165,6 +165,8 @@ export const Route = createFileRoute("/guides/exit-strategy-retirement")({
 function ExitStrategyGuide() {
   return (
     <PublicPageShell
+      seoFooter
+      relatedLinksFor="/guides/exit-strategy-retirement"
       eyebrow="Owner’s guide"
       title="Business Exit Strategy for Retirement"
       description="If you are 55+ and the business still depends on you showing up, “retire someday” is not a plan — it is a hope. A practical exit strategy starts with a clear planning range, an honest look at what buyers will pay for, and enough runway to fix the risks that discount the price."

@@ -9,6 +9,8 @@ type Props = {
   /** Force a monochrome variant useful on dark sidebar surfaces */
   variant?: "color" | "onDark" | "mono";
   size?: number;
+  /** Override the tagline text (normal case, wraps). Defaults to "SMB Exit Guide". */
+  tagline?: string;
 };
 
 /**
@@ -22,6 +24,7 @@ export function BrandLogo({
   withTagline = false,
   variant = "color",
   size = 36,
+  tagline,
 }: Props) {
   const navy = variant === "onDark" ? "currentColor" : variant === "mono" ? "currentColor" : "oklch(0.21 0.06 247)";
   const green = variant === "mono" ? "currentColor" : "oklch(0.45 0.1 158)";
@@ -38,7 +41,15 @@ export function BrandLogo({
           <span className={cn("font-display font-semibold tracking-tight", wordmarkColor)} style={{ fontSize: size * 0.5 }}>
             valuright<span className={dotColor}>.ai</span>
           </span>
-          {withTagline && (
+          {withTagline && tagline && (
+            <span
+              className="font-display font-medium text-accent mt-1 max-w-[16rem] leading-snug"
+              style={{ fontSize: Math.max(10, size * 0.26) }}
+            >
+              {tagline}
+            </span>
+          )}
+          {withTagline && !tagline && (
             <span
               className="font-display font-medium uppercase tracking-[0.22em] text-accent mt-1"
               style={{ fontSize: Math.max(8, size * 0.22) }}

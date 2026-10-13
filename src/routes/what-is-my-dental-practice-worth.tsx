@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Check, Sparkles, TrendingUp, ShieldCheck, FileCheck } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
+import { FooterEntityLine, FooterSeoLinks, RelatedLinksBlock } from "@/components/SeoLinks";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 
 const PAGE_URL = "https://valuright.ai/what-is-my-dental-practice-worth";
@@ -660,15 +661,14 @@ function DentalWorthLanding() {
         </div>
       </section>
 
+      <RelatedLinksBlock current="/what-is-my-dental-practice-worth" />
+
       <footer className="border-t border-border/60 bg-primary text-primary-foreground">
         <div className="mx-auto max-w-7xl px-6 py-12">
           <div className="flex flex-col md:flex-row justify-between gap-8">
             <div>
               <BrandLogo size={36} variant="onDark" />
-              <p className="mt-3 text-sm text-primary-foreground/70 max-w-md">
-                Planning estimates for Main Street owners preparing the next chapter — including dental
-                practice owners.
-              </p>
+              <FooterEntityLine />
             </div>
             <div className="space-y-3 text-xs text-primary-foreground/60 max-w-md">
               {VALUATION_DISCLAIMER_SHORT}
@@ -686,6 +686,7 @@ function DentalWorthLanding() {
                   Guides
                 </Link>
               </div>
+              <FooterSeoLinks />
             </div>
           </div>
           <div className="mt-8 pt-6 border-t border-primary-foreground/10 text-xs text-primary-foreground/60">

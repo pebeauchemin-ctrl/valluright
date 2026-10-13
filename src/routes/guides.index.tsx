@@ -85,6 +85,7 @@ const GUIDES = [
 function GuidesHub() {
   return (
     <PublicPageShell
+      seoFooter
       eyebrow="Owner’s guides"
       title="Owner guides"
       description="Practical homework for Main Street owners 55+ planning the next chapter — valuation, SDE, owner dependence, exit readiness / Health Score, exit strategy, and selling readiness. Planning estimates, not certified appraisals."

@@ -139,6 +139,8 @@ export const Route = createFileRoute("/guides/owner-dependence")({
 function OwnerDependenceGuide() {
   return (
     <PublicPageShell
+      seoFooter
+      relatedLinksFor="/guides/owner-dependence"
       eyebrow="Owner’s guide"
       title="Owner Dependence: Why Buyers Discount Your Business"
       description="Owner dependence means the business still needs the owner’s hours, relationships, or know-how to produce the earnings a buyer is paying for. Buyers discount the price, stretch the transition, or walk when that is true."

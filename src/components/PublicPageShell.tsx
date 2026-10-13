@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
+import { FooterEntityLine, FooterSeoLinks, RelatedLinksBlock } from "@/components/SeoLinks";
+import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 
 type PublicPageShellProps = {
@@ -9,6 +11,10 @@ type PublicPageShellProps = {
   description: string;
   updated?: string;
   children: React.ReactNode;
+  /** When set, renders the shared Related guides / By industry block (excluding this path) above the footer. */
+  relatedLinksFor?: string;
+  /** Marketing footer: entity line, disclaimer, and the full SEO link set. Legal pages leave this off. */
+  seoFooter?: boolean;
 };
 
 const GUIDE_LINKS = [
@@ -26,6 +32,8 @@ export function PublicPageShell({
   description,
   updated,
   children,
+  relatedLinksFor,
+  seoFooter = false,
 }: PublicPageShellProps) {
   return (
     <div className="min-h-screen bg-background">
@@ -39,7 +47,8 @@ export function PublicPageShell({
               Pricing
             </Link>
             <Link to="/what-is-my-business-worth" className="hover:text-foreground transition">
-              Worth?
+              <span className="lg:hidden">Business worth</span>
+              <span className="hidden lg:inline">What&apos;s my business worth?</span>
             </Link>
             <Link to="/guides" className="hover:text-foreground transition">
               Guides
@@ -83,9 +92,21 @@ export function PublicPageShell({
         <section className="mx-auto max-w-4xl px-6 py-12">{children}</section>
       </main>
 
+      {relatedLinksFor && <RelatedLinksBlock current={relatedLinksFor} />}
+
       <footer className="border-t border-border/60 bg-primary text-primary-foreground">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-10 md:flex-row md:items-start md:justify-between">
-          <BrandLogo size={34} variant="onDark" />
+          <div>
+            <BrandLogo size={34} variant="onDark" />
+            {seoFooter && (
+              <>
+                <FooterEntityLine />
+                <p className="mt-3 max-w-md text-xs text-primary-foreground/60">
+                  {VALUATION_DISCLAIMER_SHORT}
+                </p>
+              </>
+            )}
+          </div>
           <div className="flex flex-col gap-4 text-sm text-primary-foreground/70">
             <div className="flex flex-wrap gap-4">
               <Link to="/privacy" className="hover:text-primary-foreground">
@@ -101,19 +122,23 @@ export function PublicPageShell({
                 Methodology
               </Link>
               <Link to="/what-is-my-business-worth" className="hover:text-primary-foreground">
-                Worth?
+                What&apos;s my business worth?
               </Link>
               <Link to="/guides" className="hover:text-primary-foreground">
                 Guides
               </Link>
             </div>
-            <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-primary-foreground/60">
-              {GUIDE_LINKS.map((g) => (
-                <Link key={g.to} to={g.to} className="hover:text-primary-foreground">
-                  {g.label}
-                </Link>
-              ))}
-            </div>
+            {seoFooter ? (
+              <FooterSeoLinks />
+            ) : (
+              <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-primary-foreground/60">
+                {GUIDE_LINKS.map((g) => (
+                  <Link key={g.to} to={g.to} className="hover:text-primary-foreground">
+                    {g.label}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </footer>
