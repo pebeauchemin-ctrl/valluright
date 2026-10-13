@@ -131,6 +131,8 @@ export const Route = createFileRoute("/methodology")({
 function MethodologyPage() {
   return (
     <PublicPageShell
+      seoFooter
+      relatedLinksFor="/methodology"
       eyebrow="Methodology"
       title="How ValuRight values a small business"
       description="ValuRight builds a planning range for Main Street businesses using multiple methods — not a single rule of thumb. This page explains what goes into the estimate and where a CPA, broker, or appraiser still belongs. It is a software-generated planning estimate, not a certified appraisal."
@@ -156,6 +158,13 @@ function MethodologyPage() {
         <p>
           ValuRight.ai estimates a planning range for a small business or owner-operated company. It
           is intended to help owners understand value drivers, buyer risk, and exit-readiness gaps.
+        </p>
+        <p>
+          Want to see your own planning range first? Start with{" "}
+          <a href="/what-is-my-business-worth" className="font-semibold text-accent hover:underline">
+            What is my business worth?
+          </a>{" "}
+          for a free planning range.
         </p>
         <p>
           The output is not a certified appraisal, fairness opinion, tax opinion, legal opinion,

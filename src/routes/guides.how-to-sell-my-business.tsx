@@ -173,6 +173,8 @@ export const Route = createFileRoute("/guides/how-to-sell-my-business")({
 function HowToSellGuide() {
   return (
     <PublicPageShell
+      seoFooter
+      relatedLinksFor="/guides/how-to-sell-my-business"
       eyebrow="Owner’s guide"
       title="How to Sell My Business (Owner Checklist)"
       description="“How do I sell my business?” usually means three jobs at once: know a defensible range, make the company transferable, and choose a go-to-market path. This checklist is for Main Street owners — especially owners 55+ — who want to prepare before they list or take meetings."

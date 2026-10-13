@@ -4,14 +4,20 @@ import { BrandLogo } from "@/components/BrandLogo";
 import { PlanComparisonMatrix } from "@/components/PlanComparisonMatrix";
 import { COMMERCIAL_PLANS } from "@/lib/commercial-model";
 import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
+import { FooterEntityLine, FooterSeoLinks } from "@/components/SeoLinks";
+import { ENTITY, ENTITY_FIRST_SENTENCE, ENTITY_SHORT } from "@/lib/site-entity";
 
 export const Route = createFileRoute("/")({
   head: () => ({
+    meta: [
+      { name: "description", content: ENTITY_SHORT },
+      { property: "og:description", content: ENTITY },
+    ],
     links: [{ rel: "canonical", href: "https://valuright.ai/" }],
     scripts: [
       {
         type: "application/ld+json",
-        children: '{"@context": "https://schema.org", "@graph": [{"@type": "Organization", "@id": "https://valuright.ai/#organization", "name": "ValuRight", "url": "https://valuright.ai/", "logo": "https://valuright.ai/favicon.svg", "description": "Exit-readiness and business valuation software for Main Street owners preparing to retire or sell. Planning estimates, not certified appraisals."}, {"@type": "WebSite", "@id": "https://valuright.ai/#website", "url": "https://valuright.ai/", "name": "ValuRight", "publisher": {"@id": "https://valuright.ai/#organization"}, "potentialAction": {"@type": "ReadAction", "target": "https://valuright.ai/what-is-my-business-worth"}}]}',
+        children: '{"@context": "https://schema.org", "@graph": [{"@type": "Organization", "@id": "https://valuright.ai/#organization", "name": "ValuRight", "url": "https://valuright.ai/", "logo": "https://valuright.ai/favicon.svg", "description": '+JSON.stringify(ENTITY)+'}, {"@type": "WebSite", "@id": "https://valuright.ai/#website", "url": "https://valuright.ai/", "name": "ValuRight", "publisher": {"@id": "https://valuright.ai/#organization"}, "potentialAction": {"@type": "ReadAction", "target": "https://valuright.ai/what-is-my-business-worth"}}]}',
       },
     ],
   }),
@@ -24,12 +30,12 @@ function Landing() {
       <header className="border-b border-border/60 bg-background/80 backdrop-blur sticky top-0 z-50">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <Link to="/" className="flex items-center gap-2">
-            <BrandLogo size={40} withTagline />
+            <BrandLogo size={40} withTagline tagline={ENTITY_FIRST_SENTENCE} />
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
             <a href="#how-it-works" className="hover:text-foreground transition">How it works</a>
             <a href="#pricing" className="hover:text-foreground transition">Pricing</a>
-            <Link to="/what-is-my-business-worth" className="hover:text-foreground transition">Worth?</Link>
+            <Link to="/what-is-my-business-worth" className="hover:text-foreground transition"><span className="lg:hidden">Business worth</span><span className="hidden lg:inline">What&apos;s my business worth?</span></Link>
             <Link to="/guides" className="hover:text-foreground transition">Guides</Link>
             <Link to="/methodology" className="hover:text-foreground transition">Methodology</Link>
             <Link to="/demo" onClick={trackDemoClick} className="hover:text-foreground transition">See a sample</Link>
@@ -69,6 +75,14 @@ function Landing() {
                   See a sample
                 </Link>
               </div>
+              <p className="mt-4 text-sm text-muted-foreground">
+                Worth by industry:{" "}
+                <a href="/what-is-my-rv-park-worth" className="font-semibold text-accent hover:underline">RV park</a>{" · "}
+                <a href="/what-is-my-hvac-business-worth" className="font-semibold text-accent hover:underline">HVAC</a>{" · "}
+                <a href="/what-is-my-dental-practice-worth" className="font-semibold text-accent hover:underline">Dental practice</a>
+                {" · "}
+                <a href="/guides/exit-readiness" className="font-semibold text-accent hover:underline">Exit readiness &amp; Health Score guide</a>
+              </p>
               <p className="mt-5 text-xs text-muted-foreground">Software-generated planning estimate — not a certified appraisal.</p>
             </div>
 
@@ -95,7 +109,7 @@ function Landing() {
           <div className="text-center mb-14"><p className="text-sm font-semibold uppercase tracking-wider text-accent">How it works</p><h2 className="mt-2 font-display text-4xl font-semibold text-primary">Three steps to a confident exit</h2></div>
           <div className="grid md:grid-cols-3 gap-8">
             <Step n="1" title="Tell us about your business" desc="Industry, owner involvement, customers, and three years of financials. Takes about 15 minutes." />
-            <Step n="2" title="See your value range" desc={<>Seven valuation methods, a <Link to="/guides/owner-dependence" className="font-semibold text-accent hover:underline">Health Score</Link> out of 100, and a clear picture of what buyers will care about — including <Link to="/guides/owner-dependence" className="font-semibold text-accent hover:underline">owner dependence</Link> risks.</>} />
+            <Step n="2" title="See your value range" desc={<>Seven valuation methods, a <Link to="/guides/exit-readiness" className="font-semibold text-accent hover:underline">Health Score</Link> out of 100, and a clear picture of what buyers will care about — including <Link to="/guides/owner-dependence" className="font-semibold text-accent hover:underline">owner dependence</Link> risks.</>} />
             <Step n="3" title="Improve exit readiness" desc="Prioritized recommendations and a what-if builder that shows how each change may affect the planning range." />
           </div>
         </div>
@@ -128,7 +142,7 @@ function Landing() {
       <footer className="border-t border-border/60 bg-primary text-primary-foreground">
         <div className="mx-auto max-w-7xl px-6 py-12">
           <div className="flex flex-col md:flex-row justify-between gap-8">
-            <div><BrandLogo size={36} variant="onDark" /><p className="mt-3 text-sm text-primary-foreground/70 max-w-md">Helping business owners 55+ get the value they've built.</p></div>
+            <div><BrandLogo size={36} variant="onDark" /><FooterEntityLine /></div>
             <div className="space-y-3 text-xs text-primary-foreground/60 max-w-md">
               ValuRight.ai outputs are software-generated planning estimates. They are not certified appraisals, tax advice, legal advice, investment advice, or guaranteed sale prices.
               <div className="flex flex-wrap gap-4">
@@ -136,16 +150,10 @@ function Landing() {
                 <Link to="/terms" className="hover:text-primary-foreground">Terms</Link>
                 <Link to="/security" className="hover:text-primary-foreground">Security</Link>
                 <Link to="/methodology" className="hover:text-primary-foreground">Methodology</Link>
-                <Link to="/what-is-my-business-worth" className="hover:text-primary-foreground">What is my business worth?</Link>
+                <Link to="/what-is-my-business-worth" className="hover:text-primary-foreground">What&apos;s my business worth?</Link>
                 <Link to="/guides" className="hover:text-primary-foreground">Guides</Link>
               </div>
-              <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3">
-                <Link to="/guides/how-to-value-a-small-business" className="hover:text-primary-foreground">How to value a small business</Link>
-                <Link to="/guides/sde-explained" className="hover:text-primary-foreground">What is SDE?</Link>
-                <Link to="/guides/owner-dependence" className="hover:text-primary-foreground">Owner dependence</Link>
-                <Link to="/guides/exit-strategy-retirement" className="hover:text-primary-foreground">Exit strategy for retirement</Link>
-                <Link to="/guides/how-to-sell-my-business" className="hover:text-primary-foreground">How to sell my business</Link>
-              </div>
+              <FooterSeoLinks />
             </div>
           </div>
           <div className="mt-8 pt-6 border-t border-primary-foreground/10 text-xs text-primary-foreground/60">© {new Date().getFullYear()} ValuRight.ai. All rights reserved.</div>

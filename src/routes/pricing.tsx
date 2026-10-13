@@ -44,6 +44,7 @@ function PricingPage() {
 
   return (
     <PublicPageShell
+      seoFooter
       eyebrow="Pricing"
       title="Start with a free preview, upgrade when sharing matters"
       description="Every paid capability shown below is tied to the active subscription. Invited advisors access their owner’s review workspace for free."

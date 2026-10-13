@@ -150,6 +150,8 @@ export const Route = createFileRoute("/guides/sde-explained")({
 function SdeExplainedGuide() {
   return (
     <PublicPageShell
+      seoFooter
+      relatedLinksFor="/guides/sde-explained"
       eyebrow="Planning homework for owners 55+ — not a certified appraisal."
       title="What Is SDE (Seller’s Discretionary Earnings)?"
       description="Seller’s Discretionary Earnings (SDE) is the total financial benefit a single full-time owner-operator can take from a Main Street business in a normal year — roughly profit plus one owner’s pay and documented add-backs a buyer would accept. Get SDE wrong and every multiple that follows is wrong too."

@@ -153,6 +153,8 @@ export const Route = createFileRoute("/guides/exit-readiness")({
 function ExitReadinessGuide() {
   return (
     <PublicPageShell
+      seoFooter
+      relatedLinksFor="/guides/exit-readiness"
       eyebrow="Owner’s guide"
       title="Exit readiness and the Health Score"
       description="Exit readiness means a buyer can take over the business without the earnings, relationships, or know-how walking out with you. ValuRight’s Health Score (out of 100) is a software view of how ready your Main Street business looks for that transfer — and what may be holding your planning range down — not a certified appraisal or a guaranteed sale price."

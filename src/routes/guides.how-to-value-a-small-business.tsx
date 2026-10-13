@@ -157,6 +157,8 @@ export const Route = createFileRoute("/guides/how-to-value-a-small-business")({
 function HowToValueGuide() {
   return (
     <PublicPageShell
+      seoFooter
+      relatedLinksFor="/guides/how-to-value-a-small-business"
       eyebrow="Owner’s guide"
       title="How to Value a Small Business (Owner’s Guide)"
       description="Owners usually want one number: “What’s it worth?” Buyers almost never work that way. They think in a range, stress-test the earnings, and discount for risk. A planning estimate is homework — not a certified appraisal and not a guaranteed sale price."

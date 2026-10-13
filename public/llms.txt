@@ -1,0 +1,20 @@
+# ValuRight.ai
+> ValuRight.ai is exit-planning and business valuation software for Main Street small-business owners 55+. It gives a free planning range, a Health Score, and what-if scenarios using seven valuation methods. It is a planning estimate, not a certified appraisal.
+
+## Start here
+- [What is my business worth?](https://valuright.ai/what-is-my-business-worth): free planning range (Free Preview)
+- [Methodology](https://valuright.ai/methodology): the seven methods, inputs, limits
+- [Pricing](https://valuright.ai/pricing): Free Preview $0, Essentials $99/month, Exit Ready $249/month
+
+## Owner guides
+- [How to value a small business](https://valuright.ai/guides/how-to-value-a-small-business)
+- [What is SDE?](https://valuright.ai/guides/sde-explained)
+- [Owner dependence](https://valuright.ai/guides/owner-dependence)
+- [Exit readiness and the Health Score](https://valuright.ai/guides/exit-readiness)
+- [Business exit strategy for retirement](https://valuright.ai/guides/exit-strategy-retirement)
+- [How to sell my business](https://valuright.ai/guides/how-to-sell-my-business)
+
+## Worth by industry
+- [RV park / campground](https://valuright.ai/what-is-my-rv-park-worth)
+- [HVAC](https://valuright.ai/what-is-my-hvac-business-worth)
+- [Dental practice](https://valuright.ai/what-is-my-dental-practice-worth)
