@@ -2,24 +2,15 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { trackSignupStart } from "@/lib/marketing-analytics";
 import { ArrowRight } from "lucide-react";
 import { LegalSection, PublicPageShell } from "@/components/PublicPageShell";
+import { ORGANIZATION_REF } from "@/lib/site-entity";
 
 const articleLd = {
   "@context": "https://schema.org",
   "@type": "Article",
   "headline": "How ValuRight Values a Small Business",
   "description": "How ValuRight builds a planning range for Main Street businesses using seven valuation methods — not a certified appraisal. See inputs, methods, and limitations.",
-  "author": {
-    "@type": "Organization",
-    "name": "ValuRight"
-  },
-  "publisher": {
-    "@type": "Organization",
-    "name": "ValuRight",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://valuright.ai/favicon.svg"
-    }
-  },
+  "author": ORGANIZATION_REF,
+  "publisher": ORGANIZATION_REF,
   "mainEntityOfPage": "https://valuright.ai/methodology",
   "datePublished": "2026-09-15",
   "dateModified": "2026-09-22"

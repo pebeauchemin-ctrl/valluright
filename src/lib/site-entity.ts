@@ -48,3 +48,97 @@ export const FOOTER_INDUSTRY_LINKS: SiteLink[] = [
   { href: "/what-is-my-hvac-business-worth", label: "HVAC business worth" },
   { href: "/what-is-my-dental-practice-worth", label: "Dental practice worth" },
 ];
+
+// ---------------------------------------------------------------------------
+// Sitewide entity schema (SEO item 4). One Organization + one Person node,
+// identical on every page; pages reference them by @id.
+// ---------------------------------------------------------------------------
+
+export const SITE_URL = "https://valuright.ai/";
+export const ORGANIZATION_ID = "https://valuright.ai/#organization";
+export const FOUNDER_ID = "https://valuright.ai/#founder";
+export const LOGO_URL = "https://valuright.ai/logo.png";
+
+/**
+ * Single shared sameAs list. Append the LinkedIn company page (item 5) and
+ * directory listings (item 7) here once they are live. No placeholder URLs.
+ */
+export const SAME_AS: string[] = ["https://www.linkedin.com/in/paulbeauchemin1"];
+
+/** Reference to the sitewide Organization, for publisher/author fields. */
+export const ORGANIZATION_REF = { "@id": ORGANIZATION_ID } as const;
+
+export const ORGANIZATION_NODE = {
+  "@type": "Organization",
+  "@id": ORGANIZATION_ID,
+  name: "ValuRight.ai",
+  alternateName: "ValuRight",
+  url: SITE_URL,
+  logo: {
+    "@type": "ImageObject",
+    "@id": "https://valuright.ai/#logo",
+    url: LOGO_URL,
+    width: 512,
+    height: 512,
+  },
+  description: ENTITY,
+  founder: { "@id": FOUNDER_ID },
+  sameAs: SAME_AS,
+};
+
+export const FOUNDER_NODE = {
+  "@type": "Person",
+  "@id": FOUNDER_ID,
+  name: "Paul Beauchemin",
+  jobTitle: "Founder",
+  worksFor: ORGANIZATION_REF,
+  sameAs: SAME_AS,
+};
+
+/** JSON-LD graph rendered once on every page (from the root route). */
+export const SITE_ENTITY_JSON_LD = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [ORGANIZATION_NODE, FOUNDER_NODE],
+});
+
+/** Monthly plan offers; prices come from the commercial model (no ratings/reviews). */
+export function buildSoftwareApplicationNode(
+  plans: { name: string; price: string; sub: string }[],
+  freeName: string,
+) {
+  const pricingUrl = "https://valuright.ai/pricing";
+  return {
+    "@type": "SoftwareApplication",
+    "@id": "https://valuright.ai/#software",
+    name: "ValuRight.ai",
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web",
+    url: SITE_URL,
+    description: ENTITY,
+    publisher: ORGANIZATION_REF,
+    offers: [
+      { "@type": "Offer", name: freeName, price: "0", priceCurrency: "USD", url: pricingUrl },
+      ...plans.map((plan) => {
+        const price = plan.price.replace(/[^0-9.]/g, "");
+        return {
+          "@type": "Offer",
+          name: plan.name,
+          price,
+          priceCurrency: "USD",
+          url: pricingUrl,
+          ...(plan.sub === "/month"
+            ? {
+                priceSpecification: {
+                  "@type": "UnitPriceSpecification",
+                  price,
+                  priceCurrency: "USD",
+                  billingDuration: "P1M",
+                  unitText: "month",
+                },
+              }
+            : {}),
+        };
+      }),
+    ],
+  };
+}

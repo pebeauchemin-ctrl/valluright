@@ -3,24 +3,15 @@ import { ArrowRight } from "lucide-react";
 import { LegalSection, PublicPageShell } from "@/components/PublicPageShell";
 import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
+import { ORGANIZATION_REF } from "@/lib/site-entity";
 
 const articleLd = {
   "@context": "https://schema.org",
   "@type": "Article",
   "headline": "How to Sell My Business (Owner Checklist)",
   "description": "A practical checklist to prepare and sell a small business — clean numbers, reduce owner dependence, and know your planning range before you go to market.",
-  "author": {
-    "@type": "Organization",
-    "name": "ValuRight"
-  },
-  "publisher": {
-    "@type": "Organization",
-    "name": "ValuRight",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://valuright.ai/favicon.svg"
-    }
-  },
+  "author": ORGANIZATION_REF,
+  "publisher": ORGANIZATION_REF,
   "mainEntityOfPage": "https://valuright.ai/guides/how-to-sell-my-business",
   "datePublished": "2026-09-15",
   "dateModified": "2026-09-22"

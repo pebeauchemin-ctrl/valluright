@@ -7,6 +7,7 @@ import { ArrowRight, Check } from "lucide-react";
 import { PublicPageShell } from "@/components/PublicPageShell";
 import { PlanComparisonMatrix } from "@/components/PlanComparisonMatrix";
 import { COMMERCIAL_PLANS, FREE_TRIAL_LIMITS, buyerTeaserPolicy } from "@/lib/commercial-model";
+import { SOFTWARE_APPLICATION_NODE } from "@/lib/software-application-ld";
 import { trackPlanViewed, trackSignupStart } from "@/lib/marketing-analytics";
 
 export const Route = createFileRoute("/pricing")({
@@ -17,6 +18,15 @@ export const Route = createFileRoute("/pricing")({
         name: "description",
         content:
           "ValuRight.ai pricing plans for business owners preparing a business for sale.",
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [SOFTWARE_APPLICATION_NODE],
+        }),
       },
     ],
   }),

@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { LegalSection, PublicPageShell } from "@/components/PublicPageShell";
 import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
+import { ORGANIZATION_REF } from "@/lib/site-entity";
 
 const articleLd = {
   "@context": "https://schema.org",
@@ -10,12 +11,8 @@ const articleLd = {
   headline: "What Is SDE (Seller’s Discretionary Earnings)?",
   description:
     "Seller’s Discretionary Earnings (SDE) is the total financial benefit a single full-time owner-operator can take from a Main Street business in a normal year. See the formula, an illustrative example, and how it differs from EBITDA.",
-  author: { "@type": "Organization", name: "ValuRight" },
-  publisher: {
-    "@type": "Organization",
-    name: "ValuRight",
-    logo: { "@type": "ImageObject", url: "https://valuright.ai/favicon.svg" },
-  },
+  author: ORGANIZATION_REF,
+  publisher: ORGANIZATION_REF,
   mainEntityOfPage: "https://valuright.ai/guides/sde-explained",
   datePublished: "2026-09-15",
   dateModified: "2026-09-17",

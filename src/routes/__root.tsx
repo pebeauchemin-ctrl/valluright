@@ -14,6 +14,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { recordPublicClientEvent } from "@/lib/observability.functions";
 import { GTM_CONTAINER_ID, GTM_HEAD_SCRIPT } from "@/lib/marketing-analytics";
 
+import { SITE_ENTITY_JSON_LD } from "@/lib/site-entity";
+
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -147,10 +149,15 @@ export const Route = createRootRoute({
       },
       { rel: "stylesheet", href: appCss },
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+      { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
     ],
     scripts: [
       {
         children: GTM_HEAD_SCRIPT,
+      },
+      {
+        type: "application/ld+json",
+        children: SITE_ENTITY_JSON_LD,
       },
     ],
   }),

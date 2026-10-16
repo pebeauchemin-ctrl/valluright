@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { LegalSection, PublicPageShell } from "@/components/PublicPageShell";
 import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
+import { ORGANIZATION_REF } from "@/lib/site-entity";
 
 const articleLd = {
   "@context": "https://schema.org",
@@ -10,12 +11,8 @@ const articleLd = {
   headline: "Owner Dependence: Why Buyers Discount Your Business",
   description:
     "Owner dependence means the business still needs the owner’s hours, relationships, or know-how to produce the earnings a buyer is paying for. Buyers discount, stretch the transition, or walk when that is true.",
-  author: { "@type": "Organization", name: "ValuRight" },
-  publisher: {
-    "@type": "Organization",
-    name: "ValuRight",
-    logo: { "@type": "ImageObject", url: "https://valuright.ai/favicon.svg" },
-  },
+  author: ORGANIZATION_REF,
+  publisher: ORGANIZATION_REF,
   mainEntityOfPage: "https://valuright.ai/guides/owner-dependence",
   datePublished: "2026-09-09",
   dateModified: "2026-09-22",
