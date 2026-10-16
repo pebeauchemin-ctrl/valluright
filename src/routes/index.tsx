@@ -5,7 +5,8 @@ import { PlanComparisonMatrix } from "@/components/PlanComparisonMatrix";
 import { COMMERCIAL_PLANS } from "@/lib/commercial-model";
 import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 import { FooterEntityLine, FooterSeoLinks } from "@/components/SeoLinks";
-import { ENTITY, ENTITY_FIRST_SENTENCE, ENTITY_SHORT } from "@/lib/site-entity";
+import { ENTITY, ENTITY_FIRST_SENTENCE, ENTITY_SHORT, ORGANIZATION_REF } from "@/lib/site-entity";
+import { SOFTWARE_APPLICATION_NODE } from "@/lib/software-application-ld";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -17,7 +18,20 @@ export const Route = createFileRoute("/")({
     scripts: [
       {
         type: "application/ld+json",
-        children: '{"@context": "https://schema.org", "@graph": [{"@type": "Organization", "@id": "https://valuright.ai/#organization", "name": "ValuRight", "url": "https://valuright.ai/", "logo": "https://valuright.ai/favicon.svg", "description": '+JSON.stringify(ENTITY)+'}, {"@type": "WebSite", "@id": "https://valuright.ai/#website", "url": "https://valuright.ai/", "name": "ValuRight", "publisher": {"@id": "https://valuright.ai/#organization"}, "potentialAction": {"@type": "ReadAction", "target": "https://valuright.ai/what-is-my-business-worth"}}]}',
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "WebSite",
+              "@id": "https://valuright.ai/#website",
+              url: "https://valuright.ai/",
+              name: "ValuRight.ai",
+              publisher: ORGANIZATION_REF,
+              potentialAction: { "@type": "ReadAction", target: "https://valuright.ai/what-is-my-business-worth" },
+            },
+            SOFTWARE_APPLICATION_NODE,
+          ],
+        }),
       },
     ],
   }),

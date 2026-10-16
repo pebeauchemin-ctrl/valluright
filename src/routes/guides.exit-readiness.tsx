@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { LegalSection, PublicPageShell } from "@/components/PublicPageShell";
 import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
+import { ORGANIZATION_REF } from "@/lib/site-entity";
 
 const articleLd = {
   "@context": "https://schema.org",
@@ -10,12 +11,8 @@ const articleLd = {
   headline: "Exit readiness and the Health Score",
   description:
     "How to know if your Main Street business is ready to sell — what ValuRight’s Health Score measures, why buyers care, and how to improve before you list.",
-  author: { "@type": "Organization", name: "ValuRight" },
-  publisher: {
-    "@type": "Organization",
-    name: "ValuRight",
-    logo: { "@type": "ImageObject", url: "https://valuright.ai/favicon.svg" },
-  },
+  author: ORGANIZATION_REF,
+  publisher: ORGANIZATION_REF,
   mainEntityOfPage: "https://valuright.ai/guides/exit-readiness",
   datePublished: "2026-09-21",
   dateModified: "2026-09-22",

@@ -4,6 +4,7 @@ import { BrandLogo } from "@/components/BrandLogo";
 import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 import { FooterEntityLine, FooterSeoLinks, RelatedLinksBlock } from "@/components/SeoLinks";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
+import { ORGANIZATION_REF } from "@/lib/site-entity";
 
 const webPageLd = {
   "@context": "https://schema.org",
@@ -15,12 +16,8 @@ const webPageLd = {
   url: "https://valuright.ai/what-is-my-rv-park-worth",
   datePublished: "2026-09-21",
   dateModified: "2026-09-21",
-  author: { "@type": "Organization", name: "ValuRight" },
-  publisher: {
-    "@type": "Organization",
-    name: "ValuRight",
-    logo: { "@type": "ImageObject", url: "https://valuright.ai/favicon.svg" },
-  },
+  author: ORGANIZATION_REF,
+  publisher: ORGANIZATION_REF,
   mainEntityOfPage: "https://valuright.ai/what-is-my-rv-park-worth",
   about: {
     "@type": "Thing",

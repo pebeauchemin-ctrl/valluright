@@ -4,12 +4,12 @@ type Props = {
   className?: string;
   /** Show the wordmark "valuright.ai" next to the mark */
   withWordmark?: boolean;
-  /** Show the "SMB EXIT GUIDE" tagline under the wordmark */
+  /** Show the tagline (default "ValuRight.ai") under the wordmark */
   withTagline?: boolean;
   /** Force a monochrome variant useful on dark sidebar surfaces */
   variant?: "color" | "onDark" | "mono";
   size?: number;
-  /** Override the tagline text (normal case, wraps). Defaults to "SMB Exit Guide". */
+  /** Override the tagline text (normal case, wraps). Defaults to "ValuRight.ai". */
   tagline?: string;
 };
 
@@ -51,10 +51,10 @@ export function BrandLogo({
           )}
           {withTagline && !tagline && (
             <span
-              className="font-display font-medium uppercase tracking-[0.22em] text-accent mt-1"
-              style={{ fontSize: Math.max(8, size * 0.22) }}
+              className="font-display font-medium tracking-[0.08em] text-accent mt-1"
+              style={{ fontSize: Math.max(8, size * 0.24) }}
             >
-              SMB Exit Guide
+              ValuRight.ai
             </span>
           )}
         </span>

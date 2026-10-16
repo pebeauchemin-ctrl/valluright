@@ -4,6 +4,7 @@ import { BrandLogo } from "@/components/BrandLogo";
 import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 import { FooterEntityLine, FooterSeoLinks, RelatedLinksBlock } from "@/components/SeoLinks";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
+import { ORGANIZATION_REF } from "@/lib/site-entity";
 
 const PAGE_URL = "https://valuright.ai/what-is-my-dental-practice-worth";
 const PAGE_TITLE = "What Is My Dental Practice Worth? Free Planning Range | ValuRight";
@@ -55,12 +56,8 @@ const webPageLd = {
   url: PAGE_URL,
   datePublished: "2026-10-07",
   dateModified: "2026-10-07",
-  author: { "@type": "Organization", name: "ValuRight" },
-  publisher: {
-    "@type": "Organization",
-    name: "ValuRight",
-    logo: { "@type": "ImageObject", url: "https://valuright.ai/favicon.svg" },
-  },
+  author: ORGANIZATION_REF,
+  publisher: ORGANIZATION_REF,
   mainEntityOfPage: PAGE_URL,
   about: { "@type": "Thing", name: "Dental practice valuation planning estimate" },
 };

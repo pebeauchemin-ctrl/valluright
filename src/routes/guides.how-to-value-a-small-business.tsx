@@ -3,24 +3,15 @@ import { ArrowRight } from "lucide-react";
 import { LegalSection, PublicPageShell } from "@/components/PublicPageShell";
 import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
+import { ORGANIZATION_REF } from "@/lib/site-entity";
 
 const articleLd = {
   "@context": "https://schema.org",
   "@type": "Article",
   "headline": "How to Value a Small Business (Owner’s Guide)",
   "description": "Learn how Main Street buyers price a small business — SDE, multiples, and what moves the range. Then run a free ValuRight planning estimate.",
-  "author": {
-    "@type": "Organization",
-    "name": "ValuRight"
-  },
-  "publisher": {
-    "@type": "Organization",
-    "name": "ValuRight",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://valuright.ai/favicon.svg"
-    }
-  },
+  "author": ORGANIZATION_REF,
+  "publisher": ORGANIZATION_REF,
   "mainEntityOfPage": "https://valuright.ai/guides/how-to-value-a-small-business",
   "datePublished": "2026-09-09",
   "dateModified": "2026-09-22"

@@ -4,6 +4,7 @@ import { BrandLogo } from "@/components/BrandLogo";
 import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 import { FooterEntityLine, FooterSeoLinks, RelatedLinksBlock } from "@/components/SeoLinks";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
+import { ORGANIZATION_REF } from "@/lib/site-entity";
 
 const articleLd = {
   "@context": "https://schema.org",
@@ -11,12 +12,8 @@ const articleLd = {
   headline: "What Is My Business Worth? Get a Free Planning Range",
   description:
     "Your business is worth a planning range, not one napkin number. ValuRight Free Preview estimates a multi-method planning range in about 15 minutes for Main Street owners 55+.",
-  author: { "@type": "Organization", name: "ValuRight" },
-  publisher: {
-    "@type": "Organization",
-    name: "ValuRight",
-    logo: { "@type": "ImageObject", url: "https://valuright.ai/favicon.svg" },
-  },
+  author: ORGANIZATION_REF,
+  publisher: ORGANIZATION_REF,
   mainEntityOfPage: "https://valuright.ai/what-is-my-business-worth",
   datePublished: "2026-09-09",
   dateModified: "2026-09-17",
