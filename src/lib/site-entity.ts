@@ -60,10 +60,16 @@ export const FOUNDER_ID = "https://valuright.ai/#founder";
 export const LOGO_URL = "https://valuright.ai/logo.png";
 
 /**
- * Single shared sameAs list. Append the LinkedIn company page (item 5) and
- * directory listings (item 7) here once they are live. No placeholder URLs.
+ * Organization sameAs: personal profile + company page. Append directory
+ * listings (item 7) here once they are live. No placeholder URLs.
  */
-export const SAME_AS: string[] = ["https://www.linkedin.com/in/paulbeauchemin1"];
+export const ORG_SAME_AS: string[] = [
+  "https://www.linkedin.com/in/paulbeauchemin1",
+  "https://www.linkedin.com/company/valuright-ai/",
+];
+
+/** Person sameAs: founder personal profile only (not the company page). */
+export const PERSON_SAME_AS: string[] = ["https://www.linkedin.com/in/paulbeauchemin1"];
 
 /** Reference to the sitewide Organization, for publisher/author fields. */
 export const ORGANIZATION_REF = { "@id": ORGANIZATION_ID } as const;
@@ -83,7 +89,7 @@ export const ORGANIZATION_NODE = {
   },
   description: ENTITY,
   founder: { "@id": FOUNDER_ID },
-  sameAs: SAME_AS,
+  sameAs: ORG_SAME_AS,
 };
 
 export const FOUNDER_NODE = {
@@ -92,7 +98,7 @@ export const FOUNDER_NODE = {
   name: "Paul Beauchemin",
   jobTitle: "Founder",
   worksFor: ORGANIZATION_REF,
-  sameAs: SAME_AS,
+  sameAs: PERSON_SAME_AS,
 };
 
 /** JSON-LD graph rendered once on every page (from the root route). */
