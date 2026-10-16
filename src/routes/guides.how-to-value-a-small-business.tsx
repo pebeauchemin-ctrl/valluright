@@ -203,7 +203,11 @@ function HowToValueGuide() {
           A single rule of thumb is fragile. ValuRight blends several methods — including SDE and
           EBITDA multiples, revenue sanity checks, simplified DCF, asset-based floor, comparable-sales
           context, and cap rate / NOI when the business is income-property oriented (for example RV
-          parks and campgrounds) — into a planning range with confidence notes.
+          parks and campgrounds) — into a planning range with confidence notes. Own a park? Here's{" "}
+          <Link to="/what-is-my-rv-park-worth" className="font-semibold text-accent hover:underline">
+            how to value an RV park or campground
+          </Link>
+          , step by step.
         </p>
       </LegalSection>
 

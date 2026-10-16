@@ -227,7 +227,11 @@ function MethodologyPage() {
         <p>
           Cap rate / income approach: stabilized NOI divided by a selected cap rate. This is used
           for income-producing real estate or property operating businesses such as RV parks and
-          campgrounds.
+          campgrounds. For a park owner's walkthrough, see{" "}
+          <Link to="/what-is-my-rv-park-worth" className="font-semibold text-accent hover:underline">
+            how to value an RV park or campground
+          </Link>
+          .
         </p>
       </LegalSection>
 
