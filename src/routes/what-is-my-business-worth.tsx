@@ -576,6 +576,13 @@ function WorthLanding() {
             </Link>
           </div>
           <p className="mt-6 text-sm text-muted-foreground">
+            Own an{" "}
+            <Link to="/what-is-my-rv-park-worth" className="font-semibold text-accent hover:underline">
+              RV park or campground
+            </Link>
+            ? See how parks are valued, step by step.
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground">
             HVAC or heating &amp; cooling? See{" "}
             <Link to="/what-is-my-hvac-business-worth" className="font-semibold text-accent hover:underline">
               What is my HVAC business worth?
