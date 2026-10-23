@@ -344,6 +344,13 @@ function HvacWorthLanding() {
               not in the truck or on the phone.
             </li>
           </ol>
+          <p className="mt-4 text-muted-foreground leading-relaxed">
+            Run mostly plumbing? See{" "}
+            <Link to="/what-is-my-plumbing-business-worth" className="font-semibold text-accent hover:underline">
+              what a plumbing business is worth
+            </Link>
+            .
+          </p>
 
           <h3 className="mt-10 font-display text-2xl font-semibold text-primary">
             When SDE is the right starting point

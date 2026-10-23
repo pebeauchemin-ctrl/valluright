@@ -51,6 +51,11 @@ const GUIDES = [
     blurb: "Free planning range for owner-dentists (tool page)",
   },
   {
+    to: "/what-is-my-plumbing-business-worth" as const,
+    title: "What is my plumbing business worth?",
+    blurb: "Free planning range for plumbing owners (tool page)",
+  },
+  {
     to: "/guides/how-to-value-a-small-business" as const,
     title: "How to value a small business",
     blurb: "SDE, multiples, and what moves the range",

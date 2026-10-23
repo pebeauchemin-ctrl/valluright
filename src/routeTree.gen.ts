@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WhatIsMyRvParkWorthRouteImport } from './routes/what-is-my-rv-park-worth'
+import { Route as WhatIsMyPlumbingBusinessWorthRouteImport } from './routes/what-is-my-plumbing-business-worth'
 import { Route as WhatIsMyHvacBusinessWorthRouteImport } from './routes/what-is-my-hvac-business-worth'
 import { Route as WhatIsMyDentalPracticeWorthRouteImport } from './routes/what-is-my-dental-practice-worth'
 import { Route as WhatIsMyBusinessWorthRouteImport } from './routes/what-is-my-business-worth'
@@ -60,6 +61,12 @@ const WhatIsMyRvParkWorthRoute = WhatIsMyRvParkWorthRouteImport.update({
   path: '/what-is-my-rv-park-worth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WhatIsMyPlumbingBusinessWorthRoute =
+  WhatIsMyPlumbingBusinessWorthRouteImport.update({
+    id: '/what-is-my-plumbing-business-worth',
+    path: '/what-is-my-plumbing-business-worth',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const WhatIsMyHvacBusinessWorthRoute =
   WhatIsMyHvacBusinessWorthRouteImport.update({
     id: '/what-is-my-hvac-business-worth',
@@ -305,6 +312,7 @@ export interface FileRoutesByFullPath {
   '/what-is-my-business-worth': typeof WhatIsMyBusinessWorthRoute
   '/what-is-my-dental-practice-worth': typeof WhatIsMyDentalPracticeWorthRoute
   '/what-is-my-hvac-business-worth': typeof WhatIsMyHvacBusinessWorthRoute
+  '/what-is-my-plumbing-business-worth': typeof WhatIsMyPlumbingBusinessWorthRoute
   '/what-is-my-rv-park-worth': typeof WhatIsMyRvParkWorthRoute
   '/app/advisors': typeof AppAdvisorsRoute
   '/app/buyer-requests': typeof AppBuyerRequestsRoute
@@ -350,6 +358,7 @@ export interface FileRoutesByTo {
   '/what-is-my-business-worth': typeof WhatIsMyBusinessWorthRoute
   '/what-is-my-dental-practice-worth': typeof WhatIsMyDentalPracticeWorthRoute
   '/what-is-my-hvac-business-worth': typeof WhatIsMyHvacBusinessWorthRoute
+  '/what-is-my-plumbing-business-worth': typeof WhatIsMyPlumbingBusinessWorthRoute
   '/what-is-my-rv-park-worth': typeof WhatIsMyRvParkWorthRoute
   '/app/advisors': typeof AppAdvisorsRoute
   '/app/buyer-requests': typeof AppBuyerRequestsRoute
@@ -398,6 +407,7 @@ export interface FileRoutesById {
   '/what-is-my-business-worth': typeof WhatIsMyBusinessWorthRoute
   '/what-is-my-dental-practice-worth': typeof WhatIsMyDentalPracticeWorthRoute
   '/what-is-my-hvac-business-worth': typeof WhatIsMyHvacBusinessWorthRoute
+  '/what-is-my-plumbing-business-worth': typeof WhatIsMyPlumbingBusinessWorthRoute
   '/what-is-my-rv-park-worth': typeof WhatIsMyRvParkWorthRoute
   '/app/advisors': typeof AppAdvisorsRoute
   '/app/buyer-requests': typeof AppBuyerRequestsRoute
@@ -447,6 +457,7 @@ export interface FileRouteTypes {
     | '/what-is-my-business-worth'
     | '/what-is-my-dental-practice-worth'
     | '/what-is-my-hvac-business-worth'
+    | '/what-is-my-plumbing-business-worth'
     | '/what-is-my-rv-park-worth'
     | '/app/advisors'
     | '/app/buyer-requests'
@@ -492,6 +503,7 @@ export interface FileRouteTypes {
     | '/what-is-my-business-worth'
     | '/what-is-my-dental-practice-worth'
     | '/what-is-my-hvac-business-worth'
+    | '/what-is-my-plumbing-business-worth'
     | '/what-is-my-rv-park-worth'
     | '/app/advisors'
     | '/app/buyer-requests'
@@ -539,6 +551,7 @@ export interface FileRouteTypes {
     | '/what-is-my-business-worth'
     | '/what-is-my-dental-practice-worth'
     | '/what-is-my-hvac-business-worth'
+    | '/what-is-my-plumbing-business-worth'
     | '/what-is-my-rv-park-worth'
     | '/app/advisors'
     | '/app/buyer-requests'
@@ -587,6 +600,7 @@ export interface RootRouteChildren {
   WhatIsMyBusinessWorthRoute: typeof WhatIsMyBusinessWorthRoute
   WhatIsMyDentalPracticeWorthRoute: typeof WhatIsMyDentalPracticeWorthRoute
   WhatIsMyHvacBusinessWorthRoute: typeof WhatIsMyHvacBusinessWorthRoute
+  WhatIsMyPlumbingBusinessWorthRoute: typeof WhatIsMyPlumbingBusinessWorthRoute
   WhatIsMyRvParkWorthRoute: typeof WhatIsMyRvParkWorthRoute
   TeaserPublicIdRoute: typeof TeaserPublicIdRoute
   ApiPublicQuickbooksCallbackRoute: typeof ApiPublicQuickbooksCallbackRoute
@@ -601,6 +615,13 @@ declare module '@tanstack/react-router' {
       path: '/what-is-my-rv-park-worth'
       fullPath: '/what-is-my-rv-park-worth'
       preLoaderRoute: typeof WhatIsMyRvParkWorthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/what-is-my-plumbing-business-worth': {
+      id: '/what-is-my-plumbing-business-worth'
+      path: '/what-is-my-plumbing-business-worth'
+      fullPath: '/what-is-my-plumbing-business-worth'
+      preLoaderRoute: typeof WhatIsMyPlumbingBusinessWorthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/what-is-my-hvac-business-worth': {
@@ -1004,6 +1025,7 @@ const rootRouteChildren: RootRouteChildren = {
   WhatIsMyBusinessWorthRoute: WhatIsMyBusinessWorthRoute,
   WhatIsMyDentalPracticeWorthRoute: WhatIsMyDentalPracticeWorthRoute,
   WhatIsMyHvacBusinessWorthRoute: WhatIsMyHvacBusinessWorthRoute,
+  WhatIsMyPlumbingBusinessWorthRoute: WhatIsMyPlumbingBusinessWorthRoute,
   WhatIsMyRvParkWorthRoute: WhatIsMyRvParkWorthRoute,
   TeaserPublicIdRoute: TeaserPublicIdRoute,
   ApiPublicQuickbooksCallbackRoute: ApiPublicQuickbooksCallbackRoute,

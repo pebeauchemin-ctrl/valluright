@@ -208,7 +208,11 @@ function HowToValueGuide() {
           <Link to="/what-is-my-rv-park-worth" className="font-semibold text-accent hover:underline">
             how to value an RV park or campground
           </Link>
-          , step by step.
+          , step by step. For trade-specific examples, see{" "}
+          <Link to="/what-is-my-plumbing-business-worth" className="font-semibold text-accent hover:underline">
+            how a plumbing business is valued
+          </Link>
+          .
         </p>
       </LegalSection>
 
