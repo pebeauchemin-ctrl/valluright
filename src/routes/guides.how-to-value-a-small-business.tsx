@@ -211,6 +211,10 @@ function HowToValueGuide() {
           , step by step. For trade-specific examples, see{" "}
           <Link to="/what-is-my-plumbing-business-worth" className="font-semibold text-accent hover:underline">
             how a plumbing business is valued
+          </Link>{" "}
+          or{" "}
+          <Link to="/what-is-my-landscaping-business-worth" className="font-semibold text-accent hover:underline">
+            how a landscaping business is valued
           </Link>
           .
         </p>

@@ -172,6 +172,14 @@ function OwnerDependenceGuide() {
           None of these require a made-up “typical discount %.” Diligence is case-by-case. What
           matters for planning: high owner dependence thins the buyer pool and invites tougher terms.
         </p>
+        <p>
+          In landscaping and lawn care, buyers check whether crews and routes keep running without the
+          owner on a mower. See{" "}
+          <Link to="/what-is-my-landscaping-business-worth" className="font-semibold text-accent hover:underline">
+            what a landscaping business is worth
+          </Link>
+          .
+        </p>
       </LegalSection>
 
       <LegalSection title="Self-check: is the business still a job you own?">

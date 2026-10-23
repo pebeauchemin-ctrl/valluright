@@ -56,6 +56,11 @@ const GUIDES = [
     blurb: "Free planning range for plumbing owners (tool page)",
   },
   {
+    to: "/what-is-my-landscaping-business-worth" as const,
+    title: "What is my landscaping or lawn care business worth?",
+    blurb: "How landscaping and lawn care businesses are valued for owners 55+ (tool page)",
+  },
+  {
     to: "/guides/how-to-value-a-small-business" as const,
     title: "How to value a small business",
     blurb: "SDE, multiples, and what moves the range",
