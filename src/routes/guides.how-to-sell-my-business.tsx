@@ -14,7 +14,7 @@ const articleLd = {
   "publisher": ORGANIZATION_REF,
   "mainEntityOfPage": "https://valuright.ai/guides/how-to-sell-my-business",
   "datePublished": "2026-09-15",
-  "dateModified": "2026-09-22"
+  "dateModified": "2026-10-23"
 };
 
 const breadcrumbLd = {
@@ -169,7 +169,8 @@ function HowToSellGuide() {
       eyebrow="Owner’s guide"
       title="How to Sell My Business (Owner Checklist)"
       description="“How do I sell my business?” usually means three jobs at once: know a defensible range, make the company transferable, and choose a go-to-market path. This checklist is for Main Street owners — especially owners 55+ — who want to prepare before they list or take meetings."
-      updated="September 22, 2026"
+      answer="To sell your small business, know a defensible value range, make the company able to run without you, clean up your financials, and then choose a sale path: a business broker, a buyer you find yourself, or an insider such as family or a key employee. Do that preparation before you list or take buyer meetings."
+      updated="October 23, 2026"
     >
       <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
         This is <strong>not</strong> a “broker near me” funnel. Paths differ. Preparation does not.

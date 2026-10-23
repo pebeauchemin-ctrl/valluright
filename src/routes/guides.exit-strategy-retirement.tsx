@@ -14,7 +14,7 @@ const articleLd = {
   "publisher": ORGANIZATION_REF,
   "mainEntityOfPage": "https://valuright.ai/guides/exit-strategy-retirement",
   "datePublished": "2026-09-15",
-  "dateModified": "2026-09-22"
+  "dateModified": "2026-10-23"
 };
 
 const breadcrumbLd = {
@@ -161,7 +161,8 @@ function ExitStrategyGuide() {
       eyebrow="Owner’s guide"
       title="Business Exit Strategy for Retirement"
       description="If you are 55+ and the business still depends on you showing up, “retire someday” is not a plan — it is a hope. A practical exit strategy starts with a clear planning range, an honest look at what buyers will pay for, and enough runway to fix the risks that discount the price."
-      updated="September 22, 2026"
+      answer="A business exit strategy for retirement is a plan to sell or hand off your company on your timeline: get a planning range, fix the risks buyers discount (especially owner dependence), and pick a path such as a third-party sale, family succession, or a management or employee buyout. For owners 55+, starting early is what gives you time to fix those risks."
+      updated="October 23, 2026"
     >
       <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
         Peer-to-peer, no fake statistics: most owner-operators underestimate how long transferability
