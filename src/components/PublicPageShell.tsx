@@ -9,6 +9,8 @@ type PublicPageShellProps = {
   eyebrow: string;
   title: string;
   description: string;
+  /** Optional answer-first paragraph rendered as the first <p> after the H1. */
+  answer?: string;
   updated?: string;
   children: React.ReactNode;
   /** When set, renders the shared Related guides / By industry block (excluding this path) above the footer. */
@@ -30,6 +32,7 @@ export function PublicPageShell({
   eyebrow,
   title,
   description,
+  answer,
   updated,
   children,
   relatedLinksFor,
@@ -78,6 +81,9 @@ export function PublicPageShell({
             <h1 className="mt-3 font-display text-4xl font-semibold text-primary md:text-5xl">
               {title}
             </h1>
+            {answer && (
+              <p className="mt-4 max-w-3xl text-lg leading-relaxed text-foreground">{answer}</p>
+            )}
             <p className="mt-4 max-w-3xl text-base leading-relaxed text-muted-foreground">
               {description}
             </p>

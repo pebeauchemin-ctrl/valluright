@@ -14,7 +14,7 @@ const articleLd = {
   "publisher": ORGANIZATION_REF,
   "mainEntityOfPage": "https://valuright.ai/guides/how-to-value-a-small-business",
   "datePublished": "2026-09-09",
-  "dateModified": "2026-09-22"
+  "dateModified": "2026-10-23"
 };
 
 const breadcrumbLd = {
@@ -153,7 +153,8 @@ function HowToValueGuide() {
       eyebrow="Owner’s guide"
       title="How to Value a Small Business (Owner’s Guide)"
       description="Owners usually want one number: “What’s it worth?” Buyers almost never work that way. They think in a range, stress-test the earnings, and discount for risk. A planning estimate is homework — not a certified appraisal and not a guaranteed sale price."
-      updated="September 22, 2026"
+      answer="To value a small business, start with its owner earnings (usually seller's discretionary earnings, or SDE), apply a range of market multiples and cross-check with other methods, then adjust for risks such as owner dependence. The result is a planning range, not a single number and not a certified appraisal."
+      updated="October 23, 2026"
     >
       <LegalSection title="Pick the earnings base">
         <p>

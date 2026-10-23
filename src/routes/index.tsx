@@ -76,7 +76,7 @@ function Landing() {
                 Know Your Value.<br />Plan Your Exit.<br /><span className="text-accent">Live Your Freedom.</span>
               </h1>
               <p className="mt-6 max-w-xl text-lg text-muted-foreground leading-relaxed">
-                ValuRight.ai estimates a planning range, shows which risks may be holding the number down, and helps you improve exit readiness before you sell. Built for small-business owners — not Wall Street.
+                ValuRight.ai is free-to-start business valuation and exit-planning software: answer a few questions and get a planning range for what your small business may be worth, plus a Health Score showing what's holding the number down. Built for Main Street owners 55+, not Wall Street.
               </p>
               <p className="mt-4 max-w-xl text-base font-medium text-foreground">
                 See what your business may be worth — free planning range.
@@ -102,7 +102,8 @@ function Landing() {
 
             <div className="lg:col-span-5">
               <div className="relative rounded-2xl bg-gradient-to-br from-primary to-[oklch(0.28_0.07_250)] p-1 shadow-2xl">
-                <div className="rounded-[14px] bg-card p-6">
+                <div className="rounded-[14px] bg-card p-6" role="group" aria-label="Illustrative sample — not real data">
+                  <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Illustrative sample — not real data</p>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Estimated value range</span>
                     <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-semibold text-accent"><TrendingUp className="h-3 w-3" /> +18%</span>
