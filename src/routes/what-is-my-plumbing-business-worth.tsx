@@ -22,7 +22,7 @@ const webPageLd = {
   url: PAGE_URL,
   inLanguage: "en-US",
   datePublished: "2026-10-23",
-  dateModified: "2026-10-23",
+  dateModified: "2026-10-24",
   author: ORGANIZATION_REF,
   publisher: ORGANIZATION_REF,
   isPartOf: { "@id": "https://valuright.ai/#website" },
@@ -260,7 +260,7 @@ function PlumbingWorthLanding() {
                 certified appraisal or a guaranteed sale price.
               </p>
               <p className="mt-3 text-xs font-medium text-muted-foreground">
-                Last updated: October 23, 2026
+                Last updated: October 24, 2026
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-4">
                 <Link
