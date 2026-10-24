@@ -9,9 +9,17 @@ import {
 } from "@/lib/site-entity";
 
 /** "Related guides" + "By industry" internal-link block. Shows every link except `current`. */
-export function RelatedLinksBlock({ current }: { current: string }) {
-  const guides = RELATED_GUIDE_LINKS.filter((l) => l.href !== current);
-  const industries = INDUSTRY_WORTH_LINKS.filter((l) => l.href !== current);
+export function RelatedLinksBlock({
+  current,
+  exclude = [],
+}: {
+  current: string;
+  /** Extra hrefs to hide on this page (e.g. sibling pages not yet cross-linked). */
+  exclude?: string[];
+}) {
+  const hidden = (href: string) => href === current || exclude.includes(href);
+  const guides = RELATED_GUIDE_LINKS.filter((l) => !hidden(l.href));
+  const industries = INDUSTRY_WORTH_LINKS.filter((l) => !hidden(l.href));
   return (
     <section aria-label="Related guides" className="border-t border-border/60 bg-secondary/30">
       <div className="mx-auto grid max-w-4xl gap-8 px-6 py-10 md:grid-cols-2">

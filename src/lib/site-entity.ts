@@ -27,6 +27,7 @@ export const INDUSTRY_WORTH_LINKS: SiteLink[] = [
   { href: "/what-is-my-rv-park-worth", label: "What is my RV park or campground worth?" },
   { href: "/what-is-my-hvac-business-worth", label: "What is my HVAC business worth?" },
   { href: "/what-is-my-dental-practice-worth", label: "What is my dental practice worth?" },
+  { href: "/what-is-my-plumbing-business-worth", label: "What is my plumbing business worth?" },
 ];
 
 export const FOOTER_GUIDE_LINKS: SiteLink[] = [
@@ -47,6 +48,7 @@ export const FOOTER_INDUSTRY_LINKS: SiteLink[] = [
   { href: "/what-is-my-rv-park-worth", label: "RV park / campground worth" },
   { href: "/what-is-my-hvac-business-worth", label: "HVAC business worth" },
   { href: "/what-is-my-dental-practice-worth", label: "Dental practice worth" },
+  { href: "/what-is-my-plumbing-business-worth", label: "Plumbing business worth" },
 ];
 
 // ---------------------------------------------------------------------------
