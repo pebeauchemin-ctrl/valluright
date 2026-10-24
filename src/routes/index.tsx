@@ -94,7 +94,8 @@ function Landing() {
                 <a href="/what-is-my-rv-park-worth" className="font-semibold text-accent hover:underline">RV park</a>{" · "}
                 <a href="/what-is-my-hvac-business-worth" className="font-semibold text-accent hover:underline">HVAC</a>{" · "}
                 <a href="/what-is-my-dental-practice-worth" className="font-semibold text-accent hover:underline">Dental practice</a>{" · "}
-                <a href="/what-is-my-plumbing-business-worth" className="font-semibold text-accent hover:underline">Plumbing business worth</a>
+                <a href="/what-is-my-plumbing-business-worth" className="font-semibold text-accent hover:underline">Plumbing business worth</a>{" · "}
+                <a href="/what-is-my-landscaping-business-worth" className="font-semibold text-accent hover:underline">Landscaping &amp; lawn care worth</a>
                 {" · "}
                 <a href="/guides/exit-readiness" className="font-semibold text-accent hover:underline">Exit readiness &amp; Health Score guide</a>
               </p>

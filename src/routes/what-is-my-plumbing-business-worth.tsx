@@ -21,7 +21,7 @@ const webPageLd = {
   description: META,
   url: PAGE_URL,
   inLanguage: "en-US",
-  datePublished: "2026-10-23",
+  datePublished: "2026-10-24",
   dateModified: "2026-10-24",
   author: ORGANIZATION_REF,
   publisher: ORGANIZATION_REF,
