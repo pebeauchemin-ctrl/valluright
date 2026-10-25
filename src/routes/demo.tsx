@@ -16,6 +16,7 @@ export const Route = createFileRoute("/demo")({
       { title: "Sample Valuation — ValuRight.ai" },
       { name: "description", content: "See a sample exit-readiness report for a fictional HVAC business." },
     ],
+    links: [{ rel: "canonical", href: "https://valuright.ai/demo" }],
   }),
   component: Demo,
 });
