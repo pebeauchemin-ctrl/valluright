@@ -20,6 +20,7 @@ export const Route = createFileRoute("/pricing")({
           "ValuRight.ai pricing plans for business owners preparing a business for sale.",
       },
     ],
+    links: [{ rel: "canonical", href: "https://valuright.ai/pricing" }],
     scripts: [
       {
         type: "application/ld+json",
