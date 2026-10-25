@@ -17,6 +17,8 @@ type PublicPageShellProps = {
   relatedLinksFor?: string;
   /** Marketing footer: entity line, disclaimer, and the full SEO link set. Legal pages leave this off. */
   seoFooter?: boolean;
+  /** SEO pages: render the single above-the-fold "Free Preview" CTA in the hero. */
+  heroCta?: boolean;
 };
 
 const GUIDE_LINKS = [
@@ -37,6 +39,7 @@ export function PublicPageShell({
   children,
   relatedLinksFor,
   seoFooter = false,
+  heroCta = false,
 }: PublicPageShellProps) {
   return (
     <div className="min-h-screen bg-background">
@@ -87,6 +90,16 @@ export function PublicPageShell({
             <p className="mt-4 max-w-3xl text-base leading-relaxed text-muted-foreground">
               {description}
             </p>
+            {heroCta && (
+              <Link
+                to="/auth"
+                search={{ mode: "signup" }}
+                onClick={trackSignupStart}
+                className="mt-6 inline-flex items-center gap-2 rounded-md bg-accent px-6 py-3 text-base font-semibold text-accent-foreground shadow-md transition hover:bg-accent/90"
+              >
+                Free Preview <ArrowRight className="h-4 w-4" />
+              </Link>
+            )}
             {updated && (
               <p className="mt-4 text-xs font-medium text-muted-foreground">
                 Last updated: {updated}

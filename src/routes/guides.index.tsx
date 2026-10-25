@@ -95,6 +95,7 @@ const GUIDES = [
 function GuidesHub() {
   return (
     <PublicPageShell
+      heroCta
       seoFooter
       eyebrow="Owner’s guides"
       title="Owner guides"

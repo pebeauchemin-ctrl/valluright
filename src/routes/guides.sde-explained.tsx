@@ -147,6 +147,7 @@ export const Route = createFileRoute("/guides/sde-explained")({
 function SdeExplainedGuide() {
   return (
     <PublicPageShell
+      heroCta
       seoFooter
       relatedLinksFor="/guides/sde-explained"
       eyebrow="Planning homework for owners 55+ — not a certified appraisal."

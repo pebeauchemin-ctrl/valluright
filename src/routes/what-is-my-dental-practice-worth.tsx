@@ -112,7 +112,7 @@ const S = ({ children }: { children: React.ReactNode }) => (
   <strong className="text-foreground">{children}</strong>
 );
 
-function PrimaryCtas({ size = "lg" }: { size?: "lg" | "sm" }) {
+function PrimaryCtas({ size = "lg", label = "Start your free valuation" }: { size?: "lg" | "sm"; label?: string }) {
   const pad = size === "lg" ? "px-6 py-3 text-base" : "px-5 py-2.5 text-sm";
   return (
     <>
@@ -122,7 +122,7 @@ function PrimaryCtas({ size = "lg" }: { size?: "lg" | "sm" }) {
         onClick={trackSignupStart}
         className={`inline-flex items-center gap-2 rounded-md bg-accent ${pad} font-semibold text-accent-foreground hover:bg-accent/90 transition shadow-md`}
       >
-        Start your free valuation <ArrowRight className="h-4 w-4" />
+        {label} <ArrowRight className="h-4 w-4" />
       </Link>
       <Link
         to="/demo"
@@ -208,7 +208,7 @@ function DentalWorthLanding() {
                 Last updated: October 7, 2026
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-4">
-                <PrimaryCtas />
+                <PrimaryCtas label="Free Preview" />
               </div>
               <p className="mt-5 text-xs text-muted-foreground">
                 Planning estimate for dental practice owners 55+ — not Wall Street, not a certified

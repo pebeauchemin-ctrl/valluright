@@ -245,7 +245,7 @@ function HvacWorthLanding() {
               onClick={trackSignupStart}
                   className="inline-flex items-center gap-2 rounded-md bg-accent px-6 py-3 text-base font-semibold text-accent-foreground hover:bg-accent/90 transition shadow-md hover:shadow-lg"
                 >
-                  Start your free valuation <ArrowRight className="h-4 w-4" />
+                  Free Preview <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
                   to="/demo"
