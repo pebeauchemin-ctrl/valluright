@@ -214,7 +214,7 @@ export const Route = createFileRoute("/what-is-my-rv-park-worth")({
   component: RvParkWorthLanding,
 });
 
-function CtaPair({ size = "lg" }: { size?: "lg" | "md" }) {
+function CtaPair({ size = "lg", label = "Start free" }: { size?: "lg" | "md"; label?: string }) {
   const pad = size === "lg" ? "px-6 py-3 text-base" : "px-5 py-2.5 text-sm";
   return (
     <>
@@ -224,7 +224,7 @@ function CtaPair({ size = "lg" }: { size?: "lg" | "md" }) {
         onClick={trackSignupStart}
         className={`inline-flex items-center gap-2 rounded-md bg-accent ${pad} font-semibold text-accent-foreground hover:bg-accent/90 transition shadow-md hover:shadow-lg`}
       >
-        Start free <ArrowRight className="h-4 w-4" />
+        {label} <ArrowRight className="h-4 w-4" />
       </Link>
       <Link
         to="/demo"
@@ -315,7 +315,7 @@ function RvParkWorthLanding() {
                 Last updated: {SHIP_DATE_LONG}
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-4">
-                <CtaPair />
+                <CtaPair label="Free Preview" />
               </div>
               <p className="mt-4 text-sm text-muted-foreground">Free Preview is $0. No credit card.</p>
             </div>

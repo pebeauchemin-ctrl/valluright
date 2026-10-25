@@ -156,6 +156,7 @@ export const Route = createFileRoute("/guides/exit-strategy-retirement")({
 function ExitStrategyGuide() {
   return (
     <PublicPageShell
+      heroCta
       seoFooter
       relatedLinksFor="/guides/exit-strategy-retirement"
       eyebrow="Owner’s guide"

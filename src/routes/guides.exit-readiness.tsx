@@ -150,6 +150,7 @@ export const Route = createFileRoute("/guides/exit-readiness")({
 function ExitReadinessGuide() {
   return (
     <PublicPageShell
+      heroCta
       seoFooter
       relatedLinksFor="/guides/exit-readiness"
       eyebrow="Owner’s guide"

@@ -148,6 +148,7 @@ export const Route = createFileRoute("/guides/how-to-value-a-small-business")({
 function HowToValueGuide() {
   return (
     <PublicPageShell
+      heroCta
       seoFooter
       relatedLinksFor="/guides/how-to-value-a-small-business"
       eyebrow="Owner’s guide"

@@ -164,6 +164,7 @@ export const Route = createFileRoute("/guides/how-to-sell-my-business")({
 function HowToSellGuide() {
   return (
     <PublicPageShell
+      heroCta
       seoFooter
       relatedLinksFor="/guides/how-to-sell-my-business"
       eyebrow="Owner’s guide"

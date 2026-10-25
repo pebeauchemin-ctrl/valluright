@@ -136,6 +136,7 @@ export const Route = createFileRoute("/guides/owner-dependence")({
 function OwnerDependenceGuide() {
   return (
     <PublicPageShell
+      heroCta
       seoFooter
       relatedLinksFor="/guides/owner-dependence"
       eyebrow="Owner’s guide"
