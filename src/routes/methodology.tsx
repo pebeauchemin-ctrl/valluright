@@ -13,7 +13,7 @@ const articleLd = {
   "publisher": ORGANIZATION_REF,
   "mainEntityOfPage": "https://valuright.ai/methodology",
   "datePublished": "2026-09-15",
-  "dateModified": "2026-09-22"
+  "dateModified": "2026-10-27"
 };
 
 const breadcrumbLd = {
@@ -86,6 +86,38 @@ const faqLd = {
         "@type": "Answer",
         "text": "Before you set an asking price, take financing, make tax elections, or negotiate a letter of intent. Export your assumptions from ValuRight and review them with advisors."
       }
+    },
+    {
+      "@type": "Question",
+      "name": "Which method usually drives a Main Street business's range?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "For most owner-operated Main Street businesses, the SDE multiple method drives the range, because buyers expect to step into the owner's role. EBITDA multiples carry more weight when hired managers already run the business. Revenue multiples and the asset floor serve as sanity checks. Open “Why this range?” to see which methods counted for your business."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why did my range move when I changed my owner hours?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Owner hours are one of the risk factors that move your selected multiple within the industry band. More owner hours usually mean more owner dependence, which lowers the multiple and confidence; fewer hours and a stronger team usually raise it. Your earnings didn’t change, but what a buyer would pay for them did. See how owner dependence affects value."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Where do the multiples come from?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Each method starts from an industry low, median and high assumption, and ValuRight shifts your selected multiple within that band based on your risk and quality factors. We don’t publish comp tables or individual sale prices. Treat the range as a planning estimate and check it against current buyer activity with a broker before you set a price."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How often should I re-run my estimate, and how long is it good for?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A planning range reflects the numbers and answers you entered on the day you ran it. Re-run it after each year-end close, after a big change (winning or losing a major customer, hiring a manager, cutting your hours), and before you talk to a broker or buyer. A certified appraisal for a sale, tax or lending decision has its own validity rules, so ask your appraiser or CPA."
+      }
     }
   ]
 };
@@ -127,7 +159,7 @@ function MethodologyPage() {
       eyebrow="Methodology"
       title="How ValuRight values a small business"
       description="ValuRight builds a planning range for Main Street businesses using multiple methods — not a single rule of thumb. This page explains what goes into the estimate and where a CPA, broker, or appraiser still belongs. It is a software-generated planning estimate, not a certified appraisal."
-      updated="September 22, 2026"
+      updated="October 27, 2026"
     >
       <div className="mb-8 flex flex-wrap gap-3">
         <Link
@@ -193,6 +225,9 @@ function MethodologyPage() {
       </LegalSection>
 
       <LegalSection title="Supported methods">
+        <p>
+          For most owner-run Main Street businesses, the SDE multiple is the main method; the others check it.
+        </p>
         <p>
           ValuRight uses seven methods (including SDE- and EBITDA-oriented views plus cap rate / NOI where the business is income-property oriented). Each method is shown with confidence notes; the headline range blends methods appropriate for the business category.
         </p>
@@ -328,6 +363,46 @@ function MethodologyPage() {
           <p className="font-semibold text-foreground">When should I bring in a CPA, broker, or appraiser?</p>
           <p className="mt-1">
             Before you set an asking price, take financing, make tax elections, or negotiate a letter of intent. Export your assumptions from ValuRight and review them with advisors.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">Which method usually drives a Main Street business's range?</p>
+          <p className="mt-1">
+            For most owner-operated Main Street businesses, the{" "}
+            <Link to="/guides/sde-explained" className="font-semibold text-accent hover:underline">
+              SDE multiple
+            </Link>{" "}
+            method drives the range, because buyers expect to step into the owner's role. EBITDA multiples carry more weight when hired managers already run the business. Revenue multiples and the asset floor serve as sanity checks. Open “Why this range?” to see which methods counted for your business.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">Why did my range move when I changed my owner hours?</p>
+          <p className="mt-1">
+            Owner hours are one of the risk factors that move your selected multiple within the industry band. More owner hours usually mean more owner dependence, which lowers the multiple and confidence; fewer hours and a stronger team usually raise it. Your earnings didn’t change, but what a buyer would pay for them did. See{" "}
+            <Link to="/guides/owner-dependence" className="font-semibold text-accent hover:underline">
+              how owner dependence affects value
+            </Link>
+            .
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">Where do the multiples come from?</p>
+          <p className="mt-1">
+            Each method starts from an industry low, median and high assumption, and ValuRight shifts your selected multiple within that band based on your risk and quality factors. We don’t publish comp tables or individual sale prices. Treat the range as a{" "}
+            <Link to="/what-is-my-business-worth" className="font-semibold text-accent hover:underline">
+              planning estimate
+            </Link>{" "}
+            and check it against current buyer activity with a broker before you set a price.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">How often should I re-run my estimate, and how long is it good for?</p>
+          <p className="mt-1">
+            A planning range reflects the numbers and answers you entered on the day you ran it. Re-run it after each year-end close, after a big change (winning or losing a major customer, hiring a manager, cutting your hours), and{" "}
+            <Link to="/guides/how-to-sell-my-business" className="font-semibold text-accent hover:underline">
+              before you talk to a broker
+            </Link>{" "}
+            or buyer. A certified appraisal for a sale, tax or lending decision has its own validity rules, so ask your appraiser or CPA.
           </p>
         </div>
       </LegalSection>
