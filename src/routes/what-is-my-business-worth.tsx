@@ -487,7 +487,7 @@ function WorthLanding() {
               q="SDE or EBITDA?"
               a={
                 <>
-                  Owner-operated Main Street businesses usually start with Seller&apos;s Discretionary
+                  Owner-operated Main Street businesses usually start with Seller’s Discretionary
                   Earnings (SDE). Businesses that can run with hired management lean more on EBITDA.
                   ValuRight shows both in context. More:{" "}
                   <Link
