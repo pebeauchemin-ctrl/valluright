@@ -5,6 +5,7 @@ import { PlanComparisonMatrix } from "@/components/PlanComparisonMatrix";
 import { COMMERCIAL_PLANS } from "@/lib/commercial-model";
 import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 import { FooterEntityLine, FooterSeoLinks } from "@/components/SeoLinks";
+import { PilotCta } from "@/components/PilotCta";
 import { ENTITY, ENTITY_FIRST_SENTENCE, ENTITY_SHORT, ORGANIZATION_REF } from "@/lib/site-entity";
 import { SOFTWARE_APPLICATION_NODE } from "@/lib/software-application-ld";
 
@@ -120,6 +121,8 @@ function Landing() {
           </div>
         </div>
       </section>
+
+      <PilotCta />
 
       <section id="how-it-works" className="border-t border-border/60 bg-secondary/40">
         <div className="mx-auto max-w-7xl px-6 py-20">

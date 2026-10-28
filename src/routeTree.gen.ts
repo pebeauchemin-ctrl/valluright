@@ -22,6 +22,7 @@ import { Route as SecurityRouteImport } from './routes/security'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as PilotRouteImport } from './routes/pilot'
 import { Route as MethodologyRouteImport } from './routes/methodology'
 import { Route as GuidesRouteImport } from './routes/guides'
 import { Route as DemoRouteImport } from './routes/demo'
@@ -124,6 +125,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PilotRoute = PilotRouteImport.update({
+  id: '/pilot',
+  path: '/pilot',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MethodologyRoute = MethodologyRouteImport.update({
@@ -309,6 +315,7 @@ export interface FileRoutesByFullPath {
   '/demo': typeof DemoRoute
   '/guides': typeof GuidesRouteWithChildren
   '/methodology': typeof MethodologyRoute
+  '/pilot': typeof PilotRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -356,6 +363,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
   '/methodology': typeof MethodologyRoute
+  '/pilot': typeof PilotRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -406,6 +414,7 @@ export interface FileRoutesById {
   '/demo': typeof DemoRoute
   '/guides': typeof GuidesRouteWithChildren
   '/methodology': typeof MethodologyRoute
+  '/pilot': typeof PilotRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -457,6 +466,7 @@ export interface FileRouteTypes {
     | '/demo'
     | '/guides'
     | '/methodology'
+    | '/pilot'
     | '/pricing'
     | '/privacy'
     | '/reset-password'
@@ -504,6 +514,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/demo'
     | '/methodology'
+    | '/pilot'
     | '/pricing'
     | '/privacy'
     | '/reset-password'
@@ -553,6 +564,7 @@ export interface FileRouteTypes {
     | '/demo'
     | '/guides'
     | '/methodology'
+    | '/pilot'
     | '/pricing'
     | '/privacy'
     | '/reset-password'
@@ -603,6 +615,7 @@ export interface RootRouteChildren {
   DemoRoute: typeof DemoRoute
   GuidesRoute: typeof GuidesRouteWithChildren
   MethodologyRoute: typeof MethodologyRoute
+  PilotRoute: typeof PilotRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -713,6 +726,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pilot': {
+      id: '/pilot'
+      path: '/pilot'
+      fullPath: '/pilot'
+      preLoaderRoute: typeof PilotRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/methodology': {
@@ -1036,6 +1056,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoRoute: DemoRoute,
   GuidesRoute: GuidesRouteWithChildren,
   MethodologyRoute: MethodologyRoute,
+  PilotRoute: PilotRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
