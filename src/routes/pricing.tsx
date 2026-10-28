@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth";
 import { startStripeCheckout } from "@/lib/billing.functions";
 import { ArrowRight, Check } from "lucide-react";
 import { PublicPageShell } from "@/components/PublicPageShell";
+import { PilotCta } from "@/components/PilotCta";
 import { PlanComparisonMatrix } from "@/components/PlanComparisonMatrix";
 import { COMMERCIAL_PLANS, FREE_TRIAL_LIMITS, buyerTeaserPolicy } from "@/lib/commercial-model";
 import { SOFTWARE_APPLICATION_NODE } from "@/lib/software-application-ld";
@@ -60,6 +61,7 @@ function PricingPage() {
       title="Start with a free preview, upgrade when sharing matters"
       description="Every paid capability shown below is tied to the active subscription. Invited advisors access their owner’s review workspace for free."
     >
+      <PilotCta variant="compact" />
       <div className="mx-auto flex max-w-5xl flex-col gap-6 md:flex-row md:items-stretch [&>*]:min-w-0 [&>*]:flex-1">
         <div className="rounded-xl border border-border bg-card p-6">
           <h2 className="font-display text-xl font-semibold text-primary">Free Preview</h2>
