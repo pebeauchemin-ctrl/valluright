@@ -65,7 +65,7 @@ const faqLd = {
       name: "How do buyers value an HVAC company?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Most owner-operated shops start from an honest Seller's Discretionary Earnings (SDE) base, then adjust for risk — recurring work mix, technician bench, owner dependence, concentration, and documentation. There is no universal multiple on this page. Enter your numbers in Free Preview and review assumptions with an advisor before you set an asking price.",
+        text: "Most owner-operated shops start from an honest SDE (or similar earnings) base, then adjust for risk — recurring work mix, technician bench, owner dependence, concentration, and documentation. There is no universal multiple on this page. Enter your numbers in Free Preview; review assumptions with an advisor before you set an asking price.",
       },
     },
     {
@@ -73,7 +73,7 @@ const faqLd = {
       name: "Do maintenance agreements raise my value?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Buyers often prefer more repeatable or recurring service work when it is real, documented, and transferable — because earnings may look less dependent on the owner winning every new install. This page does not invent a lift percentage. Use Free Preview what-if and advisor diligence to explore your mix.",
+        text: "Buyers often prefer more repeatable / recurring service work when it is real, documented, and transferable — because earnings may look less dependent on the owner winning every new install. This page does not invent a lift percentage. Use Free Preview what-if and advisor diligence to explore your mix.",
       },
     },
     {
@@ -97,7 +97,7 @@ const faqLd = {
       name: "Who is this for?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "HVAC and heating and cooling owners — especially owners 55+ planning the next chapter — who want a planning range and exit-readiness homework before broker or buyer conversations. Not Wall Street models.",
+        text: "HVAC and heating & cooling owners — especially owners 55+ planning the next chapter — who want a planning range and exit-readiness homework before broker or buyer conversations. Not Wall Street models.",
       },
     },
     {
@@ -105,7 +105,7 @@ const faqLd = {
       name: FAQ_Q_COMPS,
       acceptedAnswer: {
         "@type": "Answer",
-        text: "No invented sale comps or industry-average multiples on this page. Your planning range comes from your inputs and ValuRight's methods. Local comps belong in advisor or broker diligence.",
+        text: "No invented sale comps or industry-average multiples on this page. Your planning range comes from your inputs and ValuRight’s methods. Local comps belong in advisor / broker diligence — label any third-party numbers carefully if you add them later.",
       },
     },
     {
