@@ -11,7 +11,10 @@ import { readdirSync, readFileSync } from "node:fs";
 const serve = process.argv.includes("--serve");
 const PORT = 5179;
 const arg = process.argv.slice(2).find((a) => !a.startsWith("--"));
-const base = (serve ? `http://localhost:${PORT}` : (arg ?? "http://localhost:5173")).replace(/\/$/, "");
+const base = (serve ? `http://localhost:${PORT}` : (arg ?? "http://localhost:5173")).replace(
+  /\/$/,
+  "",
+);
 
 let server;
 if (serve) {
@@ -27,7 +30,10 @@ if (serve) {
   process.on("exit", stop);
   let up = false;
   for (let i = 0; i < 90 && !up; i++) {
-    up = await fetch(base + "/").then((r) => r.ok, () => false);
+    up = await fetch(base + "/").then(
+      (r) => r.ok,
+      () => false,
+    );
     if (!up) await new Promise((r) => setTimeout(r, 1000));
   }
   if (!up) {
@@ -40,7 +46,14 @@ function routesWithFaq() {
   return readdirSync("src/routes")
     .filter((f) => f.endsWith(".tsx"))
     .filter((f) => readFileSync(`src/routes/${f}`, "utf8").includes('"FAQPage"'))
-    .map((f) => "/" + f.replace(/\.tsx$/, "").replace(/\./g, "/").replace(/^index$/, ""));
+    .map(
+      (f) =>
+        "/" +
+        f
+          .replace(/\.tsx$/, "")
+          .replace(/\./g, "/")
+          .replace(/^index$/, ""),
+    );
 }
 
 const decode = (s) =>
@@ -83,7 +96,10 @@ function faqEntities(html) {
 
 let failures = 0;
 for (const path of routesWithFaq()) {
-  const res = await fetch(base + path).catch((e) => ({ ok: false, status: e.cause?.code ?? e.message }));
+  const res = await fetch(base + path).catch((e) => ({
+    ok: false,
+    status: e.cause?.code ?? e.message,
+  }));
   if (!res.ok) {
     console.error(`FAIL ${path}: HTTP ${res.status}`);
     failures++;
