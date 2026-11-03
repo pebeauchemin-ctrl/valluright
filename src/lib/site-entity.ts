@@ -64,12 +64,13 @@ export const FOUNDER_ID = "https://valuright.ai/#founder";
 export const LOGO_URL = "https://valuright.ai/logo.png";
 
 /**
- * Organization sameAs: personal profile + company page. Append directory
- * listings (item 7) here once they are live. No placeholder URLs.
+ * Organization sameAs: personal profile, company page, and live directory
+ * listings. Add new directory URLs here (one line each) once they are live. No placeholder URLs.
  */
 export const ORG_SAME_AS: string[] = [
   "https://www.linkedin.com/in/paulbeauchemin1",
   "https://www.linkedin.com/company/valuright-ai/",
+  "https://www.saashub.com/valuright-ai",
 ];
 
 /** Person sameAs: founder personal profile only (not the company page). */
