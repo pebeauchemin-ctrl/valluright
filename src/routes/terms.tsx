@@ -1,16 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalSection, PublicPageShell } from "@/components/PublicPageShell";
+import { pageMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/terms")({
   head: () => ({
-    meta: [
-      { title: "Terms of Service - ValuRight.ai" },
-      {
-        name: "description",
-        content:
-          "Terms for using ValuRight.ai business valuation planning software.",
-      },
-    ],
+    meta: pageMeta({
+      title: "Terms of Service - ValuRight.ai",
+      description: "Terms for using ValuRight.ai business valuation planning software.",
+      url: "https://valuright.ai/terms",
+    }),
+    links: [{ rel: "canonical", href: "https://valuright.ai/terms" }],
   }),
   component: TermsPage,
 });

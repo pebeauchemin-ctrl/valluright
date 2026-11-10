@@ -4,6 +4,7 @@ import { LegalSection, PublicPageShell } from "@/components/PublicPageShell";
 import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 import { ORGANIZATION_REF } from "@/lib/site-entity";
+import { pageMeta } from "@/lib/page-meta";
 
 const articleLd = {
   "@context": "https://schema.org",
@@ -90,28 +91,11 @@ const faqLd = {
 
 export const Route = createFileRoute("/guides/owner-dependence")({
   head: () => ({
-    meta: [
-      { title: "Owner Dependence: Why Buyers Discount Your Business | ValuRight" },
-      {
-        name: "description",
-        content:
-          "Owner dependence means the business still needs your hours, relationships, or know-how. See how buyers react — and how to become transferable in 12–24 months.",
-      },
-      {
-        property: "og:title",
-        content: "Owner Dependence: Why Buyers Discount Your Business | ValuRight",
-      },
-      {
-        property: "og:description",
-        content:
-          "Owner dependence means the business still needs your hours, relationships, or know-how. See how buyers react — and how to become transferable in 12–24 months.",
-      },
-      { property: "og:type", content: "website" },
-      {
-        property: "og:url",
-        content: "https://valuright.ai/guides/owner-dependence",
-      },
-    ],
+    meta: pageMeta({
+      title: "Owner Dependence: Why Buyers Discount Your Business | ValuRight",
+      description: "Owner dependence means the business still needs your hours, relationships, or know-how. See how buyers react — and how to become transferable in 12–24 months.",
+      url: "https://valuright.ai/guides/owner-dependence",
+    }),
     links: [
       { rel: "canonical", href: "https://valuright.ai/guides/owner-dependence" },
     ],

@@ -15,6 +15,7 @@ import { recordPublicClientEvent } from "@/lib/observability.functions";
 import { GTM_CONTAINER_ID, GTM_HEAD_SCRIPT } from "@/lib/marketing-analytics";
 
 import { SITE_ENTITY_JSON_LD } from "@/lib/site-entity";
+import { HOME_TITLE, OG_IMAGE_META } from "@/lib/page-meta";
 
 import appCss from "../styles.css?url";
 
@@ -102,7 +103,7 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "ValuRight.ai — Know Your Value. Plan Your Exit. Live Your Freedom." },
+      { title: HOME_TITLE },
       {
         name: "description",
         content:
@@ -111,7 +112,7 @@ export const Route = createRootRoute({
       { name: "author", content: "ValuRight.ai" },
       {
         property: "og:title",
-        content: "ValuRight.ai — Know Your Value. Plan Your Exit. Live Your Freedom.",
+        content: HOME_TITLE,
       },
       {
         property: "og:description",
@@ -119,26 +120,16 @@ export const Route = createRootRoute({
           "Exit-readiness and business valuation software for owners preparing to retire or sell. Estimate a planning range, identify risks, and improve exit readiness.",
       },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
       {
         name: "twitter:title",
-        content: "ValuRight.ai — Know Your Value. Plan Your Exit. Live Your Freedom.",
+        content: HOME_TITLE,
       },
       {
         name: "twitter:description",
         content:
           "Exit-readiness and business valuation software for owners preparing to retire or sell. Estimate a planning range, identify risks, and improve exit readiness.",
       },
-      {
-        property: "og:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b39a52b5-670d-4abd-9568-36c258c4b902/id-preview-75396d10--0d57c900-6da7-4fcb-893e-afdbe8e9158c.lovable.app-1778810957571.png",
-      },
-      {
-        name: "twitter:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b39a52b5-670d-4abd-9568-36c258c4b902/id-preview-75396d10--0d57c900-6da7-4fcb-893e-afdbe8e9158c.lovable.app-1778810957571.png",
-      },
+      ...OG_IMAGE_META,
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },

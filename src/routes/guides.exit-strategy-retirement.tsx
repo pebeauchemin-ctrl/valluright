@@ -4,6 +4,7 @@ import { LegalSection, PublicPageShell } from "@/components/PublicPageShell";
 import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 import { ORGANIZATION_REF } from "@/lib/site-entity";
+import { pageMeta } from "@/lib/page-meta";
 
 const articleLd = {
   "@context": "https://schema.org",
@@ -115,20 +116,11 @@ const faqLd = {
 
 export const Route = createFileRoute("/guides/exit-strategy-retirement")({
   head: () => ({
-    meta: [
-      { title: "Business Exit Strategy for Retirement (Owners 55+) | ValuRight" },
-      { name: "description", content: "Planning to retire from your small business? A practical exit strategy: timeline, value drivers, and a free planning range before you list or talk to a broker." },
-      {
-        property: "og:title",
-        content: "Business Exit Strategy for Retirement (Owners 55+) | ValuRight",
-      },
-      { property: "og:description", content: "Planning to retire from your small business? A practical exit strategy: timeline, value drivers, and a free planning range before you list or talk to a broker." },
-      { property: "og:type", content: "website" },
-      {
-        property: "og:url",
-        content: "https://valuright.ai/guides/exit-strategy-retirement",
-      },
-    ],
+    meta: pageMeta({
+      title: "Business Exit Strategy for Retirement (Owners 55+) | ValuRight",
+      description: "Planning to retire from your small business? A practical exit strategy: timeline, value drivers, and a free planning range before you list or talk to a broker.",
+      url: "https://valuright.ai/guides/exit-strategy-retirement",
+    }),
     links: [
       {
         rel: "canonical",

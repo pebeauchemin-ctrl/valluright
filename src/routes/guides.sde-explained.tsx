@@ -4,6 +4,7 @@ import { LegalSection, PublicPageShell } from "@/components/PublicPageShell";
 import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 import { ORGANIZATION_REF } from "@/lib/site-entity";
+import { pageMeta } from "@/lib/page-meta";
 
 const META_DESCRIPTION =
   "SDE is the total benefit one full-time owner-operator can take from a Main Street business in a normal year. Formula, SDE vs EBITDA, what moves a multiple.";
@@ -106,23 +107,11 @@ const faqLd = {
 
 export const Route = createFileRoute("/guides/sde-explained")({
   head: () => ({
-    meta: [
-      { title: "What Is SDE? Seller’s Discretionary Earnings Explained | ValuRight" },
-      {
-        name: "description",
-        content: META_DESCRIPTION,
-      },
-      {
-        property: "og:title",
-        content: "What Is SDE? Seller’s Discretionary Earnings Explained | ValuRight",
-      },
-      {
-        property: "og:description",
-        content: META_DESCRIPTION,
-      },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://valuright.ai/guides/sde-explained" },
-    ],
+    meta: pageMeta({
+      title: "What Is SDE? Seller’s Discretionary Earnings Explained | ValuRight",
+      description: META_DESCRIPTION,
+      url: "https://valuright.ai/guides/sde-explained",
+    }),
     links: [{ rel: "canonical", href: "https://valuright.ai/guides/sde-explained" }],
     scripts: [
       {

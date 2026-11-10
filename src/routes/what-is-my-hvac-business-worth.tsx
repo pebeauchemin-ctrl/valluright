@@ -5,6 +5,7 @@ import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 import { FooterEntityLine, FooterSeoLinks, RelatedLinksBlock } from "@/components/SeoLinks";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 import { ORGANIZATION_REF } from "@/lib/site-entity";
+import { pageMeta } from "@/lib/page-meta";
 
 const webPageLd = {
   "@context": "https://schema.org",
@@ -121,28 +122,11 @@ const faqLd = {
 
 export const Route = createFileRoute("/what-is-my-hvac-business-worth")({
   head: () => ({
-    meta: [
-      { title: "What Is My HVAC Business Worth? Free Planning Range | ValuRight" },
-      {
-        name: "description",
-        content:
-          "Estimate a planning range for an HVAC or heating & cooling business — recurring service, owner involvement, technician bench, and risks buyers discount. For owners 55+, not a certified appraisal.",
-      },
-      {
-        property: "og:title",
-        content: "What Is My HVAC Business Worth? Free Planning Range | ValuRight",
-      },
-      {
-        property: "og:description",
-        content:
-          "Estimate a planning range for an HVAC or heating & cooling business — recurring service, owner involvement, technician bench, and risks buyers discount. For owners 55+, not a certified appraisal.",
-      },
-      { property: "og:type", content: "website" },
-      {
-        property: "og:url",
-        content: "https://valuright.ai/what-is-my-hvac-business-worth",
-      },
-    ],
+    meta: pageMeta({
+      title: "What Is My HVAC Business Worth? Free Planning Range | ValuRight",
+      description: "Estimate a planning range for an HVAC or heating & cooling business — recurring service, owner involvement, technician bench, and risks buyers discount. For owners 55+, not a certified appraisal.",
+      url: "https://valuright.ai/what-is-my-hvac-business-worth",
+    }),
     links: [{ rel: "canonical", href: "https://valuright.ai/what-is-my-hvac-business-worth" }],
     scripts: [
       {

@@ -4,6 +4,7 @@ import { LegalSection, PublicPageShell } from "@/components/PublicPageShell";
 import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 import { ORGANIZATION_REF } from "@/lib/site-entity";
+import { pageMeta } from "@/lib/page-meta";
 
 const articleLd = {
   "@context": "https://schema.org",
@@ -106,28 +107,11 @@ const faqLd = {
 
 export const Route = createFileRoute("/guides/exit-readiness")({
   head: () => ({
-    meta: [
-      { title: "Exit Readiness & Health Score Explained | ValuRight" },
-      {
-        name: "description",
-        content:
-          "How to know if your Main Street business is ready to sell — what ValuRight’s Health Score measures, why buyers care, and how to improve before you list.",
-      },
-      {
-        property: "og:title",
-        content: "Exit Readiness & Health Score Explained | ValuRight",
-      },
-      {
-        property: "og:description",
-        content:
-          "How to know if your Main Street business is ready to sell — what ValuRight’s Health Score measures, why buyers care, and how to improve before you list.",
-      },
-      { property: "og:type", content: "website" },
-      {
-        property: "og:url",
-        content: "https://valuright.ai/guides/exit-readiness",
-      },
-    ],
+    meta: pageMeta({
+      title: "Exit Readiness & Health Score Explained | ValuRight",
+      description: "How to know if your Main Street business is ready to sell — what ValuRight’s Health Score measures, why buyers care, and how to improve before you list.",
+      url: "https://valuright.ai/guides/exit-readiness",
+    }),
     links: [{ rel: "canonical", href: "https://valuright.ai/guides/exit-readiness" }],
     scripts: [
       {

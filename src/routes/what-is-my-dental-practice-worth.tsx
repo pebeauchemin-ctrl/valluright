@@ -5,6 +5,7 @@ import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 import { FooterEntityLine, FooterSeoLinks, RelatedLinksBlock } from "@/components/SeoLinks";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 import { ORGANIZATION_REF } from "@/lib/site-entity";
+import { pageMeta } from "@/lib/page-meta";
 
 const PAGE_URL = "https://valuright.ai/what-is-my-dental-practice-worth";
 const PAGE_TITLE = "What Is My Dental Practice Worth? Free Planning Range | ValuRight";
@@ -89,14 +90,11 @@ const faqLd = {
 
 export const Route = createFileRoute("/what-is-my-dental-practice-worth")({
   head: () => ({
-    meta: [
-      { title: PAGE_TITLE },
-      { name: "description", content: PAGE_DESCRIPTION },
-      { property: "og:title", content: PAGE_TITLE },
-      { property: "og:description", content: PAGE_DESCRIPTION },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: PAGE_URL },
-    ],
+    meta: pageMeta({
+      title: PAGE_TITLE,
+      description: PAGE_DESCRIPTION,
+      url: PAGE_URL,
+    }),
     links: [{ rel: "canonical", href: PAGE_URL }],
     scripts: [
       { type: "application/ld+json", children: JSON.stringify(webPageLd) },

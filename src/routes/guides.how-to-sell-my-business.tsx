@@ -4,6 +4,7 @@ import { LegalSection, PublicPageShell } from "@/components/PublicPageShell";
 import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 import { ORGANIZATION_REF } from "@/lib/site-entity";
+import { pageMeta } from "@/lib/page-meta";
 
 const articleLd = {
   "@context": "https://schema.org",
@@ -123,20 +124,11 @@ const faqLd = {
 
 export const Route = createFileRoute("/guides/how-to-sell-my-business")({
   head: () => ({
-    meta: [
-      { title: "How to Sell My Business: Owner Checklist | ValuRight" },
-      { name: "description", content: "A practical checklist to prepare and sell a small business — clean numbers, reduce owner dependence, and know your planning range before you go to market." },
-      {
-        property: "og:title",
-        content: "How to Sell My Business: Owner Checklist | ValuRight",
-      },
-      { property: "og:description", content: "A practical checklist to prepare and sell a small business — clean numbers, reduce owner dependence, and know your planning range before you go to market." },
-      { property: "og:type", content: "website" },
-      {
-        property: "og:url",
-        content: "https://valuright.ai/guides/how-to-sell-my-business",
-      },
-    ],
+    meta: pageMeta({
+      title: "How to Sell My Business: Owner Checklist | ValuRight",
+      description: "A practical checklist to prepare and sell a small business — clean numbers, reduce owner dependence, and know your planning range before you go to market.",
+      url: "https://valuright.ai/guides/how-to-sell-my-business",
+    }),
     links: [
       {
         rel: "canonical",

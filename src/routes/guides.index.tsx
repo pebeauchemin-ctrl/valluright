@@ -2,28 +2,15 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { PublicPageShell } from "@/components/PublicPageShell";
 import { trackSignupStart } from "@/lib/marketing-analytics";
+import { pageMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/guides/")({
   head: () => ({
-    meta: [
-      { title: "Owner Guides: Value, Exit & Readiness | ValuRight" },
-      {
-        name: "description",
-        content:
-          "Practical guides for Main Street owners 55+ — how to value a small business, SDE, owner dependence, exit readiness & Health Score, exit strategy, and how to sell.",
-      },
-      {
-        property: "og:title",
-        content: "Owner Guides: Value, Exit & Readiness | ValuRight",
-      },
-      {
-        property: "og:description",
-        content:
-          "Practical guides for Main Street owners 55+ — how to value a small business, SDE, owner dependence, exit readiness & Health Score, exit strategy, and how to sell.",
-      },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://valuright.ai/guides" },
-    ],
+    meta: pageMeta({
+      title: "Owner Guides: Value, Exit & Readiness | ValuRight",
+      description: "Practical guides for Main Street owners 55+ — how to value a small business, SDE, owner dependence, exit readiness & Health Score, exit strategy, and how to sell.",
+      url: "https://valuright.ai/guides",
+    }),
     links: [{ rel: "canonical", href: "https://valuright.ai/guides" }],
   }),
   component: GuidesHub,
