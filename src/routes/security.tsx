@@ -1,16 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalSection, PublicPageShell } from "@/components/PublicPageShell";
+import { pageMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/security")({
   head: () => ({
-    meta: [
-      { title: "Security - ValuRight.ai" },
-      {
-        name: "description",
-        content:
-          "ValuRight.ai security posture for business financial data, storage, and buyer-safe sharing.",
-      },
-    ],
+    meta: pageMeta({
+      title: "Security - ValuRight.ai",
+      description: "ValuRight.ai security posture for business financial data, storage, and buyer-safe sharing.",
+      url: "https://valuright.ai/security",
+    }),
+    links: [{ rel: "canonical", href: "https://valuright.ai/security" }],
   }),
   component: SecurityPage,
 });

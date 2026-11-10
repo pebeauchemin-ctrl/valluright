@@ -10,17 +10,15 @@ import { PlanComparisonMatrix } from "@/components/PlanComparisonMatrix";
 import { COMMERCIAL_PLANS, FREE_TRIAL_LIMITS, buyerTeaserPolicy } from "@/lib/commercial-model";
 import { SOFTWARE_APPLICATION_NODE } from "@/lib/software-application-ld";
 import { trackPlanViewed, trackSignupStart } from "@/lib/marketing-analytics";
+import { pageMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
-    meta: [
-      { title: "Pricing - ValuRight.ai" },
-      {
-        name: "description",
-        content:
-          "ValuRight.ai pricing plans for business owners preparing a business for sale.",
-      },
-    ],
+    meta: pageMeta({
+      title: "ValuRight.ai Pricing: Free Preview, Essentials, Exit Ready",
+      description: "ValuRight.ai pricing plans for business owners preparing a business for sale.",
+      url: "https://valuright.ai/pricing",
+    }),
     links: [{ rel: "canonical", href: "https://valuright.ai/pricing" }],
     scripts: [
       {

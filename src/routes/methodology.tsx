@@ -3,6 +3,7 @@ import { trackSignupStart } from "@/lib/marketing-analytics";
 import { ArrowRight } from "lucide-react";
 import { LegalSection, PublicPageShell } from "@/components/PublicPageShell";
 import { ORGANIZATION_REF } from "@/lib/site-entity";
+import { pageMeta } from "@/lib/page-meta";
 
 const articleLd = {
   "@context": "https://schema.org",
@@ -124,14 +125,11 @@ const faqLd = {
 
 export const Route = createFileRoute("/methodology")({
   head: () => ({
-    meta: [
-      { title: "How ValuRight Values a Small Business | ValuRight" },
-      {
-        name: "description",
-        content:
-          "How ValuRight builds a planning range for Main Street businesses using seven valuation methods — not a certified appraisal. See inputs, methods, and limitations.",
-      },
-    ],
+    meta: pageMeta({
+      title: "How ValuRight Values a Small Business | ValuRight",
+      description: "How ValuRight builds a planning range for Main Street businesses using seven valuation methods — not a certified appraisal. See inputs, methods, and limitations.",
+      url: "https://valuright.ai/methodology",
+    }),
     links: [{ rel: "canonical", href: "https://valuright.ai/methodology" }],
     scripts: [
       {

@@ -4,6 +4,7 @@ import { LegalSection, PublicPageShell } from "@/components/PublicPageShell";
 import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 import { ORGANIZATION_REF } from "@/lib/site-entity";
+import { pageMeta } from "@/lib/page-meta";
 
 const articleLd = {
   "@context": "https://schema.org",
@@ -99,28 +100,11 @@ const faqLd = {
 
 export const Route = createFileRoute("/guides/how-to-value-a-small-business")({
   head: () => ({
-    meta: [
-      { title: "How to Value a Small Business (Owner’s Guide) | ValuRight" },
-      {
-        name: "description",
-        content:
-          "Learn how Main Street buyers price a small business — SDE, multiples, and what moves the range. Then run a free ValuRight planning estimate.",
-      },
-      {
-        property: "og:title",
-        content: "How to Value a Small Business (Owner’s Guide) | ValuRight",
-      },
-      {
-        property: "og:description",
-        content:
-          "Learn how Main Street buyers price a small business — SDE, multiples, and what moves the range. Then run a free ValuRight planning estimate.",
-      },
-      { property: "og:type", content: "website" },
-      {
-        property: "og:url",
-        content: "https://valuright.ai/guides/how-to-value-a-small-business",
-      },
-    ],
+    meta: pageMeta({
+      title: "How to Value a Small Business (Owner’s Guide) | ValuRight",
+      description: "Learn how Main Street buyers price a small business — SDE, multiples, and what moves the range. Then run a free ValuRight planning estimate.",
+      url: "https://valuright.ai/guides/how-to-value-a-small-business",
+    }),
     links: [
       {
         rel: "canonical",

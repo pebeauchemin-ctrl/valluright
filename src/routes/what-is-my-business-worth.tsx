@@ -5,6 +5,7 @@ import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
 import { FooterEntityLine, FooterSeoLinks, RelatedLinksBlock } from "@/components/SeoLinks";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 import { ORGANIZATION_REF } from "@/lib/site-entity";
+import { pageMeta } from "@/lib/page-meta";
 
 const articleLd = {
   "@context": "https://schema.org",
@@ -106,28 +107,11 @@ const breadcrumbLd = {
 
 export const Route = createFileRoute("/what-is-my-business-worth")({
   head: () => ({
-    meta: [
-      { title: "What Is My Business Worth? Free Planning Range | ValuRight" },
-      {
-        name: "description",
-        content:
-          "Get a free planning range for your Main Street business in about 15 minutes. Health Score, what-if scenarios, and value drivers for owners 55+ — not a certified appraisal.",
-      },
-      {
-        property: "og:title",
-        content: "What Is My Business Worth? Free Planning Range | ValuRight",
-      },
-      {
-        property: "og:description",
-        content:
-          "Get a free planning range for your Main Street business in about 15 minutes. Health Score, what-if scenarios, and value drivers for owners 55+ — not a certified appraisal.",
-      },
-      { property: "og:type", content: "website" },
-      {
-        property: "og:url",
-        content: "https://valuright.ai/what-is-my-business-worth",
-      },
-    ],
+    meta: pageMeta({
+      title: "What Is My Business Worth? Free Planning Range | ValuRight",
+      description: "Get a free planning range for your Main Street business in about 15 minutes. Health Score, what-if scenarios, and value drivers for owners 55+ — not a certified appraisal.",
+      url: "https://valuright.ai/what-is-my-business-worth",
+    }),
     links: [{ rel: "canonical", href: "https://valuright.ai/what-is-my-business-worth" }],
     scripts: [
       {

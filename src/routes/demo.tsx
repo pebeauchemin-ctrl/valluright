@@ -9,13 +9,15 @@ import {
   SAMPLE_HVAC_FINANCIALS,
 } from "@/lib/valuation";
 import { fmtCurrency, fmtPct } from "@/lib/format";
+import { pageMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/demo")({
   head: () => ({
-    meta: [
-      { title: "Sample Valuation — ValuRight.ai" },
-      { name: "description", content: "See a sample exit-readiness report for a fictional HVAC business." },
-    ],
+    meta: pageMeta({
+      title: "Sample Valuation — ValuRight.ai",
+      description: "See a sample exit-readiness report for a fictional HVAC business.",
+      url: "https://valuright.ai/demo",
+    }),
     links: [{ rel: "canonical", href: "https://valuright.ai/demo" }],
   }),
   component: Demo,

@@ -8,13 +8,15 @@ import { FooterEntityLine, FooterSeoLinks } from "@/components/SeoLinks";
 import { PilotCta } from "@/components/PilotCta";
 import { ENTITY, ENTITY_FIRST_SENTENCE, ENTITY_SHORT, ORGANIZATION_REF } from "@/lib/site-entity";
 import { SOFTWARE_APPLICATION_NODE } from "@/lib/software-application-ld";
+import { HOME_TITLE, pageMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/")({
   head: () => ({
-    meta: [
-      { name: "description", content: ENTITY_SHORT },
-      { property: "og:description", content: ENTITY },
-    ],
+    meta: pageMeta({
+      title: HOME_TITLE,
+      description: ENTITY_SHORT,
+      url: "https://valuright.ai/",
+    }),
     links: [{ rel: "canonical", href: "https://valuright.ai/" }],
     scripts: [
       {
