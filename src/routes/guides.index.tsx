@@ -65,7 +65,7 @@ const GUIDES = [
   {
     to: "/guides/exit-readiness" as const,
     title: "Exit readiness & Health Score",
-    blurb: "What buyers mean by ready to sell — and how ValuRight scores it",
+    blurb: "Printable checklist, what buyers mean by ready to sell, and how ValuRight scores it",
   },
   {
     to: "/guides/exit-strategy-retirement" as const,

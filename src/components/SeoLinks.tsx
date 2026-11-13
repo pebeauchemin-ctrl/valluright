@@ -21,7 +21,11 @@ export function RelatedLinksBlock({
   const guides = RELATED_GUIDE_LINKS.filter((l) => !hidden(l.href));
   const industries = INDUSTRY_WORTH_LINKS.filter((l) => !hidden(l.href));
   return (
-    <section aria-label="Related guides" className="border-t border-border/60 bg-secondary/30">
+    <section
+      aria-label="Related guides"
+      data-print-hide
+      className="border-t border-border/60 bg-secondary/30 print:hidden"
+    >
       <div className="mx-auto grid max-w-4xl gap-8 px-6 py-10 md:grid-cols-2">
         <LinkList title="Related guides" links={guides} />
         <LinkList title="What is my business worth? By industry" links={industries} />

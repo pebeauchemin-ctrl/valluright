@@ -1,0 +1,80 @@
+@page {
+  margin: 0.6in;
+}
+
+.print-only-title {
+  display: none;
+}
+
+@media print {
+  header,
+  nav,
+  footer,
+  #lovable-badge,
+  [data-print-hide],
+  .print-hide {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  a[href]::after {
+    content: none !important;
+  }
+
+  #exit-readiness-print-root {
+    display: block !important;
+  }
+
+  #exit-readiness-print-root .checklist-item,
+  #exit-readiness-print-root .checklist-area {
+    break-inside: avoid;
+  }
+
+  .print-only-title {
+    display: block !important;
+    margin-bottom: 0.8em;
+    font-size: 16pt;
+    font-weight: 600;
+    color: #000;
+  }
+
+  /* Empty boxes for a pen; hide the on-screen radio controls. */
+  .answer-control {
+    display: none !important;
+  }
+
+  .answer-box {
+    display: inline-block;
+    width: 0.85em;
+    height: 0.85em;
+    border: 1px solid #000;
+    margin-right: 0.3em;
+    vertical-align: -0.1em;
+  }
+
+  .answer-print-marks {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 0.9em;
+    margin-top: 0.35em;
+    color: #000;
+  }
+
+  #exit-readiness-print-root,
+  #exit-readiness-print-root h2,
+  #exit-readiness-print-root h3,
+  #exit-readiness-print-root p,
+  #exit-readiness-print-root li,
+  #exit-readiness-print-root label {
+    color: #000;
+    background: transparent;
+  }
+}
+
+.answer-print-marks {
+  display: none;
+}

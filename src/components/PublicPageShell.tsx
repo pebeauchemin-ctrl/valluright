@@ -4,6 +4,7 @@ import { BrandLogo } from "@/components/BrandLogo";
 import { FooterEntityLine, FooterSeoLinks, RelatedLinksBlock } from "@/components/SeoLinks";
 import { VALUATION_DISCLAIMER_SHORT } from "@/components/ValuationDisclaimer";
 import { trackDemoClick, trackSignupStart } from "@/lib/marketing-analytics";
+import { cn } from "@/lib/utils";
 
 type PublicPageShellProps = {
   eyebrow: string;
@@ -19,6 +20,8 @@ type PublicPageShellProps = {
   seoFooter?: boolean;
   /** SEO pages: render the single above-the-fold "Free Preview" CTA in the hero. */
   heroCta?: boolean;
+  /** Hide the hero band in print (used when the page supplies its own print title). */
+  printHideHero?: boolean;
 };
 
 const GUIDE_LINKS = [
@@ -40,16 +43,21 @@ export function PublicPageShell({
   relatedLinksFor,
   seoFooter = false,
   heroCta = false,
+  printHideHero = false,
 }: PublicPageShellProps) {
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border/60 bg-background/80 backdrop-blur">
+      <header className="border-b border-border/60 bg-background/80 backdrop-blur print:hidden">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <Link to="/" className="flex items-center gap-2">
             <BrandLogo size={40} withTagline />
           </Link>
           <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
-            <Link to="/pricing" search={{ checkout: undefined }} className="hover:text-foreground transition">
+            <Link
+              to="/pricing"
+              search={{ checkout: undefined }}
+              className="hover:text-foreground transition"
+            >
               Pricing
             </Link>
             <Link to="/what-is-my-business-worth" className="hover:text-foreground transition">
@@ -78,7 +86,13 @@ export function PublicPageShell({
       </header>
 
       <main>
-        <section className="border-b border-border/60 bg-secondary/40">
+        <section
+          className={cn(
+            "border-b border-border/60 bg-secondary/40",
+            printHideHero && "print:hidden",
+          )}
+          {...(printHideHero ? { "data-print-hide": "" } : {})}
+        >
           <div className="mx-auto max-w-4xl px-6 py-14">
             <p className="text-sm font-semibold uppercase tracking-wider text-accent">{eyebrow}</p>
             <h1 className="mt-3 font-display text-4xl font-semibold text-primary md:text-5xl">
@@ -95,7 +109,7 @@ export function PublicPageShell({
                 to="/auth"
                 search={{ mode: "signup" }}
                 onClick={trackSignupStart}
-                className="mt-6 inline-flex items-center gap-2 rounded-md bg-accent px-6 py-3 text-base font-semibold text-accent-foreground shadow-md transition hover:bg-accent/90"
+                className="mt-6 inline-flex items-center gap-2 rounded-md bg-accent px-6 py-3 text-base font-semibold text-accent-foreground shadow-md transition hover:bg-accent/90 print:hidden"
               >
                 Free Preview <ArrowRight className="h-4 w-4" />
               </Link>
@@ -113,7 +127,7 @@ export function PublicPageShell({
 
       {relatedLinksFor && <RelatedLinksBlock current={relatedLinksFor} />}
 
-      <footer className="border-t border-border/60 bg-primary text-primary-foreground">
+      <footer className="border-t border-border/60 bg-primary text-primary-foreground print:hidden">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-10 md:flex-row md:items-start md:justify-between">
           <div>
             <BrandLogo size={34} variant="onDark" />
@@ -165,12 +179,21 @@ export function PublicPageShell({
   );
 }
 
-export function LegalSection({ title, children }: { title: string; children: React.ReactNode }) {
+export function LegalSection({
+  title,
+  children,
+  id,
+  className,
+}: {
+  title: string;
+  children: React.ReactNode;
+  id?: string;
+  className?: string;
+}) {
   return (
-    <section className="border-b border-border/60 py-7 last:border-0">
+    <section id={id} className={cn("border-b border-border/60 py-7 last:border-0", className)}>
       <h2 className="font-display text-xl font-semibold text-primary">{title}</h2>
       <div className="mt-3 space-y-3 text-sm leading-relaxed text-muted-foreground">{children}</div>
     </section>
   );
 }
-

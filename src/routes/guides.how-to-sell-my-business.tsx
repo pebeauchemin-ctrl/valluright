@@ -234,6 +234,13 @@ function HowToSellGuide() {
           vendors, hiring basics, and monthly financial routines. A buyer is purchasing an asset they
           can operate — not your memory.
         </p>
+        <p>
+          Walk through the same questions a buyer will on the{" "}
+          <Link to="/guides/exit-readiness" className="font-semibold text-accent hover:underline">
+            exit readiness checklist
+          </Link>
+          .
+        </p>
       </LegalSection>
 
       <LegalSection title="Decide path (broker, advisor, DIY)">
