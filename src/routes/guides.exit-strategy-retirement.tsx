@@ -242,6 +242,13 @@ function ExitStrategyGuide() {
           ValuRight’s Health Score is built to flag owner-risk style issues early so you can
           prioritize what to fix before you go to market.
         </p>
+        <p>
+          You can also work through a printable{" "}
+          <Link to="/guides/exit-readiness" className="font-semibold text-accent hover:underline">
+            exit readiness checklist
+          </Link>{" "}
+          to see where a buyer would push back.
+        </p>
       </LegalSection>
 
       <LegalSection title="Advisors you’ll need">

@@ -189,6 +189,14 @@ function OwnerDependenceGuide() {
           If several answers are yes, treat transferability as a workstream — not a week-before-listing
           scramble.
         </p>
+        <p>
+          For a broader printable self-check that also covers documentation, concentration, financials,
+          and deal readiness, use the{" "}
+          <Link to="/guides/exit-readiness" className="font-semibold text-accent hover:underline">
+            exit readiness checklist
+          </Link>
+          .
+        </p>
       </LegalSection>
 
       <LegalSection title="Transferable in 12–24 months (planning guidance, not a guarantee)">
