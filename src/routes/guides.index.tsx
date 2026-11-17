@@ -48,6 +48,11 @@ const GUIDES = [
     blurb: "How landscaping and lawn care businesses are valued for owners 55+ (tool page)",
   },
   {
+    to: "/what-is-my-insurance-agency-worth" as const,
+    title: "What is my insurance agency worth?",
+    blurb: "Free planning range for insurance agency owners (tool page)",
+  },
+  {
     to: "/guides/how-to-value-a-small-business" as const,
     title: "How to value a small business",
     blurb: "SDE, multiples, and what moves the range",

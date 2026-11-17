@@ -201,6 +201,10 @@ function HowToValueGuide() {
           <Link to="/what-is-my-landscaping-business-worth" className="font-semibold text-accent hover:underline">
             how a landscaping business is valued
           </Link>
+          . Own an insurance agency? See{" "}
+          <Link to="/what-is-my-insurance-agency-worth" className="font-semibold text-accent hover:underline">
+            how an insurance agency is valued
+          </Link>
           .
         </p>
       </LegalSection>
