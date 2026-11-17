@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WhatIsMyRvParkWorthRouteImport } from './routes/what-is-my-rv-park-worth'
 import { Route as WhatIsMyPlumbingBusinessWorthRouteImport } from './routes/what-is-my-plumbing-business-worth'
 import { Route as WhatIsMyLandscapingBusinessWorthRouteImport } from './routes/what-is-my-landscaping-business-worth'
+import { Route as WhatIsMyInsuranceAgencyWorthRouteImport } from './routes/what-is-my-insurance-agency-worth'
 import { Route as WhatIsMyHvacBusinessWorthRouteImport } from './routes/what-is-my-hvac-business-worth'
 import { Route as WhatIsMyDentalPracticeWorthRouteImport } from './routes/what-is-my-dental-practice-worth'
 import { Route as WhatIsMyBusinessWorthRouteImport } from './routes/what-is-my-business-worth'
@@ -73,6 +74,12 @@ const WhatIsMyLandscapingBusinessWorthRoute =
   WhatIsMyLandscapingBusinessWorthRouteImport.update({
     id: '/what-is-my-landscaping-business-worth',
     path: '/what-is-my-landscaping-business-worth',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const WhatIsMyInsuranceAgencyWorthRoute =
+  WhatIsMyInsuranceAgencyWorthRouteImport.update({
+    id: '/what-is-my-insurance-agency-worth',
+    path: '/what-is-my-insurance-agency-worth',
     getParentRoute: () => rootRouteImport,
   } as any)
 const WhatIsMyHvacBusinessWorthRoute =
@@ -326,6 +333,7 @@ export interface FileRoutesByFullPath {
   '/what-is-my-business-worth': typeof WhatIsMyBusinessWorthRoute
   '/what-is-my-dental-practice-worth': typeof WhatIsMyDentalPracticeWorthRoute
   '/what-is-my-hvac-business-worth': typeof WhatIsMyHvacBusinessWorthRoute
+  '/what-is-my-insurance-agency-worth': typeof WhatIsMyInsuranceAgencyWorthRoute
   '/what-is-my-landscaping-business-worth': typeof WhatIsMyLandscapingBusinessWorthRoute
   '/what-is-my-plumbing-business-worth': typeof WhatIsMyPlumbingBusinessWorthRoute
   '/what-is-my-rv-park-worth': typeof WhatIsMyRvParkWorthRoute
@@ -374,6 +382,7 @@ export interface FileRoutesByTo {
   '/what-is-my-business-worth': typeof WhatIsMyBusinessWorthRoute
   '/what-is-my-dental-practice-worth': typeof WhatIsMyDentalPracticeWorthRoute
   '/what-is-my-hvac-business-worth': typeof WhatIsMyHvacBusinessWorthRoute
+  '/what-is-my-insurance-agency-worth': typeof WhatIsMyInsuranceAgencyWorthRoute
   '/what-is-my-landscaping-business-worth': typeof WhatIsMyLandscapingBusinessWorthRoute
   '/what-is-my-plumbing-business-worth': typeof WhatIsMyPlumbingBusinessWorthRoute
   '/what-is-my-rv-park-worth': typeof WhatIsMyRvParkWorthRoute
@@ -425,6 +434,7 @@ export interface FileRoutesById {
   '/what-is-my-business-worth': typeof WhatIsMyBusinessWorthRoute
   '/what-is-my-dental-practice-worth': typeof WhatIsMyDentalPracticeWorthRoute
   '/what-is-my-hvac-business-worth': typeof WhatIsMyHvacBusinessWorthRoute
+  '/what-is-my-insurance-agency-worth': typeof WhatIsMyInsuranceAgencyWorthRoute
   '/what-is-my-landscaping-business-worth': typeof WhatIsMyLandscapingBusinessWorthRoute
   '/what-is-my-plumbing-business-worth': typeof WhatIsMyPlumbingBusinessWorthRoute
   '/what-is-my-rv-park-worth': typeof WhatIsMyRvParkWorthRoute
@@ -477,6 +487,7 @@ export interface FileRouteTypes {
     | '/what-is-my-business-worth'
     | '/what-is-my-dental-practice-worth'
     | '/what-is-my-hvac-business-worth'
+    | '/what-is-my-insurance-agency-worth'
     | '/what-is-my-landscaping-business-worth'
     | '/what-is-my-plumbing-business-worth'
     | '/what-is-my-rv-park-worth'
@@ -525,6 +536,7 @@ export interface FileRouteTypes {
     | '/what-is-my-business-worth'
     | '/what-is-my-dental-practice-worth'
     | '/what-is-my-hvac-business-worth'
+    | '/what-is-my-insurance-agency-worth'
     | '/what-is-my-landscaping-business-worth'
     | '/what-is-my-plumbing-business-worth'
     | '/what-is-my-rv-park-worth'
@@ -575,6 +587,7 @@ export interface FileRouteTypes {
     | '/what-is-my-business-worth'
     | '/what-is-my-dental-practice-worth'
     | '/what-is-my-hvac-business-worth'
+    | '/what-is-my-insurance-agency-worth'
     | '/what-is-my-landscaping-business-worth'
     | '/what-is-my-plumbing-business-worth'
     | '/what-is-my-rv-park-worth'
@@ -626,6 +639,7 @@ export interface RootRouteChildren {
   WhatIsMyBusinessWorthRoute: typeof WhatIsMyBusinessWorthRoute
   WhatIsMyDentalPracticeWorthRoute: typeof WhatIsMyDentalPracticeWorthRoute
   WhatIsMyHvacBusinessWorthRoute: typeof WhatIsMyHvacBusinessWorthRoute
+  WhatIsMyInsuranceAgencyWorthRoute: typeof WhatIsMyInsuranceAgencyWorthRoute
   WhatIsMyLandscapingBusinessWorthRoute: typeof WhatIsMyLandscapingBusinessWorthRoute
   WhatIsMyPlumbingBusinessWorthRoute: typeof WhatIsMyPlumbingBusinessWorthRoute
   WhatIsMyRvParkWorthRoute: typeof WhatIsMyRvParkWorthRoute
@@ -656,6 +670,13 @@ declare module '@tanstack/react-router' {
       path: '/what-is-my-landscaping-business-worth'
       fullPath: '/what-is-my-landscaping-business-worth'
       preLoaderRoute: typeof WhatIsMyLandscapingBusinessWorthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/what-is-my-insurance-agency-worth': {
+      id: '/what-is-my-insurance-agency-worth'
+      path: '/what-is-my-insurance-agency-worth'
+      fullPath: '/what-is-my-insurance-agency-worth'
+      preLoaderRoute: typeof WhatIsMyInsuranceAgencyWorthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/what-is-my-hvac-business-worth': {
@@ -1067,6 +1088,7 @@ const rootRouteChildren: RootRouteChildren = {
   WhatIsMyBusinessWorthRoute: WhatIsMyBusinessWorthRoute,
   WhatIsMyDentalPracticeWorthRoute: WhatIsMyDentalPracticeWorthRoute,
   WhatIsMyHvacBusinessWorthRoute: WhatIsMyHvacBusinessWorthRoute,
+  WhatIsMyInsuranceAgencyWorthRoute: WhatIsMyInsuranceAgencyWorthRoute,
   WhatIsMyLandscapingBusinessWorthRoute: WhatIsMyLandscapingBusinessWorthRoute,
   WhatIsMyPlumbingBusinessWorthRoute: WhatIsMyPlumbingBusinessWorthRoute,
   WhatIsMyRvParkWorthRoute: WhatIsMyRvParkWorthRoute,
