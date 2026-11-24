@@ -496,6 +496,13 @@ function RvParkWorthLanding() {
             The more the park looks like a staffed, steady property, the more weight the NOI view gets.
             The more it depends on an owner doing the work, the more SDE drives the conversation.
           </p>
+          <p className={body}>
+            Own a mobile home park instead? See{" "}
+            <Link to="/what-is-my-mobile-home-park-worth" className={LINK_CLASS}>
+              what a mobile home park is worth
+            </Link>
+            .
+          </p>
         </div>
       </section>
 

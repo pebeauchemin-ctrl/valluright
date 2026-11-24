@@ -205,6 +205,10 @@ function HowToValueGuide() {
           <Link to="/what-is-my-insurance-agency-worth" className="font-semibold text-accent hover:underline">
             how an insurance agency is valued
           </Link>
+          . Own a mobile home park? See{" "}
+          <Link to="/what-is-my-mobile-home-park-worth" className="font-semibold text-accent hover:underline">
+            how a mobile home park is valued
+          </Link>
           .
         </p>
       </LegalSection>
