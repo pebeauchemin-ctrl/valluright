@@ -53,6 +53,11 @@ const GUIDES = [
     blurb: "Free planning range for insurance agency owners (tool page)",
   },
   {
+    to: "/what-is-my-mobile-home-park-worth" as const,
+    title: "What is my mobile home park worth?",
+    blurb: "Free planning range for mobile home park owners (tool page)",
+  },
+  {
     to: "/guides/how-to-value-a-small-business" as const,
     title: "How to value a small business",
     blurb: "SDE, multiples, and what moves the range",

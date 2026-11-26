@@ -99,7 +99,8 @@ function Landing() {
                 <a href="/what-is-my-dental-practice-worth" className="font-semibold text-accent hover:underline">Dental practice</a>{" · "}
                 <a href="/what-is-my-plumbing-business-worth" className="font-semibold text-accent hover:underline">Plumbing business worth</a>{" · "}
                 <a href="/what-is-my-landscaping-business-worth" className="font-semibold text-accent hover:underline">Landscaping &amp; lawn care worth</a>{" · "}
-                <a href="/what-is-my-insurance-agency-worth" className="font-semibold text-accent hover:underline">Insurance agency worth</a>
+                <a href="/what-is-my-insurance-agency-worth" className="font-semibold text-accent hover:underline">Insurance agency worth</a>{" · "}
+                <a href="/what-is-my-mobile-home-park-worth" className="font-semibold text-accent hover:underline">Mobile home park worth</a>
                 {" · "}
                 <a href="/guides/exit-readiness" className="font-semibold text-accent hover:underline">Exit readiness &amp; Health Score guide</a>
               </p>
