@@ -12,8 +12,8 @@ const TITLE = "What Is My Mobile Home Park Worth? Free Planning Range | ValuRigh
 const META =
   "How mobile home parks are valued: NOI and cap rate, lot rent, occupancy, park-owned homes, utilities and infrastructure. Free range for owners 55+.";
 // Ship date: re-bump all three (JSON-LD, visible line, sitemap lastmod) on merge day if merged later.
-const SHIP_DATE_ISO = "2026-11-24";
-const SHIP_DATE_LABEL = "November 24, 2026";
+const SHIP_DATE_ISO = "2026-11-25";
+const SHIP_DATE_LABEL = "November 25, 2026";
 const LINK_CLS = "font-semibold text-accent hover:underline";
 // Page disclaimer (brief rule 7): shown once in the body.
 const PAGE_DISCLAIMER =
